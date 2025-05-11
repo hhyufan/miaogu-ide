@@ -29,7 +29,7 @@
 | 层级               | 技术组件                                           |
 | ------------------ | -------------------------------------------------- |
 | **桌面层**   | Electron + Node.js                                 |
-| **渲染层**   | React + TypeScript + Ant Design + Monaco Editor    |
+| **渲染层**   | React + Ant Design + Monaco Editor    |
 | **AI服务层** | (可根据实际AI服务填写，如 OpenAI API, Local LLM等) |
 | **通信层**   | IPC Main/Renderer                                  |
 | **构建工具** | Vite + electron-vite / electron-builder            |
