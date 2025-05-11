@@ -1,0 +1,49 @@
+.tab-bar {
+    background-color: var(--card-bg-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 8px;
+    height: var(--tab-bar-height);
+
+    .ant-tabs {
+        .ant-tabs-nav {
+            margin: 0;
+
+            &::before {
+                border: none;
+            }
+
+            .ant-tabs-tab {
+                background: transparent;
+                border: none;
+                color: var(--text-color);
+                padding: 8px 16px;
+                transition: all 0.3s;
+
+                &:hover {
+                    color: var(--primary-color);
+                }
+
+                &.ant-tabs-tab-active {
+                    background-color: var(--tab-active-bg-color);
+
+                    .ant-tabs-tab-btn {
+                        color: var(--primary-color);
+                    }
+                }
+
+                .anticon-close {
+                    margin-left: 8px;
+                    font-size: 12px;
+
+                    &:hover {
+                        color: var(--error-color);
+                    }
+                }
+            }
+
+            .ant-tabs-ink-bar {
+                background-color: var(--primary-color);
+            }
+        }
+    }
+}

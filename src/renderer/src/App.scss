@@ -1,0 +1,63 @@
+.app-layout {
+    min-height: 100vh;
+    user-select: none;
+}
+.app-content {
+    background-color: var(--background-color);
+    transition: all var(--transition-duration);
+    position: relative;
+    overflow: hidden;
+    height: calc(100vh - var(--header-height) - var(--tab-bar-height));
+}
+
+.content-container {
+    overflow: hidden;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-duration);
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+}
+
+.theme-toggle-btn {
+    transition: transform 0.3s ease;
+
+    .anticon {
+        font-size: 18px;
+    }
+
+    .anticon-sun {
+        color: #faad14;
+        animation: Rise 0.3s ease;
+    }
+
+    .anticon-moon {
+        color: #597ef7;
+        animation: Rise 0.3s ease;
+    }
+}
+
+@keyframes Rise {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 代码编辑器样式 */
+.code-editor-container {
+    overflow: auto;
+    /* 修改为auto以确保内容不会溢出 */
+    height: calc(100vh - var(--header-height) - var(--tab-bar-height));
+    /* 调整高度，考虑header高度和边距 */
+}

@@ -1,0 +1,225 @@
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 在两端分布元素 */
+    padding: 0 16px 0 2px;
+    background-color: var(--card-bg-color) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: var(--header-height);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all var(--transition-duration);
+    -webkit-app-region: drag;
+    /* 允许拖拽窗口 */
+}
+.header-modal {
+  user-select: none;
+  /* 禁用文本选择 */
+}
+.left-container {
+    display: flex;
+    align-items: center;
+    -webkit-app-region: no-drag;
+    /* 按钮区域不可拖拽 */
+}
+
+.file-menu-btn {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+    border-radius: 4px;
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.file-menu-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.create-file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.create-file-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.file-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 60%;
+    overflow: hidden;
+    -webkit-app-region: drag;
+    /* 可拖拽区域 */
+}
+
+.file-title {
+    margin: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+    color: var(--text-color) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-path {
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-secondary-color) !important;
+}
+
+.app-title {
+    margin: 0 !important;
+    color: var(--text-color) !important;
+    transition: color var(--transition-duration);
+}
+
+/* 窗口控制按钮 */
+.window-controls {
+    display: flex;
+    align-items: center;
+    -webkit-app-region: no-drag;
+    /* 按钮区域不可拖拽 */
+}
+
+.window-control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    transition: all 0.2s;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.window-control-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.window-control-btn.close-btn:hover {
+    background-color: #e81123;
+    color: white;
+}
+
+.custom-button-warning {
+    color: var(--warning-color);
+    border-color: var(--warning-color);
+    background: transparent;
+}
+
+.custom-button-warning:hover {
+    color: #fff !important;
+    background: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.unsaved-files-modal {
+    .file-checkbox-list {
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px 0;
+        max-height: 200px;
+        overflow-y: auto;
+        background: var(--card-bg-color);
+
+        .file-checkbox-item {
+            padding: 8px 12px;
+            transition: all var(--transition-duration);
+            display: flex;
+            align-items: center;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:hover {
+                background-color: rgba(var(--primary-color-rgb, 24, 144, 255), 0.06);
+            }
+
+            .ant-checkbox-wrapper {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                color: var(--text-color);
+
+                .ant-checkbox {
+                    top: 0;
+                }
+
+                span:last-child {
+                    flex: 1;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+}
+
+.custom-button-success {
+    color: var(--success-color);
+    border-color: var(--success-color);
+    background: transparent;
+
+    &:disabled {
+        color: var(--text-secondary-color) !important;
+        background: var(--background-color) !important;
+        border-color: var(--border-color) !important;
+        cursor: not-allowed;
+
+        &:hover {
+            color: var(--text-secondary-color) !important;
+            background: var(--background-color) !important;
+            border-color: var(--border-color) !important;
+        }
+    }
+
+    // hover样式
+    &:hover:not(:disabled) {
+        color: #fff !important;
+        background: var(--success-color) !important;
+        border-color: var(--success-color) !important;
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0 16px;
+    }
+
+    .app-title {
+        font-size: 18px !important;
+    }
+
+    .logo {
+        height: 24px;
+    }
+
+    .window-control-btn {
+        width: 28px;
+        height: 28px;
+    }
+}

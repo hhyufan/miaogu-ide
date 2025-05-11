@@ -1,0 +1,102 @@
+{
+  "name": "miaogu-ide",
+  "version": "1.0.0",
+  "description": "A Python Markdown Note with tracking practice system.",
+  "main": "./out/main/index.js",
+  "author": "hhyufan",
+  "homepage": "https://electron-vite.org",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "npm run build && electron-builder --dir",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux"
+  },
+  "build": {
+    "productName": "miaogu-ide",
+    "appId": "com.hhyufan.miaogu_ide",
+    "asar": true,
+    "files": [
+      "!**/.vscode/*",
+      "!src/*",
+      "!electron.vite.config.{js,ts,mjs,cjs}",
+      "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}",
+      "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
+      "!imgs/*",
+      "!resources/*",
+      "!python-server/*",
+      "out/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icons/icon.icns"
+    },
+    "win": {
+      "icon": "build/icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico"
+    },
+    "linux": {
+      "category": "Education",
+      "icon": "build/icons"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "devDependencies": {
+    "@ant-design/icons": "^5.2.6",
+    "@electron-toolkit/eslint-config": "^2.0.0",
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^4.0.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__template": "^7.4.4",
+    "@types/babel__traverse": "^7.20.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "antd": "^5.10.0",
+    "axios": "^1.5.0",
+    "electron": "^35.0.3",
+    "electron-builder": "^25.1.8",
+    "electron-store": "^8.0.0",
+    "electron-vite": "^3.1.0",
+    "eslint": "^9.23.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "mermaid": "^11.6.0",
+    "prettier": "^3.5.3",
+    "prism-themes": "^1.9.0",
+    "prismjs": "^1.30.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.30.0",
+    "remark-gfm": "^4.0.1",
+    "sass-embedded": "^1.86.1",
+    "vite": "^6.2.4"
+  },
+  "dependencies": {
+    "miaogu-ide": "file:"
+  }
+}
