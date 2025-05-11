@@ -1,7 +1,7 @@
 {
   "name": "miaogu-ide",
   "version": "1.0.0",
-  "description": "A Python Markdown Note with tracking practice system.",
+  "description": "A simple and beautiful code editor.",
   "main": "./out/main/index.js",
   "author": "hhyufan",
   "homepage": "https://electron-vite.org",
