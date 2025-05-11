@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Modal } from 'antd'
 
 const FileContext = createContext(undefined)
@@ -8,27 +8,7 @@ const FileContext = createContext(undefined)
 export const FileProvider = ({ children }) => {
   const [currentFilePath, setCurrentFilePath] = useState('')
   const [openedFiles, setOpenedFiles] = useState([]) // 结构：{ path: string, name: string, isTemporary: boolean, isModified: boolean, content: string }[]
-
-  // 初始化加载持久化内容
-  useEffect(() => {
-    const loadInitialContent = async () => {
-      if (window.ipcApi?.getCodeEditorContent) {
-        try {
-          const result = await window.ipcApi.getCodeEditorContent()
-          if (result?.content) {
-            setOpenedFiles((prev) =>
-              prev.map((file) =>
-                file.path === currentFilePath ? { ...file, content: result.content } : file
-              )
-            )
-          }
-        } catch (error) {
-          console.error('加载持久化内容失败:', error)
-        }
-      }
-    }
-    loadInitialContent().then()
-  }, [currentFilePath])
+  const [editorCode, setEditorCode] = useState('')
 
   // 获取当前文件对象
   const currentFile = openedFiles.find((f) => f.path === currentFilePath) || {
@@ -100,12 +80,12 @@ export const FileProvider = ({ children }) => {
 
   // 更新代码内容
   const updateCode = (newCode) => {
+    setEditorCode(newCode)
     setOpenedFiles((prev) =>
       prev.map((file) =>
         file.path === currentFilePath ? { ...file, content: newCode, isModified: true } : file
       )
     )
-
     if (window.codeBlockManager) {
       window.codeBlockManager.setCurrentBlock(newCode)
     }
@@ -162,7 +142,7 @@ export const FileProvider = ({ children }) => {
           name: fileName,
           isTemporary: false,
           isModified: false,
-          content: currentCode
+          content: editorCode
         }
         setOpenedFiles((prev) => [...prev, newFile])
       }
@@ -173,6 +153,8 @@ export const FileProvider = ({ children }) => {
       Modal.error({ title: '保存失败', content: error.message })
     }
   }
+
+  // 保存指定的文件对象数组
   const saveFiles = async (files) => {
     if (!window.ipcApi) return
 
@@ -216,6 +198,7 @@ export const FileProvider = ({ children }) => {
       Modal.error({ title: '保存失败', content: error.message })
     }
   }
+
   // 切换文件
   const switchFile = (path) => {
     const target = openedFiles.find((f) => f.path === path)
@@ -274,7 +257,6 @@ export const FileProvider = ({ children }) => {
     closeFile,
     saveFiles
   }
-
   return <FileContext.Provider value={contextValue}>{children}</FileContext.Provider>
 }
 
