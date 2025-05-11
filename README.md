@@ -1,6 +1,6 @@
 # 喵咕IDE
 
-![Electron](https://img.shields.io/badge/Electron-35.0.3-47848F?logo=electron) ![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.4-3178C6?logo=typescript) ![Ant Design](https://img.shields.io/badge/Ant_Design-5.16.2-0170FE?logo=antdesign)![Vite](https://img.shields.io/badge/Vite-6.2.4-646CFF?logo=vite)
+![Electron](https://img.shields.io/badge/Electron-35.0.3-47848F?logo=electron) ![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)  ![Ant Design](https://img.shields.io/badge/Ant_Design-5.16.2-0170FE?logo=antdesign)![Vite](https://img.shields.io/badge/Vite-6.2.4-646CFF?logo=vite)
 
 **喵咕IDE** 是一款专为开发者设计的、集成Monaco代码编辑器框架以及现代前端技术与桌面应用的优势，旨在提供一个高效、智能且用户友好的编码体验。
 
@@ -29,7 +29,7 @@
 | 层级               | 技术组件                                           |
 | ------------------ | -------------------------------------------------- |
 | **桌面层**   | Electron + Node.js                                 |
-| **渲染层**   | React + TypeScript + Ant Design + Monaco Editor    |
+| **渲染层**   | React + Ant Design + Monaco Editor    |
 | **AI服务层** | (可根据实际AI服务填写，如 OpenAI API, Local LLM等) |
 | **通信层**   | IPC Main/Renderer                                  |
 | **构建工具** | Vite + electron-vite / electron-builder            |
