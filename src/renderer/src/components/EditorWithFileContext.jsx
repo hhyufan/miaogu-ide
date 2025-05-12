@@ -1,50 +1,127 @@
-import { Editor } from '@monaco-editor/react'
-import { Spin } from 'antd'
-import { monaco } from '../monaco/monaco-config'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFile } from '../contexts/FileContext'
-import { useEffect, useMemo, useRef } from 'react'
+import * as monaco from 'monaco-editor'
+import { createHighlighter } from 'shiki'
+import { shikiToMonaco } from '@shikijs/monaco'
+import { Spin } from 'antd'
+import extensionToLanguage from '../contexts/file-extensions.json'
+
+let highlighterPromise = null
+const initializeHighlighter = async () => {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      themes: ['one-dark-pro', 'one-light', 'andromeeda', 'aurora-x'],
+      langs: [...new Set(Object.values(extensionToLanguage))]
+    }).then((hl) => {
+      shikiToMonaco(hl, monaco)
+      return hl
+    })
+  }
+  return highlighterPromise
+}
 
 // eslint-disable-next-line react/prop-types
 const EditorWithFileContext = ({ isDarkMode }) => {
-  // 修改后的hook获取方式
   const { currentFile, currentCode, updateCode } = useFile()
-
-  // 添加编辑器实例引用
+  const containerRef = useRef(null)
   const editorRef = useRef(null)
+  const [isShikiReady, setIsShikiReady] = useState(false)
+  const isInternalChange = useRef(false)
+  const prevCodeRef = useRef(currentCode)
+
+  useEffect(() => {
+    let mounted = true
+    initializeHighlighter()
+      .then(() => mounted && setIsShikiReady(true))
+      .catch(console.error)
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const editorLanguage = useMemo(() => {
     if (!currentFile?.name) return 'plaintext'
-    const extension = currentFile.name.split('.').pop().toLowerCase()
-    return extension === 'py' ? 'python' : extension === 'js' ? 'javascript' : 'plaintext'
+    const filename = currentFile.name.toLowerCase()
+    if (filename === 'dockerfile') return 'dockerfile'
+    const extension = filename.split('.').pop()
+    return extensionToLanguage[extension] || 'plaintext'
   }, [currentFile?.name])
 
-  // 添加文件路径变化的处理
   useEffect(() => {
-    if (editorRef.current && currentFile) {
-      // 强制设置编辑器内容
-      editorRef.current.setValue(currentCode)
-    }
-  }, [currentFile.path, currentCode, currentFile])
+    if (!containerRef.current || !isShikiReady || editorRef.current) return
 
-  return (
-    <Editor
-      key={currentFile?.path || 'new-file'} // 关键！通过key强制重新渲染
-      height="100%"
-      language={editorLanguage}
-      theme={monaco.getThemeName(isDarkMode)}
-      value={currentCode} // 使用currentCode而不是code
-      onChange={updateCode}
-      loading={<Spin size="large" />}
-      options={{
-        minimap: { enabled: false },
-        fontSize: 14,
-        scrollBeyondLastLine: false,
-        automaticLayout: true,
-        overviewRulerBorder: false,
-        wordWrap: 'on'
-      }}
-    />
-  )
+    editorRef.current = monaco.editor.create(containerRef.current, {
+      value: currentCode,
+      language: editorLanguage,
+      theme: isDarkMode ? 'one-dark-pro' : 'one-light',
+      minimap: { enabled: false },
+      fontSize: 14,
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+      overviewRulerBorder: false,
+      wordWrap: 'on'
+    })
+
+    prevCodeRef.current = currentCode
+
+    return () => {
+      editorRef.current?.dispose()
+      editorRef.current = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShikiReady])
+
+  useEffect(() => {
+    if (!editorRef.current || isInternalChange.current) return
+
+    const editor = editorRef.current
+    if (prevCodeRef.current !== currentCode) {
+      editor.setValue(currentCode)
+      prevCodeRef.current = currentCode
+    }
+  }, [currentCode])
+
+  useEffect(() => {
+    if (!editorRef.current) return
+
+    const editor = editorRef.current
+    const disposeContentChange = editor.onDidChangeModelContent(() => {
+      isInternalChange.current = true
+      const newValue = editor.getValue()
+      updateCode(newValue)
+      prevCodeRef.current = newValue
+      setTimeout(() => {
+        isInternalChange.current = false
+      }, 0)
+    })
+
+    return () => {
+      disposeContentChange.dispose()
+    }
+  }, [updateCode])
+
+  useEffect(() => {
+    if (!editorRef.current) return
+
+    const editor = editorRef.current
+    const model = editor.getModel()
+
+    if (model && model.getLanguageId() !== editorLanguage) {
+      monaco.editor.setModelLanguage(model, editorLanguage)
+    }
+
+    monaco.editor.setTheme(isDarkMode ? 'one-dark-pro' : 'one-light')
+  }, [editorLanguage, isDarkMode])
+
+  if (!isShikiReady) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200 }}>
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  return <div ref={containerRef} style={{ height: '100%', width: '100%' }} />
 }
 
 export default EditorWithFileContext

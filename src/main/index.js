@@ -4,10 +4,6 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import fs from 'fs'
 import stateStore from './store'
-// 存储Python进程引用
-let pythonProcess = null
-// 存储待处理的IPC请求
-let pendingRequests = new Map()
 
 function createWindow() {
   // Create the browser window.
@@ -28,47 +24,6 @@ function createWindow() {
   // 启动Python IPC服务器
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-  })
-
-  // 添加窗口关闭前的事件处理
-  mainWindow.on('close', () => {
-    // 确保Python进程在窗口关闭前被终止
-    if (pythonProcess && !pythonProcess.killed) {
-      try {
-        // 在Windows上使用taskkill强制终止进程及其子进程
-        if (process.platform === 'win32' && pythonProcess.pid) {
-          const { execSync } = require('child_process')
-          try {
-            // 确保使用/t参数终止所有子进程
-            execSync(`taskkill /pid ${pythonProcess.pid} /f /t`)
-            console.log(`窗口关闭前已强制终止Python进程及其子进程(PID: ${pythonProcess.pid})`)
-
-            // 等待一小段时间确保进程完全终止
-            setTimeout(() => {
-              // 检查进程是否仍然存在
-              try {
-                execSync(`tasklist /fi "pid eq ${pythonProcess.pid}" /fo csv /nh`)
-                console.warn(
-                  `窗口关闭前Python进程(PID: ${pythonProcess.pid})可能仍在运行，尝试再次终止`
-                )
-                execSync(`taskkill /pid ${pythonProcess.pid} /f /t`)
-              } catch (checkError) {
-                // 如果tasklist命令失败，说明进程已经不存在
-                console.log(`窗口关闭前确认Python进程(PID: ${pythonProcess.pid})已终止`, checkError)
-              }
-            }, 500)
-          } catch (e) {
-            console.error('窗口关闭前使用taskkill终止进程失败:', e)
-          }
-        }
-
-        // 常规终止方式作为备选
-        pythonProcess.kill('SIGKILL')
-        pythonProcess = null
-      } catch (error) {
-        console.error('窗口关闭前终止Python进程时出错:', error)
-      }
-    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -115,28 +70,6 @@ app.whenReady().then(() => {
           }
           break
         case 'close':
-          // 先终止Python进程，再关闭窗口
-          if (pythonProcess && !pythonProcess.killed) {
-            try {
-              // 在Windows上使用taskkill强制终止进程及其子进程
-              if (process.platform === 'win32' && pythonProcess.pid) {
-                const { execSync } = require('child_process')
-                try {
-                  // 确保使用/t参数终止所有子进程
-                  execSync(`taskkill /pid ${pythonProcess.pid} /f /t`)
-                  console.log(`已强制终止Python进程及其子进程(PID: ${pythonProcess.pid})`)
-                } catch (e) {
-                  console.error('使用taskkill终止进程失败:', e)
-                }
-              }
-
-              // 常规终止方式作为备选
-              pythonProcess.kill('SIGKILL')
-              pythonProcess = null
-            } catch (error) {
-              console.error('终止Python进程时出错:', error)
-            }
-          }
           window.close()
           break
       }
@@ -273,36 +206,6 @@ app.whenReady().then(() => {
       console.error('导入文件失败:', error)
       return { success: false, message: `导入文件失败: ${error.message}` }
     }
-  })
-
-  // 处理IPC请求
-  ipcMain.handle('python-ipc', async (event, request) => {
-    return new Promise((resolve, reject) => {
-      try {
-        // 生成唯一请求ID
-        const requestId = Date.now().toString() + Math.random().toString().substring(2, 8)
-
-        // 添加请求ID到请求中
-        const requestWithId = { ...request, requestId }
-
-        // 存储请求的resolve和reject函数
-        pendingRequests.set(requestId, { resolve, reject })
-
-        // 发送请求到Python进程
-        const requestString = JSON.stringify(requestWithId) + '\n'
-        pythonProcess.stdin.write(requestString)
-
-        // 设置超时
-        setTimeout(() => {
-          if (pendingRequests.has(requestId)) {
-            pendingRequests.delete(requestId)
-            reject(new Error('请求超时'))
-          }
-        }, 60000) // 增加到60秒超时，给AI响应更多时间
-      } catch (error) {
-        reject(error)
-      }
-    })
   })
 
   // 处理状态持久化相关的IPC请求

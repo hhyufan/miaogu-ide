@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
-
+import ViteMonacoPlugin from 'vite-plugin-monaco-editor-esm'
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()]
@@ -24,6 +24,27 @@ export default defineConfig({
         }
       }
     },
-    plugins: [react()]
+    plugins: [
+      react(),
+      ViteMonacoPlugin({
+        languageWorkers: ['editorWorkerService', 'json']
+      })
+    ],
+    worker: {
+      format: 'es',
+      plugins: [],
+      rollupOptions: {
+        output: {
+          format: 'iife'
+        }
+      }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          format: 'es'
+        }
+      }
+    }
   }
 })

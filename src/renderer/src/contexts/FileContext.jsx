@@ -1,9 +1,26 @@
 import { createContext, useContext, useState } from 'react'
 import { Modal } from 'antd'
+import extensionToLanguage from './file-extensions.json'
 
 const FileContext = createContext(undefined)
-
 // 文件上下文提供者组件
+
+// 生成保存文件过滤器
+const getSaveFilters = (currentFileName = '') => {
+  const ext = currentFileName.split('.').pop().toLowerCase()
+  const language = extensionToLanguage[ext] || 'plaintext'
+
+  // 根据当前文件类型生成推荐过滤器
+  const recommendedFilter = {
+    name: `${language.toUpperCase()} 文件`,
+    extensions: Object.entries(extensionToLanguage)
+      .filter(([, lang]) => lang === language)
+      .map(([ext]) => ext)
+  }
+  // 默认过滤器列表
+  return [recommendedFilter, { name: 'All Files', extensions: ['*'] }]
+}
+
 // eslint-disable-next-line react/prop-types
 export const FileProvider = ({ children }) => {
   const [currentFilePath, setCurrentFilePath] = useState('')
@@ -49,10 +66,6 @@ export const FileProvider = ({ children }) => {
 
       setOpenedFiles((prev) => [...prev, newFile])
       setCurrentFilePath(filePath)
-
-      if (window.codeBlockManager) {
-        window.codeBlockManager.setCurrentBlock(newFile.content)
-      }
     } catch (error) {
       console.error('打开文件失败:', error)
     }
@@ -72,10 +85,6 @@ export const FileProvider = ({ children }) => {
 
     setOpenedFiles((prev) => [...prev, newFile])
     setCurrentFilePath(newFile.path)
-
-    if (window.codeBlockManager) {
-      window.codeBlockManager.setCurrentBlock('')
-    }
   }
 
   // 更新代码内容
@@ -86,9 +95,6 @@ export const FileProvider = ({ children }) => {
         file.path === currentFilePath ? { ...file, content: newCode, isModified: true } : file
       )
     )
-    if (window.codeBlockManager) {
-      window.codeBlockManager.setCurrentBlock(newCode)
-    }
 
     if (window.ipcApi?.setCodeEditorContent) {
       window.ipcApi.setCodeEditorContent(newCode).catch(console.error)
@@ -107,7 +113,7 @@ export const FileProvider = ({ children }) => {
         const result = await window.ipcApi.saveFileDialog({
           title: '保存文件',
           defaultPath: currentFile.name,
-          filters: [{ name: 'All Files', extensions: ['*'] }]
+          filters: getSaveFilters(currentFile.name)
         })
 
         if (result.canceled) return
@@ -166,7 +172,7 @@ export const FileProvider = ({ children }) => {
           const result = await window.ipcApi.saveFileDialog({
             title: '保存文件',
             defaultPath: file.name,
-            filters: [{ name: 'All Files', extensions: ['*'] }]
+            filters: getSaveFilters(currentFile.name)
           })
 
           if (result.canceled) return
@@ -205,11 +211,6 @@ export const FileProvider = ({ children }) => {
     if (!target) return
 
     setCurrentFilePath(path)
-
-    // 确保更新编辑器内容
-    if (window.codeBlockManager) {
-      window.codeBlockManager.setCurrentBlock(target.content)
-    }
 
     // 同步到持久化存储
     if (window.ipcApi?.setCodeEditorContent) {
@@ -259,7 +260,6 @@ export const FileProvider = ({ children }) => {
   }
   return <FileContext.Provider value={contextValue}>{children}</FileContext.Provider>
 }
-
 // 自定义钩子，用于访问文件上下文
 // eslint-disable-next-line react-refresh/only-export-components
 export const useFile = () => {

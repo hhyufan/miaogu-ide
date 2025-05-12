@@ -3,10 +3,6 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
 import './index.scss'
-// 导入Monaco编辑器配置
-import './monaco/monaco-config'
-// 导入Monaco编辑器图标字体
-import './monaco/monaco-icons.css'
 
 const router = createBrowserRouter(
   [
@@ -17,7 +13,8 @@ const router = createBrowserRouter(
   ],
   {
     future: {
-      v7_relativeSplatPath: true // 启用未来标志
+      v7_relativeSplatPath: true, // 启用未来标志
+      v7_startTransition: true // 启用React.startTransition
     }
   }
 )
