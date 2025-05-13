@@ -5,6 +5,7 @@ import { createHighlighter } from 'shiki'
 import { shikiToMonaco } from '@shikijs/monaco'
 import { Spin } from 'antd'
 import extensionToLanguage from '../contexts/file-extensions.json'
+import '../monaco-setup'
 
 let highlighterPromise = null
 const initializeHighlighter = async () => {
@@ -54,7 +55,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
       value: currentCode,
       language: editorLanguage,
       theme: isDarkMode ? 'one-dark-pro' : 'one-light',
-      minimap: { enabled: false },
+      minimap: { enabled: true },
       fontSize: 14,
       scrollBeyondLastLine: false,
       automaticLayout: true,
