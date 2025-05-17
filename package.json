@@ -1,6 +1,6 @@
 {
   "name": "miaogu-ide",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "A simple and beautiful code editor.",
   "main": "./out/main/index.js",
   "author": "hhyufan",
@@ -29,7 +29,6 @@
       "!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
       "!imgs/*",
       "!resources/*",
-      "!python-server/*",
       "out/**/*",
       "package.json"
     ],
@@ -98,11 +97,13 @@
     "remark-gfm": "^4.0.1",
     "sass-embedded": "^1.86.1",
     "shiki": "^3.4.0",
-    "vite": "^6.2.4"
+    "vite": "^6.2.4",
+    "chokidar": "^4.0.3"
   },
   "dependencies": {
     "@codingame/monaco-vscode-api": "^16.1.1",
     "@codingame/monaco-vscode-python-default-extension": "^16.1.1",
+
     "miaogu-ide": "file:",
     "monaco-editor-wrapper": "^6.7.0",
     "vite-plugin-monaco-editor": "^1.1.0",

@@ -4,6 +4,13 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import fs from 'fs'
 import stateStore from './store'
+import chokidar from 'chokidar'
+// 文件监听器实例
+let fileWatcher = null
+// 当前打开的文件路径
+let currentOpenFilePath = null
+// 文件最后修改时间
+let lastModifiedTime = null
 
 function createWindow() {
   // Create the browser window.
@@ -14,7 +21,7 @@ function createWindow() {
     autoHideMenuBar: true,
     frame: false, // 移除默认窗口标题栏
     ...(process.platform === 'linux' ? { icon } : {}),
-    title: 'Python代码跟练系统',
+    title: '喵咕IDE',
     icon: icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -239,6 +246,113 @@ app.whenReady().then(() => {
     return true
   })
 
+  // 检查文件是否存在
+  ipcMain.handle('checkFileExists', async (event, filePath) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { exists: false, message: '未提供有效的文件路径' }
+      }
+      // 检查文件是否存在
+      const exists = fs.existsSync(filePath)
+      return { exists, message: exists ? '文件存在' : '文件不存在' }
+    } catch (error) {
+      console.error('检查文件是否存在失败:', error)
+      return { exists: false, message: `检查文件是否存在失败: ${error.message}` }
+    }
+  })
+
+  // 删除文件
+  ipcMain.handle('deleteFile', async (event, filePath) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, message: '未提供有效的文件路径' }
+      }
+
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        return { success: false, message: '文件不存在' }
+      }
+
+      // 如果删除的是当前监听的文件，停止监听
+      if (filePath === currentOpenFilePath) {
+        stopWatchingFile()
+      }
+
+      // 删除文件
+      fs.unlinkSync(filePath)
+      return { success: true, message: '文件删除成功' }
+    } catch (error) {
+      console.error('删除文件失败:', error)
+      return { success: false, message: `删除文件失败: ${error.message}` }
+    }
+  })
+
+  // 开始监听文件变化
+  ipcMain.handle('watch-file', async (event, { filePath }) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, message: '未提供有效的文件路径' }
+      }
+
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        return { success: false, message: '文件不存在' }
+      }
+
+      // 获取文件的最后修改时间
+      const stats = fs.statSync(filePath)
+      lastModifiedTime = stats.mtimeMs
+
+      // 如果已经在监听其他文件，先停止监听
+      if (fileWatcher) {
+        stopWatchingFile()
+      }
+
+      // 设置当前打开的文件路径
+      currentOpenFilePath = filePath
+
+      // 开始监听文件变化
+      startWatchingFile(filePath, BrowserWindow.getFocusedWindow())
+
+      return { success: true, message: '开始监听文件变化' }
+    } catch (error) {
+      console.error('监听文件变化失败:', error)
+      return { success: false, message: `监听文件变化失败: ${error.message}` }
+    }
+  })
+
+  // 停止监听文件变化
+  ipcMain.handle('stop-watching-file', async () => {
+    try {
+      stopWatchingFile()
+      return { success: true, message: '停止监听文件变化' }
+    } catch (error) {
+      console.error('停止监听文件变化失败:', error)
+      return { success: false, message: `停止监听文件变化失败: ${error.message}` }
+    }
+  })
+
+  // 获取文件内容
+  ipcMain.handle('get-file-content', async (event, filePath) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, message: '未提供有效的文件路径' }
+      }
+
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        return { success: false, message: '文件不存在' }
+      }
+
+      // 读取文件内容
+      const content = fs.readFileSync(filePath, 'utf8')
+      return { success: true, content }
+    } catch (error) {
+      console.error('读取文件内容失败:', error)
+      return { success: false, message: `读取文件内容失败: ${error.message}` }
+    }
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -247,3 +361,69 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+// 开始监听文件变化
+function startWatchingFile(filePath, window) {
+  if (!window) return
+
+  // 使用chokidar监听文件变化
+  fileWatcher = chokidar.watch(filePath, {
+    persistent: true,
+    ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 300,
+      pollInterval: 100
+    }
+  })
+
+  // 监听文件变化事件
+  fileWatcher.on('change', (path) => {
+    try {
+      // 获取文件的最新修改时间
+      const stats = fs.statSync(path)
+      const currentModifiedTime = stats.mtimeMs
+
+      // 如果修改时间不同，说明文件被外部修改了
+      if (currentModifiedTime !== lastModifiedTime) {
+        // 更新最后修改时间
+        lastModifiedTime = currentModifiedTime
+
+        // 读取文件内容
+        const content = fs.readFileSync(path, 'utf8')
+
+        // 通知渲染进程文件已被外部修改
+        window.webContents.send('file-changed-externally', {
+          filePath: path,
+          content
+        })
+      }
+    } catch (error) {
+      console.error('处理文件变化事件失败:', error)
+    }
+  })
+
+  // 监听文件删除事件
+  fileWatcher.on('unlink', (path) => {
+    try {
+      // 通知渲染进程文件已被删除
+      window.webContents.send('file-deleted-externally', {
+        filePath: path
+      })
+
+      // 停止监听
+      stopWatchingFile()
+    } catch (error) {
+      console.error('处理文件删除事件失败:', error)
+    }
+  })
+}
+
+// 停止监听文件变化
+function stopWatchingFile() {
+  if (fileWatcher) {
+    fileWatcher.close()
+    fileWatcher = null
+    currentOpenFilePath = null
+    lastModifiedTime = null
+  }
+}

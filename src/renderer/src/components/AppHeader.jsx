@@ -24,14 +24,29 @@ const AppHeader = () => {
   const [newFileName, setNewFileName] = useState('')
   const [selectedFiles, setSelectedFiles] = useState([])
   const [unsavedModalVisible, setUnsavedModalVisible] = useState(false)
+  const [isEditingFileName, setIsEditingFileName] = useState(false)
+  const [editedFileName, setEditedFileName] = useState('')
+  const [renameModalVisible, setRenameModalVisible] = useState(false)
+  const [originalFileName, setOriginalFileName] = useState('')
+  const fileNameInputRef = useRef(null)
   const selectedFilesRef = useRef(selectedFiles)
   // 使用文件上下文
-  const { currentFile, openFile, createFile, saveFile, exportFile, getUnsavedFiles, saveFiles } =
-    useFile()
+  const {
+    currentFile,
+    openFile,
+    createFile,
+    saveFile,
+    exportFile,
+    getUnsavedFiles,
+    updateDefaultFileName,
+    saveFiles,
+    renameFile
+  } = useFile()
   // 窗口控制函数
   const handleMinimize = () => {
     window.ipcApi.minimizeWindow()
   }
+
   // 添加键盘快捷键监听
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -72,7 +87,15 @@ const AppHeader = () => {
     window.ipcApi.maximizeWindow()
     setIsMaximized(!isMaximized) // 切换状态
   }
+  const handleFileNameEdit = (e) => {
+    const newName = e.target.value
+    setEditedFileName(newName)
 
+    // If no file is open, update the defaultFileName immediately
+    if (!currentFile.path) {
+      updateDefaultFileName(newName)
+    }
+  }
   // 处理单个文件选择
   const handleSelectFile = (e, file) => {
     const checked = e.target.checked
@@ -118,6 +141,7 @@ const AppHeader = () => {
 
   // 保存文件
   const handleSaveFile = () => {
+    // 如果当前没有打开的文件，但有默认文件名，使用该文件名保存
     saveFile()
   }
   const handleExportFile = () => {
@@ -176,9 +200,66 @@ const AppHeader = () => {
       </div>
 
       <div className="file-info-container">
-        <Title level={4} className="file-title">
-          {currentFile.name}
-        </Title>
+        {isEditingFileName ? (
+          <input
+            spellCheck={false}
+            ref={fileNameInputRef}
+            type="text"
+            className="file-title-edit"
+            value={editedFileName}
+            onChange={(e) => handleFileNameEdit(e)}
+            onBlur={() => {
+              if (editedFileName.trim() && editedFileName !== currentFile.name) {
+                // 临时文件或无标签页状态下直接重命名，不显示确认弹窗
+                if (currentFile.isTemporary) {
+                  renameFile(editedFileName)
+                  setIsEditingFileName(false)
+                } else {
+                  // 对于普通文件，显示确认弹窗
+                  setOriginalFileName(currentFile.name)
+                  setRenameModalVisible(true)
+                }
+              } else {
+                setIsEditingFileName(false)
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (editedFileName.trim() && editedFileName !== currentFile.name) {
+                  // 临时文件或无标签页状态下直接重命名，不显示确认弹窗
+                  if (currentFile.isTemporary) {
+                    renameFile(editedFileName)
+                    setIsEditingFileName(false)
+                  } else {
+                    // 对于普通文件，显示确认弹窗
+                    setOriginalFileName(currentFile.name)
+                    setRenameModalVisible(true)
+                  }
+                } else {
+                  setIsEditingFileName(false)
+                }
+              } else if (e.key === 'Escape') {
+                setIsEditingFileName(false)
+                setEditedFileName(currentFile.name)
+              }
+            }}
+          />
+        ) : (
+          <Title
+            level={4}
+            className="file-title"
+            onClick={() => {
+              // 无论是否有打开的文件，都允许编辑文件名
+              setEditedFileName(currentFile.name)
+              setOriginalFileName(currentFile.name)
+              setIsEditingFileName(true)
+              setTimeout(() => fileNameInputRef.current?.focus(), 0)
+            }}
+            style={{ cursor: 'pointer' }}
+          >
+            {currentFile.name}
+          </Title>
+        )}
         {currentFile.path && !currentFile.isTemporary && (
           <Text type="secondary" className="file-path">
             {currentFile.path}
@@ -268,6 +349,50 @@ const AppHeader = () => {
             ))}
           </div>
         </div>
+      </Modal>
+
+      {/* 重命名确认弹窗 */}
+      <Modal
+        className="header-modal"
+        title="确认重命名"
+        open={renameModalVisible}
+        onOk={async () => {
+          const result = await renameFile(editedFileName)
+          if (result && !result.success && result.conflict) {
+            // 如果有文件名冲突，显示确认覆盖对话框
+            Modal.confirm({
+              title: '文件已存在',
+              content: `文件 "${editedFileName}" 已存在，是否覆盖？`,
+              okText: '覆盖',
+              okType: 'danger',
+              cancelText: '取消',
+              onOk: async () => {
+                // 确认覆盖，再次调用重命名函数并传入覆盖参数
+                await renameFile(editedFileName, true)
+                setRenameModalVisible(false)
+                setIsEditingFileName(false)
+              },
+              onCancel: () => {
+                // 用户取消覆盖，保持编辑状态
+                setRenameModalVisible(false)
+              }
+            })
+          } else {
+            // 重命名成功或没有冲突
+            setRenameModalVisible(false)
+            setIsEditingFileName(false)
+          }
+        }}
+        onCancel={() => {
+          setRenameModalVisible(false)
+          setIsEditingFileName(false)
+          setEditedFileName(originalFileName)
+        }}
+        width={350}
+      >
+        <p>
+          是否将文件 &#34;{originalFileName}&#34; 重命名为 &#34;{editedFileName}&#34;？
+        </p>
       </Modal>
     </Header>
   )

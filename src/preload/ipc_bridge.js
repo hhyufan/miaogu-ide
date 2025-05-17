@@ -1,14 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 // 创建API接口，用于替代原有的HTTP API
 const ipcApi = {
-  // 获取所有教程
-  test: async (data) => {
-    return ipcRenderer.invoke('python-ipc', {
-      command: 'test',
-      payload: data
-    })
-  },
-
   // 窗口控制 - 最小化
   minimizeWindow: () => {
     ipcRenderer.send('window-control', 'minimize')
@@ -79,6 +71,41 @@ const ipcApi = {
   // 确保临时目录存在
   ensureTempDir: async () => {
     return ipcRenderer.invoke('ensure-temp-dir')
+  },
+
+  // 检查文件是否存在
+  checkFileExists: async (filePath) => {
+    return ipcRenderer.invoke('checkFileExists', filePath)
+  },
+
+  // 删除文件
+  deleteFile: async (filePath) => {
+    return ipcRenderer.invoke('deleteFile', filePath)
+  },
+
+  // 开始监听文件变化
+  watchFile: async (filePath) => {
+    return ipcRenderer.invoke('watch-file', { filePath })
+  },
+
+  // 停止监听文件变化
+  stopWatchingFile: async () => {
+    return ipcRenderer.invoke('stop-watching-file')
+  },
+
+  // 获取文件内容
+  getFileContent: async (filePath) => {
+    return ipcRenderer.invoke('get-file-content', filePath)
+  },
+
+  // 监听文件外部变化事件
+  onFileChangedExternally: (callback) => {
+    ipcRenderer.on('file-changed-externally', (event, data) => callback(data))
+  },
+
+  // 监听文件外部删除事件
+  onFileDeletedExternally: (callback) => {
+    ipcRenderer.on('file-deleted-externally', (event, data) => callback(data))
   }
 }
 

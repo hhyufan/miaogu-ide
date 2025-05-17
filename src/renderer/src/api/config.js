@@ -4,7 +4,7 @@ import axios from 'axios'
 // 获取API基础URL
 // 修改获取基础URL的方式
 const getBaseUrl = () => {
-  // 生产环境使用本地Python服务
+  // 生产环境使用5000端口
   if (process.env.NODE_ENV === 'production') {
     return 'http://localhost:5000'
   }

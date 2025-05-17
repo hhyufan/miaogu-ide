@@ -76,10 +76,9 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     if (!editorRef.current || isInternalChange.current) return
 
     const editor = editorRef.current
-    if (prevCodeRef.current !== currentCode) {
-      editor.setValue(currentCode)
-      prevCodeRef.current = currentCode
-    }
+    // 始终设置编辑器的值，确保空文件不会继承之前的内容
+    editor.setValue(currentCode)
+    prevCodeRef.current = currentCode
   }, [currentCode])
 
   useEffect(() => {

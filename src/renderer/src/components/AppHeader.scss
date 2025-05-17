@@ -14,10 +14,12 @@
     -webkit-app-region: drag;
     /* 允许拖拽窗口 */
 }
+
 .header-modal {
-  user-select: none;
-  /* 禁用文本选择 */
+    user-select: none;
+    /* 禁用文本选择 */
 }
+
 .left-container {
     display: flex;
     align-items: center;
@@ -63,8 +65,8 @@
     transform: translateX(-50%);
     max-width: 60%;
     overflow: hidden;
-    -webkit-app-region: drag;
-    /* 可拖拽区域 */
+    -webkit-app-region: no-drag;
+    /* 文件名区域不可拖拽，确保点击事件能正常触发 */
 }
 
 .file-title {
@@ -75,6 +77,38 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+}
+
+.file-title-edit {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  min-width: 20px; // 最小宽度防止完全折叠
+  font: inherit !important; // 继承父元素的字体样式
+  margin: 0 !important;
+  font-weight: bolder !important;
+  color: var(--text-color) !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  width: 60%;
+  white-space: nowrap;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2px 4px;
+  outline: none;
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .file-path {
