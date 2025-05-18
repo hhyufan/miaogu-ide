@@ -14,6 +14,10 @@ const ipcApi = {
     ipcRenderer.send('window-control', 'close')
   },
 
+  openSettingsWindow: () => {
+    ipcRenderer.send('open-settings-window')
+  },
+
   // 状态持久化相关API
 
   // 获取主题设置
@@ -106,7 +110,10 @@ const ipcApi = {
   // 监听文件外部删除事件
   onFileDeletedExternally: (callback) => {
     ipcRenderer.on('file-deleted-externally', (event, data) => callback(data))
-  }
+  },
+
+
+
 }
 
 // 暴露IPC API到渲染进程

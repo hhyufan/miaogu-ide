@@ -12,6 +12,7 @@ let currentOpenFilePath = null
 // 文件最后修改时间
 let lastModifiedTime = null
 
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -46,6 +47,53 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html')).then()
   }
 }
+
+let settingsWindow = null; 
+
+function createSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+
+  settingsWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    frame: false,
+    title: '设置',
+    icon: icon,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  settingsWindow.on('ready-to-show', () => {
+    settingsWindow.show();
+  });
+
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
+
+  settingsWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    settingsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`);
+  } else {
+    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html'));
+  }
+}
+
+ipcMain.on('open-settings-window', () => {
+  createSettingsWindow()
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -362,6 +410,8 @@ app.whenReady().then(() => {
   })
 })
 
+
+
 // 开始监听文件变化
 function startWatchingFile(filePath, window) {
   if (!window) return
@@ -427,3 +477,8 @@ function stopWatchingFile() {
     lastModifiedTime = null
   }
 }
+
+
+ipcMain.on('open-settings-window', () => {
+  createSettingsWindow();
+});
