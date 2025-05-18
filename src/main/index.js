@@ -11,6 +11,8 @@ let fileWatcher = null
 let currentOpenFilePath = null
 // 文件最后修改时间
 let lastModifiedTime = null
+// 通过打开方式打开的文件路径
+let openWithFilePath = null
 
 function createWindow() {
   // Create the browser window.
@@ -28,9 +30,17 @@ function createWindow() {
       sandbox: false
     }
   })
+
   // 启动Python IPC服务器
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+
+    // 如果有通过"打开方式"打开的文件，发送给渲染进程
+    if (openWithFilePath) {
+      setTimeout(() => {
+        mainWindow.webContents.send('open-with-file', { filePath: openWithFilePath })
+      }, 1000) // 延迟发送，确保渲染进程已准备好
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -44,6 +54,52 @@ function createWindow() {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']).then()
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html')).then()
+  }
+}
+
+// 处理通过"打开方式"打开文件
+const handleOpenWithFile = (filePath) => {
+  if (!filePath) return
+  openWithFilePath = filePath
+
+  // 如果应用已经启动，则发送消息给渲染进程
+  const windows = BrowserWindow.getAllWindows()
+  if (windows.length > 0) {
+    windows[0].webContents.send('open-with-file', { filePath })
+  }
+}
+
+// 处理命令行参数
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+} else {
+  // 监听第二个实例启动
+  app.on('second-instance', (event, commandLine) => {
+    // 有人试图运行第二个实例，我们应该聚焦到我们的窗口
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      if (windows[0].isMinimized()) windows[0].restore()
+      windows[0].focus()
+
+      // 检查命令行参数中是否有文件路径
+      if (process.platform === 'win32' && commandLine.length > 1) {
+        const filePath = commandLine[commandLine.length - 1]
+        // 检查路径是否存在且是文件而非目录
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          handleOpenWithFile(filePath)
+        }
+      }
+    }
+  })
+
+  // 检查启动参数
+  if (process.platform === 'win32' && process.argv.length > 1) {
+    const filePath = process.argv[process.argv.length - 1]
+    // 检查路径是否存在且是文件而非目录
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      openWithFilePath = filePath
+    }
   }
 }
 
@@ -96,6 +152,41 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('打开文件对话框失败:', error)
       return { canceled: true, error: error.message }
+    }
+  })
+
+  // 设置打开文件的处理函数
+  ipcMain.handle('set-open-file', async (event, { filePath }) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, message: '未提供有效的文件路径' }
+      }
+
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        return { success: false, message: '文件不存在' }
+      }
+
+      // 检查是否为目录
+      const stats = fs.statSync(filePath)
+      if (stats.isDirectory()) {
+        return { success: false, message: '无法打开目录，请选择一个文件' }
+      }
+
+      // 读取文件内容
+      const content = fs.readFileSync(filePath, 'utf8')
+      const fileName = filePath.split(/[\\/]/).pop()
+
+      return {
+        success: true,
+        filePath,
+        fileName,
+        content,
+        isTemporary: false
+      }
+    } catch (error) {
+      console.error('设置打开文件失败:', error)
+      return { success: false, message: `设置打开文件失败: ${error.message}` }
     }
   })
   // 保存文件对话框

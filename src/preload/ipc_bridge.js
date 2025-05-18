@@ -58,6 +58,11 @@ const ipcApi = {
     return ipcRenderer.invoke('open-file')
   },
 
+  // 设置打开文件（通过"打开方式"功能）
+  setOpenFile: async (filePath) => {
+    return ipcRenderer.invoke('set-open-file', { filePath })
+  },
+
   // 保存文件对话框
   saveFileDialog: async (options) => {
     return ipcRenderer.invoke('save-file-dialog', options)
@@ -114,10 +119,22 @@ export function setupIpcApi() {
   if (process.contextIsolated) {
     try {
       contextBridge.exposeInMainWorld('ipcApi', ipcApi)
+
+      // 注册通过"打开方式"打开文件的事件监听
+      contextBridge.exposeInMainWorld('electronAPI', {
+        onOpenWithFile: (callback) => {
+          ipcRenderer.on('open-with-file', (_, data) => callback(data))
+        }
+      })
     } catch (error) {
       console.error('IPC API暴露失败:', error)
     }
   } else {
     window.ipcApi = ipcApi
+    window.electronAPI = {
+      onOpenWithFile: (callback) => {
+        ipcRenderer.on('open-with-file', (_, data) => callback(data))
+      }
+    }
   }
 }

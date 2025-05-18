@@ -50,7 +50,7 @@ const App = () => {
 
   // 从electron-store加载保存的主题
   useEffect(() => {
-    ; (async () => {
+    ;(async () => {
       if (window.ipcApi && window.ipcApi.getTheme) {
         try {
           const savedTheme = await window.ipcApi.getTheme()

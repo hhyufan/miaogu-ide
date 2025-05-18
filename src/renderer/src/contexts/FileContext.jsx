@@ -32,6 +32,18 @@ export const FileProvider = ({ children }) => {
     defaultFileNameRef.current = defaultFileName
   }, [defaultFileName])
 
+  // 监听通过"打开方式"打开文件的事件
+  useEffect(() => {
+    if (window.electronAPI?.onOpenWithFile) {
+      window.electronAPI.onOpenWithFile(async (data) => {
+        if (data?.filePath) {
+          await setOpenFile(data.filePath)
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // 获取当前文件对象
   const currentFile = openedFiles.find((f) => f.path === currentFilePath) || {
     path: '',
@@ -43,6 +55,43 @@ export const FileProvider = ({ children }) => {
 
   // 获取当前文件内容
   const currentCode = currentFile.content
+  // 通过"打开方式"打开文件
+  const setOpenFile = async (filePath) => {
+    if (!window.ipcApi?.setOpenFile || !filePath) return
+
+    try {
+      const result = await window.ipcApi.setOpenFile(filePath)
+      if (!result?.success) {
+        console.error('打开文件失败', result?.message)
+      }
+
+      const existing = openedFiles.find((f) => f.path === filePath)
+      if (existing) {
+        // 如果文件已经打开，切换到该文件并刷新内容
+        setCurrentFilePath(filePath)
+        await refreshFileContent(filePath)
+        return
+      }
+
+      const newFile = {
+        path: filePath,
+        name: result.fileName,
+        isTemporary: false,
+        isModified: false,
+        content: result.content || ''
+      }
+
+      setOpenedFiles((prev) => [...prev, newFile])
+      setCurrentFilePath(filePath)
+
+      // 检查并处理可能的路径冲突
+      handlePathConflict(filePath)
+    } catch (error) {
+      console.error('通过打开方式打开文件失败:', error)
+      Modal.error({ title: '打开文件失败', content: error.message })
+    }
+  }
+
   // 打开文件
   const openFile = async () => {
     if (!window.ipcApi?.openFile) return
@@ -52,29 +101,7 @@ export const FileProvider = ({ children }) => {
       if (result?.canceled || !result.filePaths[0]) return
 
       const filePath = result.filePaths[0]
-      const existing = openedFiles.find((f) => f.path === filePath)
-
-      if (existing) {
-        // 如果文件已经打开，切换到该文件并刷新内容
-        setCurrentFilePath(filePath)
-        await refreshFileContent(filePath)
-        return
-      }
-
-      const fileContent = await window.ipcApi.importCodeFromFile(filePath)
-      const newFile = {
-        path: filePath,
-        name: filePath.split(/[\\/]/).pop(),
-        isTemporary: false,
-        isModified: false,
-        content: fileContent?.code || ''
-      }
-
-      setOpenedFiles((prev) => [...prev, newFile])
-      setCurrentFilePath(filePath)
-
-      // 检查并处理可能的路径冲突
-      handlePathConflict(filePath)
+      await setOpenFile(filePath)
     } catch (error) {
       console.error('打开文件失败:', error)
       Modal.error({ title: '打开文件失败', content: error.message })
