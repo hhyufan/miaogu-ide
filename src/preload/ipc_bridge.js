@@ -1,4 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
+
+// 设置IPC事件最大监听器数量，防止内存泄漏警告
+ipcRenderer.setMaxListeners(20)
 // 创建API接口，用于替代原有的HTTP API
 const ipcApi = {
   // 窗口控制 - 最小化
@@ -103,7 +106,7 @@ const ipcApi = {
     return ipcRenderer.invoke('get-file-content', filePath)
   },
 
-  // 监听文件外部变化事件
+  // 监听文件外部变化事件（包含编码和行尾序列信息）
   onFileChangedExternally: (callback) => {
     ipcRenderer.on('file-changed-externally', (event, data) => callback(data))
   },
@@ -111,6 +114,21 @@ const ipcApi = {
   // 监听文件外部删除事件
   onFileDeletedExternally: (callback) => {
     ipcRenderer.on('file-deleted-externally', (event, data) => callback(data))
+  },
+
+  // 获取文件编码（仅在初始加载时使用，文件变化时会通过onFileChangedExternally获取）
+  getFileEncoding: async (filePath) => {
+    return ipcRenderer.invoke('get-file-encoding', filePath)
+  },
+
+  // 获取文件行尾序列（仅在初始加载时使用，文件变化时会通过onFileChangedExternally获取）
+  getFileLineEnding: async (filePath) => {
+    return ipcRenderer.invoke('get-file-line-ending', filePath)
+  },
+
+  // 设置文件行尾序列
+  setFileLineEnding: async (filePath, encoding, lineEnding) => {
+    return ipcRenderer.invoke('set-file-line-ending', { filePath, encoding, lineEnding })
   }
 }
 
