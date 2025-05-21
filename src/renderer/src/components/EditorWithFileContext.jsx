@@ -3,7 +3,8 @@ import { useFile } from '../contexts/FileContext'
 import * as monaco from 'monaco-editor'
 import { createHighlighter } from 'shiki'
 import { shikiToMonaco } from '@shikijs/monaco'
-import { Spin } from 'antd'
+import { Spin, Alert } from 'antd'
+import { isFileBlacklisted } from '../configs/file-blacklist'
 import extensionToLanguage from '../contexts/file-extensions.json'
 import EditorStatusBar from './EditorStatusBar'
 import '../monaco-setup'
@@ -136,6 +137,33 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
     monaco.editor.setTheme(isDarkMode ? 'one-dark-pro' : 'one-light')
   }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
+
+  // 检查当前文件是否在黑名单中
+  const isCurrentFileBlacklisted = useMemo(() => {
+    return currentFile?.path && !currentFile.isTemporary && isFileBlacklisted(currentFile.path)
+  }, [currentFile?.path, currentFile?.isTemporary])
+
+  if (isCurrentFileBlacklisted) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          flexDirection: 'column'
+        }}
+      >
+        <Alert
+          message="不支持的文件类型"
+          description="该文件类型不支持在编辑器中查看和编辑。"
+          type="warning"
+          showIcon
+          style={{ maxWidth: '80%' }}
+        />
+      </div>
+    )
+  }
 
   if (!isShikiReady) {
     return (

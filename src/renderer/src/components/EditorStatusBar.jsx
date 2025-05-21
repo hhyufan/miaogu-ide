@@ -4,6 +4,7 @@ import './EditorStatusBar.scss'
 import { useRef, useState, useEffect } from 'react'
 import ENCODING_CASE_MAP from './encoding-case.json'
 import { FolderOutlined, FileOutlined } from '@ant-design/icons'
+import { isFileBlacklisted, filterDirectoryContents } from '../configs/file-blacklist'
 
 function standardizeEncodingName(encoding) {
   // 转换为小写进行匹配
@@ -78,7 +79,8 @@ const EditorStatusBar = () => {
     try {
       const result = await window.ipcApi.getDirectoryContents(path)
       if (result.success) {
-        return result.contents
+        // 应用黑名单过滤
+        return filterDirectoryContents(result.contents)
       }
       return []
     } catch (error) {
@@ -113,9 +115,13 @@ const EditorStatusBar = () => {
   // 处理文件或目录点击
   const handleFileClick = async (filePath, isDirectory) => {
     if (!filePath) return
-    // 如果是文件，才调用setOpenFile打开文件
+    // 如果是文件，检查是否在黑名单中，不在黑名单中才打开
     if (!isDirectory) {
-      await setOpenFile(filePath)
+      if (!isFileBlacklisted(filePath)) {
+        await setOpenFile(filePath)
+      } else {
+        console.warn('该文件类型不支持在编辑器中打开:', filePath)
+      }
     }
     // 文件打开后，更新路径分段
     if (filePath) {
@@ -138,7 +144,10 @@ const EditorStatusBar = () => {
   const getDropdownItems = (index) => {
     const contents = directoryContents[index] || []
 
-    return contents.map((item) => ({
+    // 确保应用黑名单过滤，防止黑名单中的文件和目录显示在下拉菜单中
+    const filteredContents = filterDirectoryContents(contents)
+
+    return filteredContents.map((item) => ({
       key: item.path,
       label: item.name,
       icon: item.isDirectory ? <FolderOutlined /> : <FileOutlined />,

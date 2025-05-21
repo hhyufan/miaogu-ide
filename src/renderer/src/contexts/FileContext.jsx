@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { Modal } from 'antd'
 import extensionToLanguage from './file-extensions.json'
+import { isFileBlacklisted } from '../configs/file-blacklist'
 
 const FileContext = createContext(undefined)
 
@@ -61,6 +62,12 @@ export const FileProvider = ({ children }) => {
   const setOpenFile = async (filePath) => {
     if (!window.ipcApi?.setOpenFile || !filePath) return
 
+    // 检查文件是否在黑名单中
+    if (isFileBlacklisted(filePath)) {
+      Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中打开。' })
+      return
+    }
+
     try {
       const result = await window.ipcApi.setOpenFile(filePath)
       if (!result?.success) {
@@ -118,6 +125,13 @@ export const FileProvider = ({ children }) => {
       if (result?.canceled || !result.filePaths[0]) return
 
       const filePath = result.filePaths[0]
+
+      // 检查文件是否在黑名单中
+      if (isFileBlacklisted(filePath)) {
+        Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中打开。' })
+        return
+      }
+
       await setOpenFile(filePath)
     } catch (error) {
       console.error('打开文件失败:', error)
@@ -128,6 +142,12 @@ export const FileProvider = ({ children }) => {
   // 创建新文件
   const createFile = (fileName) => {
     if (!fileName.trim()) return
+
+    // 检查文件名是否在黑名单中
+    if (isFileBlacklisted(fileName)) {
+      Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中创建。' })
+      return
+    }
 
     // 获取系统默认编码和行尾符号
     // 可以根据操作系统类型设置默认行尾符号
