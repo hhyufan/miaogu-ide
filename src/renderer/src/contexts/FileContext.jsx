@@ -247,13 +247,13 @@ export const FileProvider = ({ children }) => {
           prev.map((file) =>
             file.path === currentFilePath
               ? {
-                ...file,
-                path: targetPath,
-                name: fileName,
-                isTemporary: false,
-                encoding: 'UTF-8', // 存储始终为UTF-8
-                isModified: false
-              }
+                  ...file,
+                  path: targetPath,
+                  name: fileName,
+                  isTemporary: false,
+                  encoding: 'UTF-8', // 存储始终为UTF-8
+                  isModified: false
+                }
               : file
           )
         )
@@ -336,13 +336,13 @@ export const FileProvider = ({ children }) => {
           prev.map((f) =>
             f.path === file.path
               ? {
-                ...f,
-                content: file.content,
-                path: targetPath,
-                name: targetPath.split(/[\\/]/).pop(),
-                isTemporary: false,
-                isModified: false
-              }
+                  ...f,
+                  content: file.content,
+                  path: targetPath,
+                  name: targetPath.split(/[\\/]/).pop(),
+                  isTemporary: false,
+                  isModified: false
+                }
               : f
           )
         )

@@ -24,27 +24,50 @@
       margin-right: 0;
     }
   }
-
   .file-path {
-    white-space: nowrap;
+    flex: 1; /* 占据剩余可用空间 */
+    min-width: 0; /* 允许内容溢出时被截断 */
     overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 50%;
 
     .ant-breadcrumb {
+      display: flex;
       font-size: 12px;
       line-height: 22px;
+      white-space: nowrap;
+      overflow: hidden;
 
-      .ant-breadcrumb-link {
-        color: var(--text-color-secondary);
+      ol {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+      }
 
-        &:hover {
-          color: var(--primary-color);
+      li {
+        flex-shrink: 0; /* 防止面包屑项被压缩 */
+        max-width: 150px; /* 可根据需要调整 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:last-child {
+          flex-shrink: 1; /* 最后一个项可以适当收缩 */
         }
       }
 
+      .ant-breadcrumb-link,
       .ant-breadcrumb-separator {
         color: var(--text-color-secondary);
+        display: inline;
+      }
+
+      .ant-breadcrumb-link:hover {
+        color: var(--primary-color);
+      }
+
+      .ant-breadcrumb-separator {
         margin: 0 4px;
       }
     }
@@ -74,21 +97,17 @@
     }
   }
 
-    .ant-dropdown-menu {
-      max-height: 280px !important;
-      overflow-y: auto !important;
-      padding: 4px 0;
+  .ant-dropdown-menu {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    padding: 4px 0;
 
-      .ant-dropdown-menu-item .ant-dropdown-menu-title-content{
-        padding: 5px 12px;
-        font-size: 12px;
-        min-width: 120px;
-        height: 35px;
-        line-height: 25px;
-        &:hover {
-          color: var(--primary-color) !important;  // 确保覆盖默认样式
-          background-color: #f0f7ff !important;    // 可选：添加背景色
-        }
-      }
+    .ant-dropdown-menu-item .ant-dropdown-menu-title-content {
+      padding: 5px 12px;
+      font-size: 12px;
+      min-width: 120px;
+      height: 35px;
+      line-height: 25px;
     }
+  }
 }
