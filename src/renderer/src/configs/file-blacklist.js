@@ -13,6 +13,7 @@ const blacklistExtensions = [
   'dylib',
   'bin',
   'obj',
+  'blf',
   // 图像文件
   'jpg',
   'jpeg',

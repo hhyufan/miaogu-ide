@@ -29,7 +29,6 @@ const EditorStatusBar = () => {
   const lineEndingInputRef = useRef(null)
   const [pathSegments, setPathSegments] = useState([])
   const [directoryContents, setDirectoryContents] = useState({})
-
   // Line ending options
   const lineEndingOptions = [
     { value: 'LF', label: 'LF' },
@@ -147,7 +146,17 @@ const EditorStatusBar = () => {
     // 确保应用黑名单过滤，防止黑名单中的文件和目录显示在下拉菜单中
     const filteredContents = filterDirectoryContents(contents)
 
-    return filteredContents.map((item) => ({
+    // 对内容进行排序，目录排在前面，文件排在后面
+    const sortedContents = [...filteredContents].sort((a, b) => {
+      // 如果a是目录而b不是，a排在前面
+      if (a.isDirectory && !b.isDirectory) return -1
+      // 如果b是目录而a不是，b排在前面
+      if (!a.isDirectory && b.isDirectory) return 1
+      // 如果都是目录或都是文件，按名称字母顺序排序
+      return a.name.localeCompare(b.name)
+    })
+
+    return sortedContents.map((item) => ({
       key: item.path,
       label: item.name,
       icon: item.isDirectory ? <FolderOutlined /> : <FileOutlined />,
@@ -164,14 +173,16 @@ const EditorStatusBar = () => {
           trigger={['click']}
           placement="topLeft"
           overlayStyle={{
-            maxHeight: '300px',
+            maxHeight: '265px',
             overflow: 'auto'
           }}
           onOpenChange={(open) => {
             if (open) handleBreadcrumbClick(index)
           }}
         >
-          <span style={{ cursor: 'pointer' }}>{segment}</span>
+          <span style={{ cursor: 'pointer' }}>
+            {/^[A-Z]:\\$/i.test(segment) ? segment.substring(0, 2) : segment}
+          </span>
         </Dropdown>
       </Breadcrumb.Item>
     )
@@ -188,7 +199,27 @@ const EditorStatusBar = () => {
     <div className="editor-status-bar">
       <div className="status-item file-path">
         {pathSegments.length > 0 ? (
-          <Breadcrumb>{pathSegments.map(renderBreadcrumbItem)}</Breadcrumb>
+          <Breadcrumb
+            separator={
+              <svg
+                className="icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                style={{ transform: 'translateY(3px)' }}
+              >
+                <path
+                  d="M704 514.368a52.864 52.864 0 0 1-15.808 37.888L415.872 819.2a55.296 55.296 0 0 1-73.984-2.752 52.608 52.608 0 0 1-2.816-72.512l233.6-228.928-233.6-228.992a52.736 52.736 0 0 1-17.536-53.056 53.952 53.952 0 0 1 40.192-39.424c19.904-4.672 40.832 1.92 54.144 17.216l272.32 266.88c9.92 9.792 15.616 23.04 15.808 36.8z"
+                  fill="#1296db"
+                  fillOpacity=".88"
+                ></path>
+              </svg>
+            }
+          >
+            {pathSegments.map(renderBreadcrumbItem)}
+          </Breadcrumb>
         ) : (
           '未保存的文件'
         )}
