@@ -2,6 +2,7 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/renderer/src/components/EditorWithFileContext.jsx" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../../demo.cpp" charset="UTF-16" />
     <file url="file://$PROJECT_DIR$/../../../demo.py" charset="UTF-16" />
     <file url="file://$PROJECT_DIR$/../../../py-track/vk_swiftshader_icd.json" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/../../../笨蛋.txt" charset="UTF-16" />
