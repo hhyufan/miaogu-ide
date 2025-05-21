@@ -30,6 +30,24 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 50%;
+
+    .ant-breadcrumb {
+      font-size: 12px;
+      line-height: 22px;
+
+      .ant-breadcrumb-link {
+        color: var(--text-color-secondary);
+
+        &:hover {
+          color: var(--primary-color);
+        }
+      }
+
+      .ant-breadcrumb-separator {
+        color: var(--text-color-secondary);
+        margin: 0 4px;
+      }
+    }
   }
 
   .status-right {
@@ -37,7 +55,8 @@
     align-items: center;
   }
 
-  .encoding-button, .line-ending-button {
+  .encoding-button,
+  .line-ending-button {
     width: 120px;
     cursor: pointer;
     background-color: transparent;
@@ -46,22 +65,30 @@
     padding: 0 4px;
     height: 22px;
 
-    &:focus, &:active, &:hover{
+    &:focus,
+    &:active,
+    &:hover {
       box-shadow: none !important;
       color: var(--text-color-secondary) !important;
       border-color: transparent !important;
     }
   }
 
-  .ant-dropdown-menu {
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 4px 0;
+    .ant-dropdown-menu {
+      max-height: 280px !important;
+      overflow-y: auto !important;
+      padding: 4px 0;
 
-    .ant-dropdown-menu-item {
-      padding: 5px 12px;
-      font-size: 12px;
-      min-width: 120px;
+      .ant-dropdown-menu-item .ant-dropdown-menu-title-content{
+        padding: 5px 12px;
+        font-size: 12px;
+        min-width: 120px;
+        height: 35px;
+        line-height: 25px;
+        &:hover {
+          color: var(--primary-color) !important;  // 确保覆盖默认样式
+          background-color: #f0f7ff !important;    // 可选：添加背景色
+        }
+      }
     }
-  }
 }

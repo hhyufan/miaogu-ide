@@ -101,6 +101,11 @@ const ipcApi = {
     return ipcRenderer.invoke('stop-watching-file')
   },
 
+  // 获取目录内容
+  getDirectoryContents: async (dirPath) => {
+    return ipcRenderer.invoke('get-directory-contents', dirPath)
+  },
+
   // 获取文件内容
   getFileContent: async (filePath) => {
     return ipcRenderer.invoke('get-file-content', filePath)

@@ -601,6 +601,39 @@ app.whenReady().then(() => {
     }
   })
 
+  // 获取目录内容
+  ipcMain.handle('get-directory-contents', async (event, dirPath) => {
+    try {
+      if (!dirPath || typeof dirPath !== 'string') {
+        return { success: false, message: '未提供有效的目录路径' }
+      }
+
+      // 检查目录是否存在
+      if (!fs.existsSync(dirPath)) {
+        return { success: false, message: '目录不存在' }
+      }
+
+      // 检查是否为目录
+      const stats = fs.statSync(dirPath)
+      if (!stats.isDirectory()) {
+        return { success: false, message: '提供的路径不是目录' }
+      }
+
+      // 读取目录内容
+      const files = fs.readdirSync(dirPath, { withFileTypes: true })
+      const contents = files.map(file => ({
+        name: file.name,
+        isDirectory: file.isDirectory(),
+        path: join(dirPath, file.name)
+      }))
+
+      return { success: true, contents }
+    } catch (error) {
+      console.error('获取目录内容失败:', error)
+      return { success: false, message: `获取目录内容失败: ${error.message}` }
+    }
+  })
+
   // 检测文件行尾序列
   ipcMain.handle('get-file-line-ending', async (event, filePath) => {
     try {

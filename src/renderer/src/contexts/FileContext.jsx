@@ -652,6 +652,7 @@ export const FileProvider = ({ children }) => {
     handlePathConflict,
     updateDefaultFileName,
     updateFileLineEnding,
+    setOpenFile,
     defaultFileName
   }
 
