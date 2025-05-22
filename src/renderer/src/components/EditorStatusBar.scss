@@ -76,6 +76,13 @@
   .status-right {
     display: flex;
     align-items: center;
+
+    .status-item {
+      &.font-size-control {
+        width: 40px;
+        justify-content: center;
+      }
+    }
   }
 
   .encoding-button,

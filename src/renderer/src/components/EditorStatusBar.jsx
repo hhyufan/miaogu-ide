@@ -268,7 +268,7 @@ const EditorStatusBar = () => {
         </Tooltip>
 
         <Tooltip title="字体大小">
-          <Button type="text" size="small" className="status-item">
+          <Button type="text" size="small" className="status-item font-size-control">
             {fontSize}px
           </Button>
         </Tooltip>
