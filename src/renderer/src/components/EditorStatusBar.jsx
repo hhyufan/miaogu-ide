@@ -1,9 +1,9 @@
-import { Divider, Dropdown, Button, Breadcrumb } from 'antd'
+import { Divider, Dropdown, Button, Breadcrumb, Tooltip } from 'antd'
 import { useFile } from '../contexts/FileContext'
 import './EditorStatusBar.scss'
 import { useRef, useState, useEffect } from 'react'
 import ENCODING_CASE_MAP from './encoding-case.json'
-import { FolderOutlined, FileOutlined } from '@ant-design/icons'
+import { FolderOutlined, FileOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
 import { isFileBlacklisted, filterDirectoryContents } from '../configs/file-blacklist'
 
 function standardizeEncodingName(encoding) {
@@ -29,6 +29,7 @@ const EditorStatusBar = () => {
   const lineEndingInputRef = useRef(null)
   const [pathSegments, setPathSegments] = useState([])
   const [directoryContents, setDirectoryContents] = useState({})
+  const [fontSize, setFontSize] = useState(14)
   // Line ending options
   const lineEndingOptions = [
     { value: 'LF', label: 'LF' },
@@ -48,6 +49,36 @@ const EditorStatusBar = () => {
   const getCurrentEncodingLabel = () => {
     const encoding = typeof currentFile.encoding === 'string' ? currentFile.encoding : 'UTF-8'
     return standardizeEncodingName(encoding)
+  }
+
+  // 加载字体大小设置
+  useEffect(() => {
+    const loadFontSize = async () => {
+      try {
+        const savedFontSize = await window.ipcApi.getFontSize()
+        if (savedFontSize) {
+          setFontSize(savedFontSize)
+        }
+      } catch (error) {
+        console.error('加载字体大小设置失败:', error)
+      }
+    }
+
+    loadFontSize().catch(console.error)
+  }, [])
+
+  // 处理字体大小变化
+  const handleFontSizeChange = async (newSize) => {
+    // 限制字体大小范围在8-32之间
+    const size = Math.max(8, Math.min(32, newSize))
+    setFontSize(size)
+
+    try {
+      // 保存到持久化存储
+      await window.ipcApi.setFontSize(size)
+    } catch (error) {
+      console.error('保存字体大小设置失败:', error)
+    }
   }
 
   // 处理路径分段 - 当文件路径或临时状态变化时更新面包屑
@@ -177,7 +208,7 @@ const EditorStatusBar = () => {
             overflow: 'auto'
           }}
           onOpenChange={(open) => {
-            if (open) handleBreadcrumbClick(index)
+            if (open) handleBreadcrumbClick(index).catch(console.error)
           }}
         >
           <span style={{ cursor: 'pointer' }}>
@@ -225,6 +256,35 @@ const EditorStatusBar = () => {
         )}
       </div>
       <div className="status-right">
+        {/* 字体大小控制 */}
+        <Tooltip title="减小字体">
+          <Button
+            type="text"
+            size="small"
+            className="status-item"
+            onClick={() => handleFontSizeChange(fontSize - 1)}
+            icon={<ZoomOutOutlined />}
+          />
+        </Tooltip>
+
+        <Tooltip title="字体大小">
+          <Button type="text" size="small" className="status-item">
+            {fontSize}px
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="增大字体">
+          <Button
+            type="text"
+            size="small"
+            className="status-item"
+            onClick={() => handleFontSizeChange(fontSize + 1)}
+            icon={<ZoomInOutlined />}
+          />
+        </Tooltip>
+
+        <Divider type="vertical" />
+
         <div className="status-item" ref={encodingInputRef}>
           <Button
             className="encoding-button"

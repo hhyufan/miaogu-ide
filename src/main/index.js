@@ -444,6 +444,8 @@ app.whenReady().then(() => {
     switch (key) {
       case 'theme':
         return stateStore.getTheme()
+      case 'fontSize':
+        return stateStore.getFontSize()
       default:
         // 对于其他键（如aiSettings），使用通用的getState方法
         return stateStore.getState(key)
@@ -452,6 +454,15 @@ app.whenReady().then(() => {
 
   ipcMain.handle('set-theme', (event, theme) => {
     stateStore.setTheme(theme)
+    return true
+  })
+
+  ipcMain.handle('set-font-size', (event, fontSize) => {
+    stateStore.setFontSize(fontSize)
+    // 广播字体大小变化事件到所有窗口
+    BrowserWindow.getAllWindows().forEach((window) => {
+      window.webContents.send('font-size-changed', fontSize)
+    })
     return true
   })
 
@@ -621,7 +632,7 @@ app.whenReady().then(() => {
 
       // 读取目录内容
       const files = fs.readdirSync(dirPath, { withFileTypes: true })
-      const contents = files.map(file => ({
+      const contents = files.map((file) => ({
         name: file.name,
         isDirectory: file.isDirectory(),
         path: join(dirPath, file.name)
@@ -759,10 +770,10 @@ function startWatchingFile(filePath, window) {
 
         // 读取文件内容为Buffer
         const buffer = fs.readFileSync(path)
-        
+
         // 检测文件编码
         const encoding = detectFileEncoding(buffer)
-        
+
         // 使用检测到的编码解码内容 - 确保使用正确的编码
         let content = ''
         try {

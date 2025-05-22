@@ -29,6 +29,26 @@ const ipcApi = {
     return ipcRenderer.invoke('set-theme', theme)
   },
 
+  // 获取字体大小设置
+  getFontSize: async () => {
+    return ipcRenderer.invoke('get-state', 'fontSize')
+  },
+
+  // 设置字体大小
+  setFontSize: async (fontSize) => {
+    return ipcRenderer.invoke('set-font-size', fontSize)
+  },
+
+  // 监听字体大小变化
+  onFontSizeChange: (callback) => {
+    ipcRenderer.on('font-size-changed', callback)
+  },
+
+  // 移除字体大小变化监听
+  removeFontSizeChange: (callback) => {
+    ipcRenderer.removeListener('font-size-changed', callback)
+  },
+
   // 获取通用状态（包括AI设置）
   getState: async (key) => {
     return ipcRenderer.invoke('get-state', key)

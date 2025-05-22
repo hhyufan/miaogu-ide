@@ -8,16 +8,15 @@ const store = new Store({
   cwd: app.getPath('userData'),
   // 定义存储结构的默认值
   defaults: {
-    // 当前选中的教程
-    currentTutorial: '基础知识',
-    // 各教程的学习状态
-    tutorialStates: {},
-    // 已完成的练习
-    completedExercises: [],
     // 主题设置
     theme: 'light',
-    // 演练场代码编辑内容
-    codeEditorContents: {}
+    // 代码编辑内容
+    codeEditorContents: {},
+    settings: {
+      fontSize: 14,
+      fontFamily: 'Courier New',
+      bgImage: ''
+    }
   }
 })
 
@@ -35,6 +34,25 @@ function getTheme() {
  */
 function setTheme(theme) {
   store.set('theme', theme)
+}
+
+/**
+ * 获取字体大小设置
+ * @returns {number} 字体大小
+ */
+function getFontSize() {
+  const settings = store.get('settings')
+  return settings.fontSize || 14
+}
+
+/**
+ * 设置字体大小
+ * @param {number} fontSize 字体大小
+ */
+function setFontSize(fontSize) {
+  const settings = store.get('settings')
+  settings.fontSize = fontSize
+  store.set('settings', settings)
 }
 
 /**
@@ -86,6 +104,8 @@ function setState(key, value) {
 export default {
   getTheme,
   setTheme,
+  getFontSize,
+  setFontSize,
   getCodeEditorContent,
   setCodeEditorContent,
   getState,

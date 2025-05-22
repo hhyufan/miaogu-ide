@@ -31,6 +31,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
   const isInternalChange = useRef(false)
   const prevCodeRef = useRef(currentCode)
   const prevEncodingRef = useRef(currentFile.encoding)
+  const [fontSize, setFontSize] = useState(14)
 
   useEffect(() => {
     let mounted = true
@@ -50,6 +51,36 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     return extensionToLanguage[extension] || 'plaintext'
   }, [currentFile?.name])
 
+  // 获取保存的字体大小设置并监听变化
+  useEffect(() => {
+    const loadFontSize = async () => {
+      try {
+        const savedFontSize = await window.ipcApi.getFontSize()
+        if (savedFontSize) {
+          setFontSize(savedFontSize)
+        }
+      } catch (error) {
+        console.error('加载字体大小设置失败:', error)
+      }
+    }
+
+    // 初始加载字体大小
+    loadFontSize()
+
+    // 监听字体大小变化事件
+    const handleFontSizeChange = (event, newFontSize) => {
+      setFontSize(newFontSize)
+    }
+
+    // 添加事件监听器
+    window.ipcApi.onFontSizeChange(handleFontSizeChange)
+
+    // 清理事件监听器
+    return () => {
+      window.ipcApi.removeFontSizeChange(handleFontSizeChange)
+    }
+  }, [])
+
   useEffect(() => {
     if (!containerRef.current || !isShikiReady || editorRef.current) return
     editorRef.current = monaco.editor.create(containerRef.current, {
@@ -57,7 +88,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
       language: editorLanguage,
       theme: isDarkMode ? 'one-dark-pro' : 'one-light',
       minimap: { enabled: true },
-      fontSize: 14,
+      fontSize: fontSize,
       scrollBeyondLastLine: false,
       automaticLayout: true,
       overviewRulerBorder: false,
@@ -137,6 +168,13 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
     monaco.editor.setTheme(isDarkMode ? 'one-dark-pro' : 'one-light')
   }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
+
+  // 监听字体大小变化并更新编辑器
+  useEffect(() => {
+    if (!editorRef.current) return
+
+    editorRef.current.updateOptions({ fontSize: fontSize })
+  }, [fontSize])
 
   // 检查当前文件是否在黑名单中
   const isCurrentFileBlacklisted = useMemo(() => {
