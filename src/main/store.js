@@ -17,7 +17,14 @@ const store = new Store({
     // 主题设置
     theme: 'light',
     // 演练场代码编辑内容
-    codeEditorContents: {}
+    codeEditorContents: {},
+    settings: {    // 字体大小
+        fontSize:14,
+        // 字体
+        fontFamily: 'Verdana',
+        // 背景图片
+        bgImage: ''
+      }
   }
 })
 
@@ -83,11 +90,37 @@ function setState(key, value) {
   }
 }
 
+/**
+ * 获取设置
+ * @returns {Object} 存储的设置值
+ */
+function getSettings() {
+  return store.get('settings')
+}
+
+/**
+ * 设置设置
+ * @param {Object} settings 要存储的设置值
+ * @returns {boolean} 操作是否成功
+ */
+function setSettings(settings) {
+  try {
+    store.set('settings', settings)
+    return true
+  } catch (error) {
+    console.error(`设置失败:`, error)
+    return false
+  }
+}
+
+
 export default {
   getTheme,
   setTheme,
   getCodeEditorContent,
   setCodeEditorContent,
   getState,
-  setState
+  setState,
+  getSettings,
+  setSettings
 }

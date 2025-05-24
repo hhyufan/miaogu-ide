@@ -1,6 +1,6 @@
 import { Layout, Button } from 'antd'
 import { useState } from'react';
-import './AppHeader.scss'
+import './SettingsHeader.scss'
 
 const { Header } = Layout
 import {
@@ -28,8 +28,8 @@ const SettingsHead = () => {
     }
 
     return(
-        <Header className="app-header">
-            <span>miaogu-ide settings</span>
+        <Header className="settings-header">
+            <div className='settingsHead-title'>设置</div>
             <div className="window-controls">
                 <Button
                 type="text"

@@ -112,7 +112,13 @@ const ipcApi = {
     ipcRenderer.on('file-deleted-externally', (event, data) => callback(data))
   },
 
+  getSettings: async () => {
+    return ipcRenderer.invoke('get-settings')
+  },
 
+  setSettings: async (settings) => {
+    return ipcRenderer.invoke('set-settings', settings)
+  }
 
 }
 

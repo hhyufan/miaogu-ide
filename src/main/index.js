@@ -268,6 +268,8 @@ app.whenReady().then(() => {
     switch (key) {
       case 'theme':
         return stateStore.getTheme()
+      case 'settings':
+          return stateStore.getSettings()
       default:
         // 对于其他键（如aiSettings），使用通用的getState方法
         return stateStore.getState(key)
@@ -482,3 +484,11 @@ function stopWatchingFile() {
 ipcMain.on('open-settings-window', () => {
   createSettingsWindow();
 });
+
+ipcMain.handle('get-settings', () => {
+  return stateStore.getSettings()
+})
+
+ipcMain.handle('set-settings', (event, settings) => {
+  return stateStore.setSettings(settings)
+})

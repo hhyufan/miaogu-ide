@@ -29,16 +29,21 @@ const EditorWithFileContext = ({ isDarkMode }) => {
   const [isShikiReady, setIsShikiReady] = useState(false)
   const isInternalChange = useRef(false)
   const prevCodeRef = useRef(currentCode)
+  const [FontSize, setFontSize] = useState(14)
 
   useEffect(() => {
     let mounted = true
+    loadFontSize()
     initializeHighlighter()
       .then(() => mounted && setIsShikiReady(true))
       .catch(console.error)
+    
     return () => {
       mounted = false
     }
   }, [])
+
+
 
   const editorLanguage = useMemo(() => {
     if (!currentFile?.name) return 'plaintext'
@@ -48,19 +53,30 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     return extensionToLanguage[extension] || 'plaintext'
   }, [currentFile?.name])
 
+  const loadFontSize = async () => {
+    try {
+      const settings = await window.ipcApi.getSettings()
+      setFontSize(settings.fontSize)
+    } catch (error) {
+      console.error('获取字体大小失败:', error)
+    }
+  }
+
+
   useEffect(() => {
     if (!containerRef.current || !isShikiReady || editorRef.current) return
-
+    
     editorRef.current = monaco.editor.create(containerRef.current, {
       value: currentCode,
       language: editorLanguage,
       theme: isDarkMode ? 'one-dark-pro' : 'one-light',
       minimap: { enabled: true },
-      fontSize: 14,
+      fontSize: FontSize,
       scrollBeyondLastLine: false,
       automaticLayout: true,
       overviewRulerBorder: false,
-      wordWrap: 'on'
+      wordWrap: 'on',
+      backgroundImage: 'none'
     })
 
     prevCodeRef.current = currentCode
