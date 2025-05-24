@@ -1,0 +1,120 @@
+.editor-status-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background-color: var(--card-bg-color);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  z-index: 10;
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    position: relative;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+  .file-path {
+    flex: 1; /* 占据剩余可用空间 */
+    min-width: 0; /* 允许内容溢出时被截断 */
+    overflow: hidden;
+
+    .ant-breadcrumb {
+      display: flex;
+      font-size: 12px;
+      line-height: 22px;
+      white-space: nowrap;
+      overflow: hidden;
+
+      ol {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      li {
+        flex-shrink: 0; /* 防止面包屑项被压缩 */
+        max-width: 150px; /* 可根据需要调整 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:last-child {
+          flex-shrink: 1; /* 最后一个项可以适当收缩 */
+        }
+      }
+
+      .ant-breadcrumb-link,
+      .ant-breadcrumb-separator {
+        color: var(--text-color-secondary);
+        display: inline;
+      }
+
+      .ant-breadcrumb-link:hover {
+        color: var(--primary-color);
+      }
+
+      .ant-breadcrumb-separator {
+        margin: 0 4px;
+      }
+    }
+  }
+
+  .status-right {
+    display: flex;
+    align-items: center;
+
+    .status-item {
+      &.font-size-control {
+        width: 40px;
+        justify-content: center;
+      }
+    }
+  }
+
+  .encoding-button,
+  .line-ending-button {
+    width: 120px;
+    cursor: pointer;
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--text-color-secondary);
+    padding: 0 4px;
+    height: 22px;
+
+    &:focus,
+    &:active,
+    &:hover {
+      box-shadow: none !important;
+      color: var(--text-color-secondary) !important;
+      border-color: transparent !important;
+    }
+  }
+
+  .ant-dropdown-menu {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    padding: 4px 0;
+
+    .ant-dropdown-menu-item .ant-dropdown-menu-title-content {
+      padding: 5px 12px;
+      font-size: 12px;
+      min-width: 120px;
+      height: 35px;
+      line-height: 25px;
+    }
+  }
+}

@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   FileAddOutlined
 } from '@ant-design/icons'
+import { isFileBlacklisted } from '../configs/file-blacklist'
 import './AppHeader.scss'
 import { useState, useEffect, useRef } from 'react'
 import { useFile } from '../contexts/FileContext'
@@ -132,6 +133,12 @@ const AppHeader = () => {
 
   const handleModalOk = () => {
     if (newFileName.trim()) {
+      // 检查文件名是否在黑名单中
+      if (isFileBlacklisted(newFileName)) {
+        Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中创建。' })
+        return
+      }
+
       // 使用文件上下文的创建文件方法
       createFile(newFileName)
       setIsModalVisible(false)

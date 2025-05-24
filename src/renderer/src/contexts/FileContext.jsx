@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { Modal } from 'antd'
 import extensionToLanguage from './file-extensions.json'
+import { isFileBlacklisted } from '../configs/file-blacklist'
 
 const FileContext = createContext(undefined)
 
@@ -32,17 +33,89 @@ export const FileProvider = ({ children }) => {
     defaultFileNameRef.current = defaultFileName
   }, [defaultFileName])
 
+  // 监听通过"打开方式"打开文件的事件
+  useEffect(() => {
+    if (window.electronAPI?.onOpenWithFile) {
+      window.electronAPI.onOpenWithFile(async (data) => {
+        if (data?.filePath) {
+          await setOpenFile(data.filePath)
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // 获取当前文件对象
   const currentFile = openedFiles.find((f) => f.path === currentFilePath) || {
     path: '',
     name: defaultFileName,
     isTemporary: true,
     isModified: false,
-    content: editorCode
+    content: editorCode,
+    encoding: 'UTF-8',
+    lineEnding: 'LF'
   }
 
   // 获取当前文件内容
   const currentCode = currentFile.content
+  // 通过"打开方式"打开文件
+  const setOpenFile = async (filePath) => {
+    if (!window.ipcApi?.setOpenFile || !filePath) return
+
+    // 检查文件是否在黑名单中
+    if (isFileBlacklisted(filePath)) {
+      Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中打开。' })
+      return
+    }
+
+    try {
+      const result = await window.ipcApi.setOpenFile(filePath)
+      if (!result?.success) {
+        console.error('打开文件失败', result?.message)
+      }
+
+      const existing = openedFiles.find((f) => f.path === filePath)
+      if (existing) {
+        // 如果文件已经打开，切换到该文件并刷新内容
+        setCurrentFilePath(filePath)
+        await refreshFileContent(filePath)
+        return
+      }
+
+      // 获取文件的编码和行尾符号信息
+      let fileEncoding = 'UTF-8'
+      let fileLineEnding = 'LF'
+
+      // 如果result中包含编码和行尾符号信息，则使用它们
+      if (result.encoding) {
+        fileEncoding = result.encoding
+      }
+
+      if (result.lineEnding) {
+        fileLineEnding = result.lineEnding
+      }
+
+      const newFile = {
+        path: filePath,
+        name: result.fileName,
+        isTemporary: false,
+        isModified: false,
+        content: result.content || '',
+        encoding: fileEncoding,
+        lineEnding: fileLineEnding
+      }
+
+      setOpenedFiles((prev) => [...prev, newFile])
+      setCurrentFilePath(filePath)
+
+      // 检查并处理可能的路径冲突
+      handlePathConflict(filePath)
+    } catch (error) {
+      console.error('通过打开方式打开文件失败:', error)
+      Modal.error({ title: '打开文件失败', content: error.message || '未知错误' })
+    }
+  }
+
   // 打开文件
   const openFile = async () => {
     if (!window.ipcApi?.openFile) return
@@ -52,32 +125,17 @@ export const FileProvider = ({ children }) => {
       if (result?.canceled || !result.filePaths[0]) return
 
       const filePath = result.filePaths[0]
-      const existing = openedFiles.find((f) => f.path === filePath)
 
-      if (existing) {
-        // 如果文件已经打开，切换到该文件并刷新内容
-        setCurrentFilePath(filePath)
-        await refreshFileContent(filePath)
+      // 检查文件是否在黑名单中
+      if (isFileBlacklisted(filePath)) {
+        Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中打开。' })
         return
       }
 
-      const fileContent = await window.ipcApi.importCodeFromFile(filePath)
-      const newFile = {
-        path: filePath,
-        name: filePath.split(/[\\/]/).pop(),
-        isTemporary: false,
-        isModified: false,
-        content: fileContent?.code || ''
-      }
-
-      setOpenedFiles((prev) => [...prev, newFile])
-      setCurrentFilePath(filePath)
-
-      // 检查并处理可能的路径冲突
-      handlePathConflict(filePath)
+      await setOpenFile(filePath)
     } catch (error) {
       console.error('打开文件失败:', error)
-      Modal.error({ title: '打开文件失败', content: error.message })
+      Modal.error({ title: '打开文件失败', content: error.message || '未知错误' })
     }
   }
 
@@ -85,12 +143,25 @@ export const FileProvider = ({ children }) => {
   const createFile = (fileName) => {
     if (!fileName.trim()) return
 
+    // 检查文件名是否在黑名单中
+    if (isFileBlacklisted(fileName)) {
+      Modal.warning({ title: '不支持的文件类型', content: '该文件类型不支持在编辑器中创建。' })
+      return
+    }
+
+    // 获取系统默认编码和行尾符号
+    // 可以根据操作系统类型设置默认行尾符号
+    const isWindows = navigator.platform.indexOf('Win') > -1
+    const defaultLineEnding = isWindows ? 'CRLF' : 'LF'
+
     const newFile = {
       path: `temp://${Date.now()}_${fileName}`,
       name: fileName,
       isTemporary: true,
       isModified: false,
-      content: ''
+      content: '',
+      encoding: 'UTF-8',
+      lineEnding: defaultLineEnding
     }
 
     setOpenedFiles((prev) => [...prev, newFile])
@@ -102,7 +173,13 @@ export const FileProvider = ({ children }) => {
     setEditorCode(newCode)
     setOpenedFiles((prev) =>
       prev.map((file) =>
-        file.path === currentFilePath ? { ...file, content: newCode, isModified: true } : file
+        file.path === currentFilePath
+          ? {
+              ...file,
+              content: newCode,
+              isModified: file.content.normalize() !== newCode.normalize()
+            }
+          : file
       )
     )
 
@@ -174,6 +251,7 @@ export const FileProvider = ({ children }) => {
                   path: targetPath,
                   name: fileName,
                   isTemporary: false,
+                  encoding: 'UTF-8', // 存储始终为UTF-8
                   isModified: false
                 }
               : file
@@ -186,7 +264,9 @@ export const FileProvider = ({ children }) => {
           name: fileName,
           isTemporary: false,
           isModified: false,
-          content: contentToSave
+          content: contentToSave,
+          encoding: 'UTF-8',
+          lineEnding: 'LF'
         }
         setOpenedFiles((prev) => [...prev, newFile])
       }
@@ -206,8 +286,9 @@ export const FileProvider = ({ children }) => {
 
       return { success: true, path: targetPath }
     } catch (error) {
-      Modal.error({ title: '保存失败', content: error.message })
-      return { success: false, error: error.message }
+      const errorMessage = error.message || '未知错误'
+      Modal.error({ title: '保存失败', content: errorMessage })
+      return { success: false, error: errorMessage }
     }
   }
 
@@ -286,8 +367,9 @@ export const FileProvider = ({ children }) => {
 
       return results
     } catch (error) {
-      Modal.error({ title: '保存失败', content: error.message })
-      return [{ success: false, error: error.message }]
+      const errorMessage = error.message || '未知错误'
+      Modal.error({ title: '保存失败', content: errorMessage })
+      return [{ success: false, error: errorMessage }]
     }
   }
 
@@ -454,8 +536,9 @@ export const FileProvider = ({ children }) => {
           return { success: true }
         }
       } catch (error) {
-        Modal.error({ title: '重命名文件失败', content: error.message })
-        return { success: false, error: error.message }
+        const errorMessage = error.message || '未知错误'
+        Modal.error({ title: '重命名文件失败', content: errorMessage })
+        return { success: false, error: errorMessage }
       }
     }
     return { success: false }
@@ -463,24 +546,56 @@ export const FileProvider = ({ children }) => {
 
   // 监听文件变化并更新内容
   const refreshFileContent = async (filePath) => {
-    if (!window.ipcApi?.importCodeFromFile || !filePath || filePath.startsWith('temp://')) return
+    if (
+      !window.ipcApi?.importCodeFromFile ||
+      !window.ipcApi?.getFileEncoding ||
+      !window.ipcApi?.getFileLineEnding ||
+      !filePath ||
+      filePath.startsWith('temp://')
+    )
+      return
 
     try {
       // 获取文件最新内容
       const fileContent = await window.ipcApi.importCodeFromFile(filePath)
       const newContent = fileContent?.code || ''
 
+      // 获取文件的编码和行尾符号信息
+      let fileEncoding = await window.ipcApi.getFileEncoding(filePath)
+      let fileLineEnding = await window.ipcApi.getFileLineEnding(filePath)
+
       // 查找对应的文件
       const targetFile = openedFiles.find((file) => file.path === filePath)
       if (!targetFile) return
+
+      // 检查编码或行尾字符是否发生变化
+      console.log('targetFile', JSON.stringify(targetFile))
+      console.log('File', JSON.stringify(fileLineEnding))
+      const encodingChanged = targetFile.encoding !== fileEncoding
+      const lineEndingChanged = targetFile.lineEnding !== fileLineEnding
+
+      // 更新文件信息
       setOpenedFiles((prev) =>
         prev.map((file) => {
           if (file.path === filePath) {
-            return { ...file, content: newContent, isModified: false }
+            return {
+              ...file,
+              content: newContent,
+              isModified: false,
+              encoding: fileEncoding,
+              lineEnding: fileLineEnding
+            }
           }
           return file
         })
       )
+
+      // 如果当前文件是正在编辑的文件，且编码或行尾字符发生变化，需要更新编辑器内容
+      if (filePath === currentFilePath && (encodingChanged || lineEndingChanged)) {
+        if (window.ipcApi?.setCodeEditorContent) {
+          window.ipcApi.setCodeEditorContent(newContent).catch(console.error)
+        }
+      }
     } catch (error) {
       console.error('刷新文件内容失败:', error)
     }
@@ -504,6 +619,43 @@ export const FileProvider = ({ children }) => {
     return false
   }
 
+  // 更新文件行尾序列
+  const updateFileLineEnding = async (lineEnding) => {
+    if (!currentFilePath || !window.ipcApi?.setFileLineEnding) return
+
+    try {
+      const result = await window.ipcApi.setFileLineEnding(
+        currentFilePath,
+        currentFile.encoding,
+        lineEnding
+      )
+      if (result.success) {
+        // 保存当前文件内容
+        const currentFileContent = currentFile.content
+
+        // 更新文件行尾序列
+        setOpenedFiles((prev) =>
+          prev.map((file) => (file.path === currentFilePath ? { ...file, lineEnding } : file))
+        )
+
+        // 确保编辑器内容不会丢失
+        if (window.ipcApi?.setCodeEditorContent) {
+          window.ipcApi.setCodeEditorContent(currentFileContent).catch(console.error)
+        }
+      } else {
+        console.error('更新文件行尾序列失败:', result.message)
+        // 确保content是字符串而不是对象
+        const errorMessage =
+          typeof result.message === 'string' ? result.message : JSON.stringify(result.message)
+        Modal.error({ title: '更新文件行尾序列失败', content: errorMessage })
+      }
+    } catch (error) {
+      console.error('更新文件行尾序列失败:', error)
+      // 确保error.message是字符串
+      const errorMessage = error.message || '未知错误'
+      Modal.error({ title: '更新文件行尾序列失败', content: errorMessage })
+    }
+  }
   // 提供的上下文值
   const contextValue = {
     currentFile,
@@ -523,6 +675,8 @@ export const FileProvider = ({ children }) => {
     refreshFileContent,
     handlePathConflict,
     updateDefaultFileName,
+    updateFileLineEnding,
+    setOpenFile,
     defaultFileName
   }
 
@@ -570,7 +724,48 @@ export const FileProvider = ({ children }) => {
     if (window.ipcApi?.onFileChangedExternally) {
       const handleFileChanged = (data) => {
         if (data && data.filePath) {
-          refreshFileContent(data.filePath).catch(console.error)
+          // 检查是否包含完整的文件信息（内容、编码和行尾序列）
+          if (data.content !== undefined && data.encoding && data.lineEnding) {
+            // 直接使用main进程提供的信息更新文件，无需再次读取文件
+            const filePath = data.filePath
+            const newContent = data.content
+            const fileEncoding = data.encoding
+            const fileLineEnding = data.lineEnding
+
+            // 查找对应的文件
+            const targetFile = openedFiles.find((file) => file.path === filePath)
+            if (!targetFile) return
+
+            // 检查编码或行尾字符是否发生变化
+            const encodingChanged = targetFile.encoding !== fileEncoding
+            const lineEndingChanged = targetFile.lineEnding !== fileLineEnding
+
+            // 更新文件信息
+            setOpenedFiles((prev) =>
+              prev.map((file) => {
+                if (file.path === filePath) {
+                  return {
+                    ...file,
+                    content: newContent,
+                    isModified: false,
+                    encoding: fileEncoding,
+                    lineEnding: fileLineEnding
+                  }
+                }
+                return file
+              })
+            )
+
+            // 如果当前文件是正在编辑的文件，且编码或行尾字符发生变化，需要更新编辑器内容
+            if (filePath === currentFilePath && (encodingChanged || lineEndingChanged)) {
+              if (window.ipcApi?.setCodeEditorContent) {
+                window.ipcApi.setCodeEditorContent(newContent).catch(console.error)
+              }
+            }
+          } else {
+            // 如果没有完整信息，则回退到原来的方式读取文件
+            refreshFileContent(data.filePath).catch(console.error)
+          }
         }
       }
 
@@ -587,7 +782,6 @@ export const FileProvider = ({ children }) => {
 
       window.ipcApi.onFileDeletedExternally(handleFileDeleted)
     }
-
     // 清理函数
     return () => {
       if (window.ipcApi?.stopWatchingFile) {

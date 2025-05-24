@@ -1,4 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
+
+// 设置IPC事件最大监听器数量，防止内存泄漏警告
+ipcRenderer.setMaxListeners(20)
 // 创建API接口，用于替代原有的HTTP API
 const ipcApi = {
   // 窗口控制 - 最小化
@@ -28,6 +31,26 @@ const ipcApi = {
   // 设置主题
   setTheme: async (theme) => {
     return ipcRenderer.invoke('set-theme', theme)
+  },
+
+  // 获取字体大小设置
+  getFontSize: async () => {
+    return ipcRenderer.invoke('get-state', 'fontSize')
+  },
+
+  // 设置字体大小
+  setFontSize: async (fontSize) => {
+    return ipcRenderer.invoke('set-font-size', fontSize)
+  },
+
+  // 监听字体大小变化
+  onFontSizeChange: (callback) => {
+    ipcRenderer.on('font-size-changed', callback)
+  },
+
+  // 移除字体大小变化监听
+  removeFontSizeChange: (callback) => {
+    ipcRenderer.removeListener('font-size-changed', callback)
   },
 
   // 获取通用状态（包括AI设置）
@@ -60,6 +83,11 @@ const ipcApi = {
   // 打开文件对话框
   openFile: async () => {
     return ipcRenderer.invoke('open-file')
+  },
+
+  // 设置打开文件（通过"打开方式"功能）
+  setOpenFile: async (filePath) => {
+    return ipcRenderer.invoke('set-open-file', { filePath })
   },
 
   // 保存文件对话框
@@ -97,12 +125,17 @@ const ipcApi = {
     return ipcRenderer.invoke('stop-watching-file')
   },
 
+  // 获取目录内容
+  getDirectoryContents: async (dirPath) => {
+    return ipcRenderer.invoke('get-directory-contents', dirPath)
+  },
+
   // 获取文件内容
   getFileContent: async (filePath) => {
     return ipcRenderer.invoke('get-file-content', filePath)
   },
 
-  // 监听文件外部变化事件
+  // 监听文件外部变化事件（包含编码和行尾序列信息）
   onFileChangedExternally: (callback) => {
     ipcRenderer.on('file-changed-externally', (event, data) => callback(data))
   },
@@ -118,6 +151,19 @@ const ipcApi = {
 
   setSettings: async (settings) => {
     return ipcRenderer.invoke('set-settings', settings)
+  // 获取文件编码（仅在初始加载时使用，文件变化时会通过onFileChangedExternally获取）
+  getFileEncoding: async (filePath) => {
+    return ipcRenderer.invoke('get-file-encoding', filePath)
+  },
+
+  // 获取文件行尾序列（仅在初始加载时使用，文件变化时会通过onFileChangedExternally获取）
+  getFileLineEnding: async (filePath) => {
+    return ipcRenderer.invoke('get-file-line-ending', filePath)
+  },
+
+  // 设置文件行尾序列
+  setFileLineEnding: async (filePath, encoding, lineEnding) => {
+    return ipcRenderer.invoke('set-file-line-ending', { filePath, encoding, lineEnding })
   }
 
 }
@@ -127,10 +173,22 @@ export function setupIpcApi() {
   if (process.contextIsolated) {
     try {
       contextBridge.exposeInMainWorld('ipcApi', ipcApi)
+
+      // 注册通过"打开方式"打开文件的事件监听
+      contextBridge.exposeInMainWorld('electronAPI', {
+        onOpenWithFile: (callback) => {
+          ipcRenderer.on('open-with-file', (_, data) => callback(data))
+        }
+      })
     } catch (error) {
       console.error('IPC API暴露失败:', error)
     }
   } else {
     window.ipcApi = ipcApi
+    window.electronAPI = {
+      onOpenWithFile: (callback) => {
+        ipcRenderer.on('open-with-file', (_, data) => callback(data))
+      }
+    }
   }
 }
