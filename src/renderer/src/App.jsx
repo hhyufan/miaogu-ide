@@ -97,9 +97,25 @@ const App = () => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
   }, [isDarkMode])
 
+  // 监听切换主题快捷键 (Ctrl+T)
+  useEffect(() => {
+    // 监听来自主进程的toggle-theme事件
+    const handleToggleTheme = () => {
+      toggleTheme()
+    }
+
+    // 添加事件监听器
+    window.ipcApi.onToggleTheme(handleToggleTheme)
+
+    // 清理事件监听器
+    return () => {
+      window.ipcApi.removeToggleTheme(handleToggleTheme)
+    }
+  }, [toggleTheme])
+
   // 从electron-store加载保存的主题
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       if (window.ipcApi && window.ipcApi.getTheme) {
         try {
           const savedTheme = await window.ipcApi.getTheme()
