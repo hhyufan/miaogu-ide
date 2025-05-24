@@ -131,7 +131,6 @@ let openWithFilePath = null
 // 设置IPC事件最大监听器数量
 const MAX_LISTENERS = 20 // 增加监听器上限
 
-
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -175,7 +174,7 @@ function createWindow() {
   }
 }
 
-let settingsWindow = null; 
+let settingsWindow = null
 
 function createSettingsWindow() {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -218,9 +217,6 @@ function createSettingsWindow() {
   }
 }
 
-ipcMain.on('open-settings-window', () => {
-  createSettingsWindow()
-})
 // 处理通过"打开方式"打开文件
 const handleOpenWithFile = (filePath) => {
   if (!filePath) return
@@ -781,8 +777,6 @@ app.whenReady().then(() => {
   })
 })
 
-
-
 // 开始监听文件变化
 function startWatchingFile(filePath, window) {
   if (!window) return
@@ -885,10 +879,9 @@ function stopWatchingFile() {
   }
 }
 
-
 ipcMain.on('open-settings-window', () => {
-  createSettingsWindow();
-});
+  createSettingsWindow()
+})
 
 ipcMain.handle('get-settings', () => {
   return stateStore.getSettings()

@@ -16,7 +16,7 @@ const ipcApi = {
   closeWindow: () => {
     ipcRenderer.send('window-control', 'close')
   },
-
+  // 打开设置窗口
   openSettingsWindow: () => {
     ipcRenderer.send('open-settings-window')
   },
@@ -145,12 +145,6 @@ const ipcApi = {
     ipcRenderer.on('file-deleted-externally', (event, data) => callback(data))
   },
 
-  getSettings: async () => {
-    return ipcRenderer.invoke('get-settings')
-  },
-
-  setSettings: async (settings) => {
-    return ipcRenderer.invoke('set-settings', settings)
   // 获取文件编码（仅在初始加载时使用，文件变化时会通过onFileChangedExternally获取）
   getFileEncoding: async (filePath) => {
     return ipcRenderer.invoke('get-file-encoding', filePath)
@@ -164,8 +158,14 @@ const ipcApi = {
   // 设置文件行尾序列
   setFileLineEnding: async (filePath, encoding, lineEnding) => {
     return ipcRenderer.invoke('set-file-line-ending', { filePath, encoding, lineEnding })
-  }
+  },
+  getSettings: async () => {
+    return ipcRenderer.invoke('get-settings')
+  },
 
+  setSettings: async (settings) => {
+    return ipcRenderer.invoke('set-settings', settings)
+  }
 }
 
 // 暴露IPC API到渲染进程
