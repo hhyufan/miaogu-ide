@@ -4,10 +4,59 @@ import { SunOutlined, MoonFilled } from '@ant-design/icons'
 import './App.scss'
 import AppHeader from './components/AppHeader'
 import TabBar from './components/TabBar'
+import Console from './components/Console'
 const { Content } = Layout
-import { FileProvider } from './contexts/FileContext'
+import { FileProvider, useFile } from './contexts/FileContext'
 import EditorWithFileContext from './components/EditorWithFileContext'
+import JavaScriptRunner from './components/JavaScriptRunner'
+import EditorStatusBar from './components/EditorStatusBar'
+
+// 内部组件，用于访问文件上下文
+// eslint-disable-next-line react/prop-types
+const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible }) => {
+  const { currentFile } = useFile()
+  // 检查文件是否为JavaScript文件
+  const isJavaScriptFile = (fileName) => {
+    if (!fileName) return false
+    const ext = fileName.toLowerCase().split('.').pop()
+    return ['js', 'jsx', 'mjs', 'cjs'].includes(ext)
+  }
+
+  return (
+    <>
+      <div className="theme-toggle">
+        <Button
+          type="text"
+          icon={isDarkMode ? <MoonFilled /> : <SunOutlined />}
+          onClick={toggleTheme}
+          title={isDarkMode ? '切换到亮色模式' : '切换到暗色模式'}
+          className="theme-toggle-btn"
+        />
+      </div>
+      {/* JavaScript运行按钮 - 只在当前文件为JS文件时显示 */}
+      {currentFile && currentFile.name && isJavaScriptFile(currentFile.name) && (
+        <div className="js-runner-container">
+          <JavaScriptRunner
+            code={currentFile.content || ''}
+            onOutput={onRunCode}
+            disabled={false}
+          />
+        </div>
+      )}
+      <div className="content-container">
+        <div className={`code-editor-container ${consoleVisible ? 'with-console' : ''}`}>
+          <EditorWithFileContext isDarkMode={isDarkMode} />
+        </div>
+      </div>
+    </>
+  )
+}
+
 const App = () => {
+  // 控制台状态
+  const [consoleVisible, setConsoleVisible] = useState(false)
+  const [consoleOutputs, setConsoleOutputs] = useState([])
+
   // 主题设置
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // 首先尝试从localStorage获取（向后兼容）
@@ -65,6 +114,31 @@ const App = () => {
       }
     })()
   }, [])
+
+  // 处理代码运行输出
+  const handleRunCode = (output) => {
+    if (output.type === 'clear') {
+      setConsoleOutputs([])
+    } else {
+      setConsoleOutputs((prev) => [...prev, output])
+    }
+
+    // 显示控制台
+    if (!consoleVisible) {
+      setConsoleVisible(true)
+    }
+  }
+
+  // 清空控制台
+  const handleClearConsole = () => {
+    setConsoleOutputs([])
+  }
+
+  // 关闭控制台
+  const handleCloseConsole = () => {
+    setConsoleVisible(false)
+    setConsoleOutputs([])
+  }
   return (
     <FileProvider>
       <ConfigProvider
@@ -80,24 +154,27 @@ const App = () => {
       >
         <Layout className="app-layout">
           <AppHeader />
-          <TabBar />
-          <Layout>
-            <Content className="app-content">
-              <div className="theme-toggle">
-                <Button
-                  type="text"
-                  icon={isDarkMode ? <MoonFilled /> : <SunOutlined />}
-                  onClick={toggleTheme}
-                  title={isDarkMode ? '切换到亮色模式' : '切换到暗色模式'}
-                  className="theme-toggle-btn"
+          <TabBar onRunCode={handleRunCode} />
+          <Layout className="main-layout">
+            <Content className={`app-content ${consoleVisible ? 'with-console' : ''}`}>
+              <AppContent
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                onRunCode={handleRunCode}
+                consoleVisible={consoleVisible}
+              />
+            </Content>
+            {consoleVisible && (
+              <div className="console-layout">
+                <Console
+                  outputs={consoleOutputs}
+                  onClear={handleClearConsole}
+                  onClose={handleCloseConsole}
+                  visible={consoleVisible}
                 />
               </div>
-              <div className="content-container">
-                <div className="code-editor-container">
-                  <EditorWithFileContext isDarkMode={isDarkMode} />
-                </div>
-              </div>
-            </Content>
+            )}
+            <EditorStatusBar />
           </Layout>
         </Layout>
       </ConfigProvider>

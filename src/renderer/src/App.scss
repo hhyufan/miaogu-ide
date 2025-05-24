@@ -2,16 +2,41 @@
     min-height: 100vh;
     user-select: none;
 }
+
 .app-content {
     background-color: var(--background-color);
     transition: all var(--transition-duration);
     position: relative;
-    overflow: hidden;
+    height: calc(100vh - var(--header-height) - var(--tab-bar-height));
+
+    &.with-console {
+        height: calc(100vh - var(--header-height) - var(--tab-bar-height) - 300px);
+    }
+}
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
 }
 
-.content-container {
+.console-layout {
     overflow: hidden;
+    flex-shrink: 0;
+    height: 276px;
+    margin-bottom: 24px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] {
+    .console-layout {
+        background-color: var(--card-bg-color);
+        border-top-color: #434343;
+    }
+}
+
+.content-container {
     background-color: var(--card-bg-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all var(--transition-duration);
@@ -22,6 +47,21 @@
     top: 24px;
     right: 24px;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.js-runner-container {
+    position: absolute;
+    top: 60px;
+    right: 24px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .theme-toggle-btn {
@@ -59,5 +99,9 @@
     overflow: auto;
     /* 修改为auto以确保内容不会溢出 */
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
+
     /* 调整高度，考虑header高度和边距 */
+    &.with-console {
+        height: calc(100vh - var(--header-height) - var(--tab-bar-height) + 24px - 300px);
+    }
 }

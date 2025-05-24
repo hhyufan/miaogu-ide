@@ -6,7 +6,6 @@ import { shikiToMonaco } from '@shikijs/monaco'
 import { Spin, Alert } from 'antd'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 import extensionToLanguage from '../contexts/file-extensions.json'
-import EditorStatusBar from './EditorStatusBar'
 import '../monaco-setup'
 let highlighterPromise = null
 const initializeHighlighter = async () => {
@@ -214,7 +213,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
       <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%' }} />
-      <EditorStatusBar />
     </div>
   )
 }
