@@ -13,7 +13,28 @@
         height: calc(100vh - var(--header-height) - var(--tab-bar-height) - 300px);
     }
 }
-
+.minimap .slider-mouseover {
+  display: none;
+}
+/* 同时覆盖编辑器和左侧边栏 */
+.current-line {
+  background-color: transparent !important;
+}
+.monaco-editor .minimap-decorations-layer,
+.monaco-editor .minimap,
+.monaco-editor-background,
+.monaco-editor .margin,
+{ background-color: var(--editor-background) !important;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+.monaco-editor .overflow-guard {
+  background-image: url(https://t.alcy.cc/moez) !important;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
 .main-layout {
     display: flex;
     flex-direction: column;
