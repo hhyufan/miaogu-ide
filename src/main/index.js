@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell, globalShortcut } from 'electron'
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -275,6 +275,23 @@ app.whenReady().then(() => {
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
+  })
+
+  // 注册全局快捷键
+  // Ctrl+R 运行代码
+  globalShortcut.register('CommandOrControl+R', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win) {
+      win.webContents.send('run-code')
+    }
+  })
+
+  // Ctrl+T 切换主题
+  globalShortcut.register('CommandOrControl+T', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win) {
+      win.webContents.send('toggle-theme')
+    }
   })
 
   // 处理窗口控制

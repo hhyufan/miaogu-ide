@@ -53,6 +53,26 @@ const ipcApi = {
     ipcRenderer.removeListener('font-size-changed', callback)
   },
 
+  // 监听运行代码事件 (Ctrl+R)
+  onRunCode: (callback) => {
+    ipcRenderer.on('run-code', callback)
+  },
+
+  // 移除运行代码事件监听
+  removeRunCode: (callback) => {
+    ipcRenderer.removeListener('run-code', callback)
+  },
+
+  // 监听切换主题事件 (Ctrl+T)
+  onToggleTheme: (callback) => {
+    ipcRenderer.on('toggle-theme', callback)
+  },
+
+  // 移除切换主题事件监听
+  removeToggleTheme: (callback) => {
+    ipcRenderer.removeListener('toggle-theme', callback)
+  },
+
   // 获取通用状态（包括AI设置）
   getState: async (key) => {
     return ipcRenderer.invoke('get-state', key)
