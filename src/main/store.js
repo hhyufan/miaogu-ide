@@ -18,7 +18,14 @@ const store = new Store({
         fontFamily: 'Verdana',
         // 背景图片
         bgImage: ''
-      }
+      },
+    savedImage:'',
+    // 透明度
+    transparency: {
+      light: 50,
+      dark: 50
+    }
+
   }
 })
 
@@ -126,6 +133,50 @@ function setSettings(settings) {
   }
 }
 
+/**
+ * 获取背景图片路径
+ * @returns {string} 背景图片路径
+ */
+function getBgImage() {
+  const settings = store.get('settings')
+  return settings.bgImage || ''
+}
+
+/**
+ * 设置背景图片路径
+ * @param {string} bgImage 背景图片路径
+ */
+function setBgImage(bgImage) {
+  const settings = store.get('settings')
+  settings.bgImage = bgImage
+  store.set('settings', settings)
+}
+
+/**
+ * 获取保存的图片路径
+ * @returns {string} 保存的图片路径
+ */
+function getSavedImage() {
+  return store.get('savedImage')
+}
+
+/**
+ * 设置保存的图片路径
+ * @param {string} savedImage 保存的图片路径
+ */
+function setSavedImage(savedImage) {
+  store.set('savedImage', savedImage)
+}
+
+function setTransparency(theme, value) {
+  const transparency = store.get('transparency') || {}
+  transparency[theme] = value
+  store.set('transparency', transparency)
+}
+
+function getTransparency() {
+  return store.get('transparency')
+}
 
 export default {
   getTheme,
@@ -137,5 +188,11 @@ export default {
   getState,
   setState,
   getSettings,
-  setSettings
+  setSettings,
+  getBgImage,
+  setBgImage,
+  getSavedImage,
+  setSavedImage,
+  getTransparency,
+  setTransparency,
 }

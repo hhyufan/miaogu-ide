@@ -896,6 +896,43 @@ function stopWatchingFile() {
   }
 }
 
+async function handleStoreBgImage() {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg','gif'] }]
+  })
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0]
+    stateStore.setBgImage(filePath)
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      windows[0].webContents.send('bg-image-changed', { filePath })
+    }
+    return filePath
+  }
+  return null
+}
+
+ipcMain.handle('set-bg-image', (_, bgImage)=>{
+  // 通知所有窗口背景图片已更改
+  stateStore.setBgImage(bgImage)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('bg-image-changed', bgImage)
+  })
+  return true
+})
+
+ipcMain.handle('set-bg-transparency', (_, theme, transparency) => {
+  stateStore.setTransparency(theme,transparency)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('bg-transparency-changed', theme, transparency)
+  })
+  return true
+})
+
+
+ipcMain.handle('select-bg-image', handleStoreBgImage)
+
 ipcMain.on('open-settings-window', () => {
   createSettingsWindow()
 })
@@ -907,3 +944,23 @@ ipcMain.handle('get-settings', () => {
 ipcMain.handle('set-settings', (event, settings) => {
   return stateStore.setSettings(settings)
 })
+
+ipcMain.handle('get-bg-image', () => {
+  return stateStore.getBgImage()
+})
+
+ipcMain.handle('get-saved-image', () => {
+  return stateStore.getSavedImage()
+})
+
+ipcMain.handle('set-saved-image', (event, savedImage) => {
+  return stateStore.setSavedImage(savedImage)
+})
+
+ipcMain.handle('get-bg-transparency', () => {
+  return stateStore.getTransparency()
+})
+
+
+
+

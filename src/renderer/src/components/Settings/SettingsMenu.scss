@@ -36,3 +36,22 @@
     border-radius: 0;
   }
 }
+
+.floating-save-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  
+  // 可选：添加一些视觉效果
+  .ant-btn {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    transition: all 0.3s ease;
+  }
+}

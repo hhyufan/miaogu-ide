@@ -179,13 +179,61 @@ const ipcApi = {
   setFileLineEnding: async (filePath, encoding, lineEnding) => {
     return ipcRenderer.invoke('set-file-line-ending', { filePath, encoding, lineEnding })
   },
+  
   getSettings: async () => {
     return ipcRenderer.invoke('get-settings')
   },
 
   setSettings: async (settings) => {
     return ipcRenderer.invoke('set-settings', settings)
-  }
+  },
+  
+  selectBgImage: async () => {
+    return ipcRenderer.invoke('select-bg-image')
+  },
+
+  setBgImage: async (bgImage) => {
+    return ipcRenderer.invoke('set-bg-image', bgImage)
+  },
+
+  getBgImage: async () => {
+    return ipcRenderer.invoke('get-bg-image')
+  },
+   // 监听背景图片变化
+   onBgImageChange: (callback) => {
+    ipcRenderer.on('bg-image-changed', callback)
+  },
+
+  // 移除背景图片变化监听
+  removeBgImageChange: (callback) => {
+    ipcRenderer.removeListener('bg-image-changed', callback)
+  },
+  // 设置背景透明度
+  setBgTransparency: async (theme, transparency) => {
+    return ipcRenderer.invoke('set-bg-transparency', theme, transparency)
+  },
+  // 获取背景透明度
+  getBgTransparency: async () => {
+    return ipcRenderer.invoke('get-bg-transparency')
+  },
+  // 监听背景透明度变化
+  onBgTransparencyChange: (callback) => {
+    ipcRenderer.on('bg-transparency-changed', callback)
+  },
+  
+  // 移除背景透明度变化监听
+  removeBgTransparencyChange: (callback) => {
+    ipcRenderer.removeListener('bg-transparency-changed', callback)
+  },
+
+
+  getSavedImage: async () => {
+    return ipcRenderer.invoke('get-saved-image')
+  },
+
+  setSavedImage: async (savedImage) => {
+    return ipcRenderer.invoke('set-saved-image', savedImage)
+  },
 }
 
 // 暴露IPC API到渲染进程
