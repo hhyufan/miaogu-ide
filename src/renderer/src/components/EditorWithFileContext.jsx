@@ -95,6 +95,8 @@ const EditorWithFileContext = ({ isDarkMode }) => {
       wordWrap: 'on',
       lineEnding: currentFile.lineEnding === 'CRLF' ? '\r\n' : '\n'
     })
+    // 初始化更新一次，以同步更改
+    updateCode(currentCode)
 
     prevCodeRef.current = currentCode
     prevEncodingRef.current = currentFile.encoding
@@ -213,10 +215,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <div
-        ref={containerRef}
-        style={{ height: 'calc(100% - 24px)', width: '100%' }}
-      />
+      <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%' }} />
     </div>
   )
 }

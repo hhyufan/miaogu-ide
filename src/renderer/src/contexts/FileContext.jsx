@@ -24,7 +24,7 @@ const getSaveFilters = (currentFileName = '') => {
 // eslint-disable-next-line react/prop-types
 export const FileProvider = ({ children }) => {
   const [currentFilePath, setCurrentFilePath] = useState('')
-  const [openedFiles, setOpenedFiles] = useState([]) // 结构：{ path: string, name: string, isTemporary: boolean, isModified: boolean, content: string }[]
+  const [openedFiles, setOpenedFiles] = useState([]) // 结构：{ path: string, name: string, isTemporary: boolean, isModified: boolean, content: string, originalContent: string }[]
   const [editorCode, setEditorCode] = useState('')
   const [defaultFileName, setDefaultFileName] = useState('未命名')
   const defaultFileNameRef = useRef(defaultFileName)
@@ -52,6 +52,7 @@ export const FileProvider = ({ children }) => {
     isTemporary: true,
     isModified: false,
     content: editorCode,
+    originalContent: '', // 临时文件的原始内容为空
     encoding: 'UTF-8',
     lineEnding: 'LF'
   }
@@ -76,9 +77,8 @@ export const FileProvider = ({ children }) => {
 
       const existing = openedFiles.find((f) => f.path === filePath)
       if (existing) {
-        // 如果文件已经打开，切换到该文件并刷新内容
+        // 如果文件已经打开，切换到该文件
         setCurrentFilePath(filePath)
-        await refreshFileContent(filePath)
         return
       }
 
@@ -101,6 +101,7 @@ export const FileProvider = ({ children }) => {
         isTemporary: false,
         isModified: false,
         content: result.content || '',
+        originalContent: result.content || '', // 保存原始内容用于比较
         encoding: fileEncoding,
         lineEnding: fileLineEnding
       }
@@ -175,10 +176,14 @@ export const FileProvider = ({ children }) => {
       prev.map((file) =>
         file.path === currentFilePath
           ? {
-              ...file,
-              content: newCode,
-              isModified: file.content.normalize() !== newCode.normalize()
-            }
+            ...file,
+            content: newCode,
+            // 使用更可靠的字符串比较方式，避免中文编码问题
+            isModified:
+              file.originalContent !== undefined
+                ? file.originalContent !== newCode
+                : file.content !== newCode
+          }
           : file
       )
     )
@@ -247,13 +252,14 @@ export const FileProvider = ({ children }) => {
           prev.map((file) =>
             file.path === currentFilePath
               ? {
-                  ...file,
-                  path: targetPath,
-                  name: fileName,
-                  isTemporary: false,
-                  encoding: 'UTF-8', // 存储始终为UTF-8
-                  isModified: false
-                }
+                ...file,
+                path: targetPath,
+                name: fileName,
+                isTemporary: false,
+                encoding: 'UTF-8', // 存储始终为UTF-8
+                isModified: false,
+                originalContent: contentToSave // 更新原始内容
+              }
               : file
           )
         )
@@ -265,6 +271,7 @@ export const FileProvider = ({ children }) => {
           isTemporary: false,
           isModified: false,
           content: contentToSave,
+          originalContent: contentToSave, // 保存原始内容
           encoding: 'UTF-8',
           lineEnding: 'LF'
         }
@@ -336,13 +343,14 @@ export const FileProvider = ({ children }) => {
           prev.map((f) =>
             f.path === file.path
               ? {
-                  ...f,
-                  content: file.content,
-                  path: targetPath,
-                  name: targetPath.split(/[\\/]/).pop(),
-                  isTemporary: false,
-                  isModified: false
-                }
+                ...f,
+                content: file.content,
+                originalContent: file.content, // 更新原始内容
+                path: targetPath,
+                name: targetPath.split(/[\\/]/).pop(),
+                isTemporary: false,
+                isModified: false
+              }
               : f
           )
         )
@@ -528,7 +536,13 @@ export const FileProvider = ({ children }) => {
           setOpenedFiles((prev) =>
             prev.map((file) =>
               file.path === currentFilePath
-                ? { ...file, path: newPath, name: newName, isModified: false }
+                ? {
+                  ...file,
+                  path: newPath,
+                  name: newName,
+                  isModified: false,
+                  originalContent: file.content
+                }
                 : file
             )
           )
@@ -581,6 +595,7 @@ export const FileProvider = ({ children }) => {
             return {
               ...file,
               content: newContent,
+              originalContent: newContent, // 更新原始内容
               isModified: false,
               encoding: fileEncoding,
               lineEnding: fileLineEnding
@@ -747,6 +762,7 @@ export const FileProvider = ({ children }) => {
                   return {
                     ...file,
                     content: newContent,
+                    originalContent: newContent, // 更新原始内容
                     isModified: false,
                     encoding: fileEncoding,
                     lineEnding: fileLineEnding
