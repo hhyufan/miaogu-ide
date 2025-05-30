@@ -14,6 +14,12 @@
   --error-color: #ff4d4f;
   --code-bg-color: #f6f8fa;
   --outline-color: #FFFFFF3A;
+
+  // 滚动条颜色
+  --scrollbar-track-color: rgba(0, 0, 0, 0.08);
+  --scrollbar-thumb-color: rgba(0, 0, 0, 0.25);
+  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.4);
+  --scrollbar-thumb-active-color: rgba(0, 0, 0, 0.5);
   --transition-duration: 0.3s;
   --sidebar-width: 250px;
   --header-height: 42px;
@@ -36,6 +42,12 @@
   --error-color: #a61d24;
   --code-bg-color: #282c34;
 
+  // 滚动条颜色
+  --scrollbar-track-color: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.5);
+  --scrollbar-thumb-active-color: rgba(255, 255, 255, 0.6);
+
   /* 表格样式覆盖 */
   table th {
     background-color: #333;
@@ -52,13 +64,16 @@ body {
   color: var(--text-color);
   transition: all var(--transition-duration);
   /* 隐藏滚动条但仍可滚动 */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 和 Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 和 Edge */
 }
 
 /* 隐藏所有滚动条 */
 ::-webkit-scrollbar {
-  display: none; /* Chrome, Safari 和 Opera */
+  display: none;
+  /* Chrome, Safari 和 Opera */
   width: 0;
   height: 0;
   background: transparent;
