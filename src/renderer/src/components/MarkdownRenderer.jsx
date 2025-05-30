@@ -111,7 +111,7 @@ const MarkdownRenderer = memo(({ content }) => {
   }
 
   const tableHeadStyle = {
-    backgroundColor: '#f5f5f5'
+    backgroundColor: isDarkMode ? '#1f1f1f' : '#f5f5f5'
   }
 
   const tableCellStyle = {
@@ -122,7 +122,8 @@ const MarkdownRenderer = memo(({ content }) => {
 
   const tableHeaderStyle = {
     ...tableCellStyle,
-    fontWeight: 600
+    fontWeight: 600,
+    color: isDarkMode ? '#ffffff' : token['colorText']
   }
   // 语言显示名称映射表
   const LANGUAGE_DISPLAY_MAP = {
