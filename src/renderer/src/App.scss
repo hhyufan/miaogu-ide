@@ -1,10 +1,15 @@
 .app-layout {
+  background-image: url(https://t.alcy.cc/moez) !important;
+  //background-color: var(--background-color);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
     min-height: 100vh;
     user-select: none;
 }
 
 .app-content {
-    background-color: var(--background-color);
+    background-color: transparent !important;
     transition: all var(--transition-duration);
     position: relative;
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
@@ -30,13 +35,21 @@
   background-position: center;
   background-attachment: fixed;
 }
-.monaco-editor .overflow-guard {
-  background-image: url(https://t.alcy.cc/moez) !important;
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+
+.monaco-editor, .monaco-diff-editor textarea:focus {
+  outline-color: var(--outline-color) !important;
+}
+
+.ant-card-bordered, .ant-tabs-nav-wrap {
+  box-shadow: none !important;
+  border: none transparent !important;
+}
+
+.monaco-editor {
+  background-color: transparent !important;
 }
 .main-layout {
+    background-color: transparent !important;
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
@@ -45,6 +58,7 @@
 .console-layout {
     overflow: hidden;
     flex-shrink: 0;
+    background-color: var(--editor-background) !important;
     height: 276px;
     margin-bottom: 24px;
     border-top: 1px solid #f0f0f0;
@@ -59,8 +73,7 @@
 }
 
 .content-container {
-    background-color: var(--card-bg-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: transparent !important;
     transition: all var(--transition-duration);
 }
 
@@ -121,7 +134,8 @@
     overflow: auto;
     /* 修改为auto以确保内容不会溢出 */
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
-
+    background-color: transparent !important;
+    border: none !important;
     /* 调整高度，考虑header高度和边距 */
     &.with-console {
         height: calc(100vh - var(--header-height) - var(--tab-bar-height) + 24px - 300px);

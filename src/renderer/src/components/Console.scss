@@ -4,17 +4,16 @@
   height: 276px;
   margin-bottom: 24px;
   transition: all 0.3s ease;
-
+  background-color: transparent !important;
   &.collapsed {
     max-height: 40px;
   }
 
-
 .console-card {
   margin: 0;
-  border-radius: 8px 8px 0 0;
+  border-radius: 0 0 0 0;
   border-bottom: none;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  background-color: transparent !important;
 
   .ant-card-head {
     min-height: 40px;
@@ -68,6 +67,7 @@
 }
 
 .console-outputs {
+  background-color: transparent !important;
   flex: 1;
   overflow-y: scroll;
   padding: 8px 16px;
@@ -80,12 +80,12 @@
   }
 
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background-color: transparent !important;
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
+    background-color: transparent !important;
     border-radius: 3px;
 
     &:hover {
@@ -95,6 +95,7 @@
 }
 
 .console-output {
+  background-color: transparent !important;
   display: flex;
   align-items: flex-start;
   margin-bottom: 4px;
@@ -170,18 +171,18 @@
 [data-theme='dark'] {
   .console-container {
     .console-card {
-      background-color: #1f1f1f;
+      background-color: transparent !important;
       border-color: #434343;
       box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 
       .ant-card-head {
-        background-color: #1f1f1f;
+        background-color: transparent !important;
         border-bottom-color: #434343;
         color: #fff;
       }
 
       .ant-card-body {
-        background-color: #1f1f1f;
+        background-color: transparent !important;
       }
     }
 
@@ -198,11 +199,11 @@
     }
 
     .console-outputs {
-      background-color: #1f1f1f;
+      background-color: transparent !important;
       color: #fff;
 
       &::-webkit-scrollbar-track {
-        background: #2f2f2f;
+        background-color: transparent !important;
       }
 
       &::-webkit-scrollbar-thumb {
