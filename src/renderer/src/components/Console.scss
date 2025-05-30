@@ -5,166 +5,380 @@
   margin-bottom: 24px;
   transition: all 0.3s ease;
   background-color: transparent !important;
+
   &.collapsed {
     max-height: 40px;
   }
 
-.console-card {
-  margin: 0;
-  border-radius: 0 0 0 0;
-  border-bottom: none;
-  background-color: transparent !important;
+  .console-card {
+    margin: 0;
+    border-radius: 0 0 0 0;
+    border-bottom: none;
+    background-color: transparent !important;
 
-  .ant-card-head {
-    min-height: 40px;
-    padding: 0 16px;
-    border-bottom: 1px solid #f0f0f0;
+    .ant-card-head {
+      min-height: 40px;
+      padding: 0 16px;
+      border-bottom: 1px solid #f0f0f0;
 
-    .ant-card-head-title {
-      padding: 8px 0;
+      .ant-card-head-title {
+        padding: 8px 0;
+      }
+    }
+
+    .ant-card-body {
+      padding: 0;
+      max-height: 250px;
+      overflow: hidden;
     }
   }
 
-  .ant-card-body {
-    padding: 0;
-    max-height: 250px;
-    overflow: hidden;
-  }
-}
-
-.console-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-weight: 500;
-  font-size: 14px;
-
-  .console-actions {
+  .console-header {
     display: flex;
-    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-weight: 500;
+    font-size: 14px;
 
-    .ant-btn {
+    .console-actions {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      padding: 0;
+      gap: 4px;
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.04);
+      .ant-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.04);
+        }
       }
     }
   }
-}
 
-.console-content {
-  height: 276px;
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-.console-outputs {
-  background-color: transparent !important;
-  flex: 1;
-  overflow-y: scroll;
-  padding: 8px 16px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.4;
-
-  &::-webkit-scrollbar {
-    width: 6px;
+  .console-content {
+    height: 276px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
   }
 
-  &::-webkit-scrollbar-track {
+  .console-outputs {
     background-color: transparent !important;
-    border-radius: 3px;
-  }
+    flex: 1;
+    overflow-y: scroll;
+    padding: 8px 16px;
+    user-select: text;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    line-height: 1.4;
 
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent !important;
-    border-radius: 3px;
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
 
-    &:hover {
-      background: #a8a8a8;
+    &::-webkit-scrollbar-track {
+      background-color: transparent !important;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent !important;
+      border-radius: 3px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
     }
   }
-}
 
-.console-output {
-  background-color: transparent !important;
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 4px;
-  padding: 2px 0;
-  word-break: break-all;
-  white-space: pre-wrap;
+  .console-output {
+    background-color: transparent !important;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding: 2px 0;
+    word-break: break-all;
+    white-space: pre-wrap;
 
-  .console-prefix {
-    margin-right: 8px;
-    flex-shrink: 0;
-    font-size: 10px;
+    .console-prefix {
+      margin-right: 8px;
+      flex-shrink: 0;
+      font-size: 10px;
+    }
+
+    .console-content-text {
+      flex: 1;
+    }
+
+    &.console-output-error {
+      color: #ff4d4f;
+      background-color: rgba(255, 77, 79, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #ff4d4f;
+    }
+
+    &.console-output-warn {
+      color: #faad14;
+      background-color: rgba(250, 173, 20, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #faad14;
+    }
+
+    &.console-output-info {
+      color: #1890ff;
+      background-color: rgba(24, 144, 255, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #1890ff;
+    }
+
+    &.console-output-success {
+      color: #52c41a;
+      background-color: rgba(82, 196, 26, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #52c41a;
+    }
+
+    &.console-output-result {
+      color: #722ed1;
+      background-color: rgba(114, 46, 209, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #722ed1;
+      font-weight: 500;
+    }
+
+    &.console-output-markdown {
+      color: #262626;
+      background-color: rgba(0, 0, 0, 0.02);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-left: 3px solid #1890ff;
+
+      .console-content-markdown {
+        flex: 1;
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin: 8px 0 4px 0;
+          font-weight: 600;
+        }
+
+        h1 {
+          font-size: 16px;
+        }
+
+        h2 {
+          font-size: 15px;
+        }
+
+        h3 {
+          font-size: 14px;
+        }
+
+        h4 {
+          font-size: 13px;
+        }
+
+        h5 {
+          font-size: 12px;
+        }
+
+        h6 {
+          font-size: 11px;
+        }
+
+        p {
+          margin: 4px 0;
+          line-height: 1.5;
+        }
+
+        code {
+          background-color: rgba(0, 0, 0, 0.06);
+          padding: 2px 4px;
+          border-radius: 3px;
+          font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+          font-size: 11px;
+        }
+
+        pre {
+          background-color: rgba(0, 0, 0, 0.06);
+          padding: 8px;
+          border-radius: 4px;
+          overflow-x: auto;
+          margin: 4px 0;
+
+          code {
+            background-color: transparent;
+            padding: 0;
+          }
+        }
+
+        blockquote {
+          border-left: 3px solid #d9d9d9;
+          padding-left: 8px;
+          margin: 4px 0;
+          color: #666;
+        }
+
+        ul,
+        ol {
+          margin: 4px 0;
+          padding-left: 16px;
+        }
+
+        li {
+          margin: 2px 0;
+        }
+
+        table {
+          border-collapse: collapse;
+          margin: 4px 0;
+          font-size: 11px;
+        }
+
+        th,
+        td {
+          border: 1px solid #d9d9d9;
+          padding: 4px 6px;
+          text-align: left;
+        }
+
+        th {
+          background-color: rgba(0, 0, 0, 0.04);
+          font-weight: 600;
+        }
+
+        a {
+          color: #1890ff;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        strong {
+          font-weight: 600;
+        }
+
+        em {
+          font-style: italic;
+        }
+      }
+    }
+
+    &.console-output-log {
+      color: #666;
+
+      .console-prefix {
+        color: #1890ff;
+      }
+    }
+
+    &.console-output-markdown {
+      .console-prefix {
+        color: #722ed1;
+      }
+
+      .console-content-markdown {
+        flex: 1;
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin: 0.5em 0 0.3em 0;
+          color: inherit;
+        }
+
+        p {
+          margin: 0.3em 0;
+          line-height: 1.4;
+        }
+
+        code {
+          background: rgba(0, 0, 0, 0.1);
+          padding: 0.1em 0.3em;
+          border-radius: 3px;
+          font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+
+        pre {
+          background: rgba(0, 0, 0, 0.1);
+          padding: 0.5em;
+          border-radius: 4px;
+          overflow-x: auto;
+          margin: 0.3em 0;
+
+          code {
+            background: none;
+            padding: 0;
+          }
+        }
+
+        blockquote {
+          border-left: 3px solid #722ed1;
+          padding-left: 0.8em;
+          margin: 0.3em 0;
+          color: #666;
+        }
+
+        ul,
+        ol {
+          margin: 0.3em 0;
+          padding-left: 1.5em;
+        }
+
+        table {
+          border-collapse: collapse;
+          margin: 0.3em 0;
+
+          th,
+          td {
+            border: 1px solid #ddd;
+            padding: 0.3em 0.5em;
+            text-align: left;
+          }
+
+          th {
+            background: rgba(0, 0, 0, 0.05);
+            font-weight: bold;
+          }
+        }
+
+        a {
+          color: #1890ff;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
   }
 
-  .console-content-text {
-    flex: 1;
+  .console-empty {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
   }
-
-  &.console-output-error {
-    color: #ff4d4f;
-    background-color: rgba(255, 77, 79, 0.05);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border-left: 3px solid #ff4d4f;
-  }
-
-  &.console-output-warn {
-    color: #faad14;
-    background-color: rgba(250, 173, 20, 0.05);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border-left: 3px solid #faad14;
-  }
-
-  &.console-output-info {
-    color: #1890ff;
-    background-color: rgba(24, 144, 255, 0.05);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border-left: 3px solid #1890ff;
-  }
-
-  &.console-output-success {
-    color: #52c41a;
-    background-color: rgba(82, 196, 26, 0.05);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border-left: 3px solid #52c41a;
-  }
-
-  &.console-output-result {
-    color: #722ed1;
-    background-color: rgba(114, 46, 209, 0.05);
-    padding: 4px 8px;
-    border-radius: 4px;
-    border-left: 3px solid #722ed1;
-    font-weight: 500;
-  }
-
-  &.console-output-log {
-    color: #666;
-  }
-}
-
-.console-empty {
-  color: #999;
-  font-style: italic;
-  text-align: center;
-  padding: 20px;
-}
 }
 
 /* 暗色主题适配 */
@@ -236,8 +450,94 @@
         background-color: rgba(114, 46, 209, 0.1);
       }
 
+      &.console-output-markdown {
+        color: #e6e6e6;
+        background-color: rgba(255, 255, 255, 0.03);
+        border-left-color: #1890ff;
+
+        .console-content-markdown {
+
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
+            color: #fff;
+          }
+
+          p {
+            color: #e6e6e6;
+          }
+
+          code {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #e6e6e6;
+          }
+
+          pre {
+            background-color: rgba(255, 255, 255, 0.08);
+
+            code {
+              background-color: transparent;
+            }
+          }
+
+          blockquote {
+            border-left-color: #666;
+            color: #999;
+          }
+
+          th,
+          td {
+            border-color: #666;
+          }
+
+          th {
+            background-color: rgba(255, 255, 255, 0.06);
+          }
+
+          a {
+            color: #40a9ff;
+          }
+        }
+      }
+
       &.console-output-log {
         color: #ccc;
+      }
+
+      &.console-output-markdown {
+        .console-prefix {
+          color: #b37feb;
+        }
+
+        .console-content-markdown {
+          code {
+            background: rgba(255, 255, 255, 0.1);
+          }
+
+          pre {
+            background: rgba(255, 255, 255, 0.1);
+          }
+
+          blockquote {
+            border-left-color: #b37feb;
+            color: #999;
+          }
+
+          table {
+
+            th,
+            td {
+              border-color: #555;
+            }
+
+            th {
+              background: rgba(255, 255, 255, 0.05);
+            }
+          }
+        }
       }
     }
 

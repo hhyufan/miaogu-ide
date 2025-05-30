@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Layout, ConfigProvider, theme, Button } from 'antd'
 import { SunOutlined, MoonFilled } from '@ant-design/icons'
 import './App.scss'
@@ -13,8 +13,20 @@ import EditorStatusBar from './components/EditorStatusBar'
 
 // 内部组件，用于访问文件上下文
 // eslint-disable-next-line react/prop-types
-const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible }) => {
+const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onCloseConsole }) => {
   const { currentFile } = useFile()
+  const [previousFilePath, setPreviousFilePath] = useState(null)
+
+  // 监听文件切换，自动关闭控制台
+  useEffect(() => {
+    if (currentFile && currentFile.path !== previousFilePath) {
+      // 如果文件路径发生变化且控制台是打开的，则关闭控制台
+      if (consoleVisible && previousFilePath !== null) {
+        onCloseConsole()
+      }
+      setPreviousFilePath(currentFile.path)
+    }
+  }, [currentFile, previousFilePath, consoleVisible, onCloseConsole])
   // 检查文件是否为JavaScript文件
   const isJavaScriptFile = (fileName) => {
     if (!fileName) return false
@@ -178,6 +190,7 @@ const App = () => {
                 toggleTheme={toggleTheme}
                 onRunCode={handleRunCode}
                 consoleVisible={consoleVisible}
+                onCloseConsole={handleCloseConsole}
               />
             </Content>
             {consoleVisible && (

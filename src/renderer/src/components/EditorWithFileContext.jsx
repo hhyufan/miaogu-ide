@@ -88,6 +88,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
       theme: isDarkMode ? 'one-dark-pro' : 'one-light',
       minimap: { enabled: false },
       fontSize: fontSize,
+      fontFamily: '"JetBrains Mono", monospace',
       scrollBeyondLastLine: false,
       automaticLayout: true,
       overviewRulerBorder: false,
@@ -214,7 +215,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%' }} />
+      <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%'}} />
     </div>
   )
 }

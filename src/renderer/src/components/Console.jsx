@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { Button, Card } from 'antd'
 import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
 import './Console.scss'
+import MarkdownRenderer from './MarkdownRenderer'
 
 // eslint-disable-next-line react/prop-types
 const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
@@ -30,6 +31,8 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
         return 'console-output-success'
       case 'result':
         return 'console-output-result'
+      case 'markdown':
+        return 'console-output-markdown'
       default:
         return 'console-output-log'
     }
@@ -47,6 +50,8 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
         return '✅'
       case 'result':
         return '📤'
+      case 'markdown':
+        return '📄'
       default:
         return '📝'
     }
@@ -88,7 +93,13 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
                 outputs.map((output, index) => (
                   <div key={index} className={`console-output ${getOutputClass(output.type)}`}>
                     <span className="console-prefix">{getOutputPrefix(output.type)}</span>
-                    <span className="console-content-text">{output.content}</span>
+                    {output.type === 'markdown' ? (
+                      <div className="console-content-markdown">
+                        <MarkdownRenderer content={output.content} />
+                      </div>
+                    ) : (
+                      <span className="console-content-text">{output.content}</span>
+                    )}
                   </div>
                 ))
               )}
