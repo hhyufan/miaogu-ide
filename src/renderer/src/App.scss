@@ -13,13 +13,14 @@
         height: calc(100vh - var(--header-height) - var(--tab-bar-height) - 300px);
     }
 }
-.minimap .slider-mouseover {
-  display: none;
+.minimap .slider-mouseover, .sticky-widget {
+  display: none !important;
 }
 /* 同时覆盖编辑器和左侧边栏 */
 .current-line {
   background-color: transparent !important;
 }
+
 .monaco-editor .minimap-decorations-layer,
 .monaco-editor .minimap,
 .monaco-editor-background,
