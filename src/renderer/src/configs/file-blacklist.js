@@ -3,43 +3,56 @@
  * 用于过滤不能在Monaco编辑器中查看和编辑的文件
  */
 
-// 黑名单文件扩展名
 const blacklistExtensions = [
-  // 二进制文件
+  // 可执行文件和二进制文件
   'exe',
   'dll',
+  'vch',
   'so',
-  'lnk', // Windows快捷方式
   'dylib',
   'bin',
-  'obj',
-  'blf',
-  // 图像文件
-  'jpg',
-  'jpeg',
-  'png',
-  'gif',
-  'bmp',
-  'ico',
-  'webp',
-  'tiff',
+  'com',
+  'msi',
+  'app',
+  'deb',
+  'rpm',
+  'pkg',
+  'sys',
+  'drv',
+  'ko',
+  'ocx',
+  'scr',
+  'cpl',
+  'jar',
+  'class',
+  'wasm',
+  'swf',
+  'fla',
+  'dat',
+  'default',
+  'crc',
+  'pth', // 你原始列表特有的补充
+
+  // 系统文件
+  'lnk',
+  'reg',
   'regtrans-ms',
-  // 音频文件
-  'mp3',
-  'wav',
-  'ogg',
-  'flac',
-  'aac',
-  'm4a',
-  // 视频文件
-  'mp4',
-  'avi',
-  'mov',
-  'wmv',
-  'mkv',
-  'flv',
-  'webm',
-  // 压缩文件
+  'blf',
+  'mui',
+  'cat',
+  'diagcab',
+  'diagpkg',
+  'diagcfg',
+  'hlp',
+  'chm',
+  'clr',
+  'theme',
+  'deskthemepack',
+  'ics',
+  'idx',
+  'full',
+
+  // 压缩和归档文件
   'zip',
   'rar',
   '7z',
@@ -47,37 +60,332 @@ const blacklistExtensions = [
   'gz',
   'bz2',
   'xz',
-  // 数据库文件
-  'db',
-  'sqlite',
-  'sqlite3',
-  'mdb',
-  // 其他二进制文件
+  'lz',
+  'lzma',
+  'z',
+  'cab',
+  'arj',
+  'iso',
+  'dmg',
+  'img',
+  'vhd',
+  'vhdx',
+  'wim',
+  'swm',
+  'esd',
+  'zipx',
+
+  // 文档和办公文件（二进制格式）
   'pdf',
   'doc',
   'docx',
   'xls',
   'xlsx',
   'ppt',
-  'pptx'
-]
+  'pptx',
+  'odt',
+  'ods',
+  'odp',
+  'mdb',
+  'accdb',
+  'pub',
+  'vsd',
+  'vsdx',
+  'indd',
+  'qbb',
+  'qbm',
+  'qbw',
 
-// 黑名单目录名称（不区分大小写）
-const blacklistDirectories = [
-  // 常见隐藏目录
-  '.git',
-  '.svn',
-  '.hg',
-  '.vscode',
-  'node_modules',
-  '__pycache__',
-  // 其他不需要编辑的目录
-  'dist',
-  'build',
-  'out',
-  'target',
+  // 多媒体文件
+  // 图像
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'bmp',
+  'ico',
+  'icns',
+  'webp',
+  'tiff',
+  'tif',
+  'psd',
+  'ai',
+  'eps',
+  'raw',
+  'cr2',
+  'nef',
+  'orf',
+  'sr2',
+  'xcf',
+  'kra',
+
+  // 音频
+  'mp3',
+  'wav',
+  'ogg',
+  'flac',
+  'aac',
+  'm4a',
+  'wma',
+  'aiff',
+  'au',
+  'mid',
+  'midi',
+  'opus',
+  'ra',
+  'amr',
+  'ape',
+  'cda',
+
+  // 视频
+  'mp4',
+  'avi',
+  'mov',
+  'wmv',
+  'mkv',
+  'flv',
+  'webm',
+  'mpeg',
+  'mpg',
+  '3gp',
+  'm4v',
+  'vob',
+  'ogv',
+  'rm',
+  'rmvb',
+  'asf',
+  'swf',
+  'm2ts',
+  'mxf',
+
+  // 数据库文件
+  'db',
+  'pdb',
+  'mdf',
+  'ldf',
+  'ndf',
+  'sql',
+  'sqlite',
+  'sqlite3',
+  'frm',
+  'myd',
+  'myi',
+  'ibd',
+  'dbf',
+  'db3',
+  'kdbx',
+  'nsf',
+  'pst',
+  'ost',
+  'accde',
+  'mde',
+
+  // 开发相关二进制文件
+  'pch',
+  'ilk',
+  'exp',
+  'lib',
+  'a',
+  'suo',
+  'user',
+  'ncb',
+  'aps',
+  'res',
+  'resources',
+  'manifest',
+  'winmd',
+  'pyc',
+  'pyo',
+  'elc',
+  'hi',
+  'o',
+  'obj',
+  'ko',
+  'elf',
+
+  // 虚拟化和容器文件
+  'vdi',
+  'vmdk',
+  'vhd',
+  'vhdx',
+  'qcow2',
+  'ova',
+  'ovf',
+  'vbox',
+  'vmcx',
+  'vmrs',
+  'docker',
+  'vmem',
+  'nvram',
+
+  // 游戏文件
+  'pak',
+  'assets',
+  'ress',
+  'resource',
+  'bik',
+  'unity3d',
+  'asset',
+  'bundle',
+  'upk',
+  'umap',
+  'blend',
+  'fbx',
+  'dae',
+  '3ds',
+  'obj',
+  'x',
+  'mdl',
+  'bsp',
+  'wad',
+  'pk3',
+  'pk4',
+
+  // 加密和安全文件
+  'pfx',
+  'p12',
+  'cer',
+  'crt',
+  'der',
+  'p7b',
+  'p7c',
+  'p7r',
+  'spc',
+  'pem',
+  'gpg',
+  'pgp',
+  'asc',
+  'sig',
+  'key',
+  'keystore',
+  'jks',
+  'kdb',
+  'wallet',
+
+  // 其他特殊格式
+  'ttf',
+  'otf',
+  'woff',
+  'woff2',
+  'eot',
+  'fon',
+  'chm',
+  'hlp',
+  'lit',
+  'mobi',
+  'epub',
+  'azw',
+  'ibooks',
+  'djvu',
+  'xps',
+  'oxps',
+  'vsix',
+  'crx',
+  'xpi',
+  'torrent',
+  'recycle',
+  'part',
+  'crdownload',
+  'tmp',
+  'temp',
+  'download',
+
+  // 固件和硬件相关
   'bin',
-  'obj'
+  'hex',
+  'rom',
+  'bios',
+  'efi',
+  'uefi',
+  'acm',
+  'ax',
+  'ime',
+  'ime',
+  'prm',
+  'r0',
+  'r1',
+  'r2',
+  'rs',
+  'rx',
+  'tsp',
+  'vb',
+  'vxd',
+  'wpx',
+
+  // 邮件和数据存储
+  'pst',
+  'ost',
+  'eml',
+  'msg',
+  'mbx',
+  'mbox',
+  'dbx',
+  'msf',
+  'nsf',
+  'olk',
+  'edb',
+  'ost',
+  'wab',
+
+  // 备份文件
+  'bak',
+  'bkp',
+  'bkf',
+  'old',
+  'backup',
+  'gho',
+  'tib',
+  'v2i',
+  'sparseimage',
+  'dmgpart',
+  'ipsw',
+  'itl',
+  'itdb',
+  'mdbackup',
+
+  // 虚拟现实和3D
+  'glb',
+  'gltf',
+  'fbx',
+  'dae',
+  '3mf',
+  'stl',
+  'obj',
+  'blend',
+  'ma',
+  'mb',
+  'lwo',
+  'lws',
+  'lxo',
+  'abc',
+  'ply',
+  'pz3',
+  'wrl',
+  'x3d',
+  'usd',
+  'usda',
+
+  // 科学数据格式
+  'fits',
+  'hdf5',
+  'h5',
+  'nc',
+  'cdf',
+  'sav',
+  'mat',
+  'ibw',
+  'pxp',
+  'spc',
+  'spe',
+  'wdf',
+  'imzml',
+  'raw',
+  'mzml',
+  'mzxml',
+
+  // 易语言相关
+  'e',
+  'ec'
 ]
 
 // 黑名单文件名称（不区分大小写）
@@ -119,19 +427,7 @@ export const isFileBlacklisted = (filePath) => {
   }
   // 检查扩展名是否在黑名单中
   const extension = fileName.split('.').pop().toLowerCase()
-  if (blacklistExtensions.includes(extension)) {
-    return true
-  }
-
-  // 检查文件是否在黑名单目录中
-  const pathParts = filePath.split(/[\\/]/)
-  for (const dir of blacklistDirectories) {
-    if (pathParts.some((part) => part.toLowerCase() === dir.toLowerCase())) {
-      return true
-    }
-  }
-
-  return false
+  return blacklistExtensions.includes(extension)
 }
 
 /**
@@ -149,9 +445,6 @@ export const filterDirectoryContents = (contents) => {
       if (dirName.startsWith('.')) {
         return false
       }
-      // 2. 过滤其他黑名单目录
-      const lowerDirName = dirName.toLowerCase()
-      return !blacklistDirectories.some((dir) => dir.toLowerCase() === lowerDirName)
     }
     // 检查文件是否在黑名单中
     return !isFileBlacklisted(item.path)
