@@ -64,7 +64,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     }
 
     // 初始加载字体大小
-    loadFontSize()
+    loadFontSize().catch(console.error)
 
     // 监听字体大小变化事件
     const handleFontSizeChange = (event, newFontSize) => {
@@ -215,7 +215,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%'}} />
+      <div ref={containerRef} style={{ height: 'calc(100% - 24px)', width: '100%' }} />
     </div>
   )
 }

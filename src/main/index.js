@@ -702,6 +702,20 @@ app.whenReady().then(() => {
     }
   })
 
+  // 在外部浏览器中打开链接
+  ipcMain.handle('open-external', async (event, url) => {
+    try {
+      if (!url || typeof url !== 'string') {
+        return { success: false, message: '未提供有效的URL' }
+      }
+      await shell.openExternal(url)
+      return { success: true }
+    } catch (error) {
+      console.error('打开外部链接失败:', error)
+      return { success: false, message: `打开外部链接失败: ${error.message}` }
+    }
+  })
+
   // 设置文件行尾序列
   ipcMain.handle('set-file-line-ending', async (event, { filePath, lineEnding }) => {
     try {

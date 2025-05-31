@@ -338,7 +338,16 @@ const MarkdownRenderer = memo(({ content }) => {
           ol: ({ children }) => <ol style={listStyle}>{children}</ol>,
           li: ({ children }) => <li style={listItemStyle}>{children}</li>,
           a: ({ children, href }) => (
-            <a href={href} style={linkStyle}>
+            <a
+              href={href}
+              style={linkStyle}
+              onClick={(e) => {
+                e.preventDefault()
+                if (href && window.ipcApi?.openExternal) {
+                  window.ipcApi.openExternal(href)
+                }
+              }}
+            >
               {children}
             </a>
           ),

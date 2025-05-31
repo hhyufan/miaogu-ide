@@ -174,6 +174,10 @@ const ipcApi = {
   // 设置文件行尾序列
   setFileLineEnding: async (filePath, encoding, lineEnding) => {
     return ipcRenderer.invoke('set-file-line-ending', { filePath, encoding, lineEnding })
+  },
+
+  openExternal: (url) => {
+    return ipcRenderer.invoke('open-external', url)
   }
 }
 
