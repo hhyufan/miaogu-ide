@@ -52,6 +52,21 @@ const ipcApi = {
   removeFontSizeChange: (callback) => {
     ipcRenderer.removeListener('font-size-changed', callback)
   },
+  
+  // 字体设置
+  setFontFamily: async (fontFamily) => {
+    return ipcRenderer.invoke('set-font-family', fontFamily)
+  },
+
+  // 监听字体变化
+  onFontFamilyChange: (callback) => {
+    ipcRenderer.on('font-family-changed', callback)
+  },
+
+  // 移除字体变化监听
+  removeFontFamilyChange: (callback) => {
+    ipcRenderer.removeListener('font-family-changed', callback)
+  },
 
   // 监听运行代码事件 (Ctrl+R)
   onRunCode: (callback) => {

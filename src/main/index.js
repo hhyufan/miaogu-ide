@@ -930,6 +930,14 @@ ipcMain.handle('set-bg-transparency', (_, theme, transparency) => {
   return true
 })
 
+ipcMain.handle('set-font-family', (_, fontFamily) => {
+  stateStore.setFontFamily(fontFamily)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('font-family-changed', fontFamily)
+  })
+  return true
+})
+
 
 ipcMain.handle('select-bg-image', handleStoreBgImage)
 

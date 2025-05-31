@@ -31,6 +31,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
   const prevCodeRef = useRef(currentCode)
   const prevEncodingRef = useRef(currentFile.encoding)
   const [fontSize, setFontSize] = useState(14)
+  const [fontFamily, setFontFamily] = useState("JetBrains Mono")
 
   useEffect(() => {
     let mounted = true
@@ -59,6 +60,9 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         if (savedSettings.fontSize) {
           setFontSize(savedSettings.fontSize)
         }
+        if (savedSettings.fontFamily) {
+          setFontFamily(savedSettings.fontFamily)
+        }
       } catch (error) {
         console.error('加载字体大小设置失败:', error)
       }
@@ -71,13 +75,20 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     const handleFontSizeChange = (event, newFontSize) => {
       setFontSize(newFontSize)
     }
+    //监听字体变化
+    const handleFontFamilyChange = (event, newFontFamily) => {
+      setFontFamily(newFontFamily)
+    } 
+    
 
     // 添加事件监听器
     window.ipcApi.onFontSizeChange(handleFontSizeChange)
+    window.ipcApi.onFontFamilyChange(handleFontFamilyChange)
 
     // 清理事件监听器
     return () => {
       window.ipcApi.removeFontSizeChange(handleFontSizeChange)
+      window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
     }
   }, [])
 
@@ -89,7 +100,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
       theme: isDarkMode ? 'one-dark-pro' : 'one-light',
       minimap: { enabled: false },
       fontSize: fontSize,
-      fontFamily: '"JetBrains Mono", monospace',
+      fontFamily: `"${fontFamily}", monospace`,
       scrollBeyondLastLine: false,
       automaticLayout: true,
       overviewRulerBorder: false,
@@ -177,7 +188,8 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     if (!editorRef.current) return
 
     editorRef.current.updateOptions({ fontSize: fontSize })
-  }, [fontSize])
+    editorRef.current.updateOptions({ fontFamily: `"${fontFamily}", monospace` })
+  }, [fontSize, fontFamily])
 
   // 检查当前文件是否在黑名单中
   const isCurrentFileBlacklisted = useMemo(() => {

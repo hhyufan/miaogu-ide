@@ -211,6 +211,7 @@ const App = () => {
           '--editor-background-image',
           `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
         )
+        
         const transparencySetting = await window.ipcApi.getBgTransparency();
         document.documentElement.style.setProperty(
           '--editor-background', 

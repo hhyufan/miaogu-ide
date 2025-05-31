@@ -29,7 +29,7 @@ const SettingsMenu = () => {
   const contentRef = useRef(null);
   const [localSettings, setLocalSettings] = useState({})
   const [fontSize, setFontSize] = useState(14)
-  const [fontFamily, setFontFamily] = useState('Arial')
+  const [fontFamily, setFontFamily] = useState('')
   const [currentSection, setCurrentSection] = useState('textEditor');
   const [settingBgImage, setBgImage] = useState('');
 
@@ -93,6 +93,7 @@ const SettingsMenu = () => {
     localSettings.fontFamily = fontFamily
     try {  
       await window.ipcApi.setFontSize(fontSize)
+      await window.ipcApi.setFontFamily(fontFamily)
       await window.ipcApi.setSettings(localSettings)
       message.success('设置保存成功')
     } catch (error) {

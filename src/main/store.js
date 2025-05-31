@@ -15,7 +15,7 @@ const store = new Store({
     settings: {    // 字体大小
         fontSize:14,
         // 字体
-        fontFamily: 'Verdana',
+        fontFamily: 'JetBrains Mono',
         // 背景图片
         bgImage: ''
       },
@@ -61,6 +61,17 @@ function getFontSize() {
 function setFontSize(fontSize) {
   const settings = store.get('settings')
   settings.fontSize = fontSize
+  store.set('settings', settings)
+}
+
+/**
+ * 设置字体
+ * @param {string} fontFamily 字体名称
+ */
+
+function setFontFamily(fontFamily) {
+  const settings = store.get('settings')
+  settings.fontFamily = fontFamily
   store.set('settings', settings)
 }
 
@@ -195,4 +206,5 @@ export default {
   setSavedImage,
   getTransparency,
   setTransparency,
+  setFontFamily
 }

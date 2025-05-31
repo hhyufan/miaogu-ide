@@ -28,10 +28,12 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
 
     const openBgImage = async () => {
       window.ipcApi.setBgImage(randomBackground? 'https://t.alcy.cc/moez' : savedBgImage)
+      setBgImage(savedBgImage)
     }
 
     const handleBgTransparency = (theme, value) => {
       window.ipcApi.setBgTransparency(theme, value)
+      setBgTransparency({...bgTransparency, [theme]: value})
     }
 
     const initSavedImage = async () => {
@@ -60,25 +62,24 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div id="background">
         <h2>背景设置</h2>
-        <Checkbox style={{color: 'inherit'}}
-          defaultChecked={bgImage !== ''} 
-          onChange={(e) => {
-            if (e.target.checked) {
-              openBgImage()
-              setIsVisible(true)
-            }
-            else {
-              setIsVisible(false)
-              closeBgImage()
-            }
-          }}
-        >
-          <span>开启背景</span>
-        </Checkbox>
-
-        {isVisible && (
-        <div id="bgImage" data-section style={{ marginBottom: 48,color: 'inherit' }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center',marginTop: 32,marginBottom: 32 }}>
           <Checkbox style={{color: 'inherit'}}
+            defaultChecked={bgImage !== ''} 
+            onChange={(e) => {
+              if (e.target.checked) {
+                openBgImage()
+                setIsVisible(true)
+              }
+              else {
+                setIsVisible(false)
+                closeBgImage()
+              }
+            }}
+          >
+            <span>开启背景</span>
+          </Checkbox>
+          {isVisible && (
+            <Checkbox style={{color: 'inherit'}}
             checked = {randomBackground}
             onChange={(e) => {
               if (e.target.checked) {
@@ -95,6 +96,10 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
           }>
             <span>随机背景</span>
           </Checkbox>
+          )}
+        </div>
+        {isVisible && (
+        <div id="bgImage" data-section style={{ marginBottom: 48,color: 'inherit' }}>
           <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start',marginTop: 32,marginBottom: 32 }}>
             <Input value={bgImage ? bgImage : savedBgImage} readOnly />
             <Button icon={<UploadOutlined />} onClick={() => handleSelectBgImage()}>浏览</Button>

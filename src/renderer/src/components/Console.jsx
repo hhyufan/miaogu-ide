@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Button, Card } from 'antd'
 import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
 import './Console.scss'
@@ -7,6 +7,25 @@ import MarkdownRenderer from './MarkdownRenderer'
 // eslint-disable-next-line react/prop-types
 const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
   const outputRef = useRef(null)
+  const [fontFamily, setFontFamily] = useState("JetBrains Mono")
+
+  useEffect(() => {
+    const initFamily = async () => {
+      const settings = await window.ipcApi.getSettings()
+      setFontFamily(settings.fontFamily || 'JetBrains Mono')
+    }
+    initFamily()
+  },[])
+
+  useEffect(() => {
+    const handleFontFamilyChange = (event, newFontFamily) => {
+      setFontFamily(newFontFamily)
+    }
+    window.ipcApi.onFontFamilyChange(handleFontFamilyChange)
+    return () => {
+      window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
+    }
+  }, [])
 
   // 自动滚动到底部
   useEffect(() => {
@@ -18,7 +37,7 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
   if (!visible) {
     return null
   }
-
+  
   const getOutputClass = (type) => {
     switch (type) {
       case 'error':
@@ -57,14 +76,20 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
     }
   }
 
+  const styles = `
+    .console-outputs {
+    font-family:  '${fontFamily}', monospace;
+  }`;
+
   return (
-    <div className={`console-container`}>
+    <div className={`console-container`} >
+      <style>{styles}</style>
       <Card
         size="small"
         title={
           <div className="console-header">
             <span>控制台</span>
-            <div className="console-actions">
+            <div className="console-actions" >
               <Button
                 type="text"
                 size="small"
@@ -86,7 +111,7 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
       >
         {
           <div className="console-content">
-            <div className="console-outputs" ref={outputRef}>
+            <div className="console-outputs" ref={outputRef} >
               {outputs.length === 0 ? (
                 <div className="console-empty">控制台已准备就绪</div>
               ) : (

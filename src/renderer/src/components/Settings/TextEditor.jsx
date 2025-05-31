@@ -20,9 +20,10 @@ const TextEditor = ({ fontSize, setFontSize, fontFamily, setFontFamily }) => {
           <Select value={fontFamily} style={{ width: 150 }} onChange={(value) => {
             setFontFamily(value)
           }}>
-            <Select.Option value="Arial">Arial</Select.Option>
-            <Select.Option value="Verdana">Verdana</Select.Option>
+            <Select.Option value="JetBrains Mono">JetBrains Mono</Select.Option>
+            <Select.Option value="Fira Code">Fira Code</Select.Option>
             <Select.Option value="Courier New">Courier New</Select.Option>
+            <Select.Option value="Consolas">Consolas</Select.Option>
           </Select>
         </div>
       </div>
