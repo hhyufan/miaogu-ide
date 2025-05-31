@@ -1,0 +1,56 @@
+.settings-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg-color) !important;
+    justify-content: space-between;
+    padding: 0 16px 0 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: var(--header-height);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all var(--transition-duration);
+    -webkit-app-region: drag;
+    /* 允许拖拽窗口 */
+}
+
+.settingsHead-title{
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-color) !important;
+    font-size: 18px;
+    align-items: center;
+}
+
+.window-controls {
+    display: flex;
+    align-items: center;
+    -webkit-app-region: no-drag;
+}
+
+.window-control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    transition: all 0.2s;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.window-control-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.window-control-btn.close-btn:hover {
+    background-color: #e81123;
+    color: white;
+}
+
+
+

@@ -27,5 +27,14 @@ export default defineConfig({
     plugins: [
       react()
     ]
+  },
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        settings: resolve(__dirname, 'settings.html') // ✅ 添加 settings 页面
+      }
+    }
   }
 })

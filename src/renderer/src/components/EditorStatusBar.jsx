@@ -66,20 +66,35 @@ const EditorStatusBar = () => {
   useEffect(() => {
     const loadFontSize = async () => {
       try {
-        const savedFontSize = await window.ipcApi.getFontSize()
-        if (savedFontSize) {
-          setFontSize(savedFontSize)
+        const savedSettings = await window.ipcApi.getSettings()
+        if (savedSettings.fontSize) {
+          setFontSize(savedSettings.fontSize)
         }
       } catch (error) {
         console.error('加载字体大小设置失败:', error)
       }
     }
 
-    loadFontSize().catch(console.error)
+    // 初始加载字体大小
+    loadFontSize()
+
+    // 监听字体大小变化事件
+    const handleFontSizeChange = (event, newFontSize) => {
+      setFontSize(newFontSize)
+    }
+
+    // 添加事件监听器
+    window.ipcApi.onFontSizeChange(handleFontSizeChange)
+
+    // 清理事件监听器
+    return () => {
+      window.ipcApi.removeFontSizeChange(handleFontSizeChange)
+    }
   }, [])
 
   // 处理字体大小变化
   const handleFontSizeChange = async (newSize) => {
+    console.log('newSize', newSize)
     // 限制字体大小范围在8-32之间
     const size = Math.max(8, Math.min(32, newSize))
     setFontSize(size)
@@ -376,6 +391,8 @@ const EditorStatusBar = () => {
       updateFileLineEnding(value)
     }
   }
+
+
   return (
     <div className="editor-status-bar">
       <div className="status-item file-path" ref={filePathRef}>
@@ -431,7 +448,7 @@ const EditorStatusBar = () => {
             type="text"
             size="small"
             className="status-item"
-            onClick={() => handleFontSizeChange(fontSize - 1)}
+            onClick={() => handleFontSizeChange(+(fontSize) - 1)}
             icon={<ZoomOutOutlined />}
           />
         </Tooltip>
@@ -447,7 +464,7 @@ const EditorStatusBar = () => {
             type="text"
             size="small"
             className="status-item"
-            onClick={() => handleFontSizeChange(fontSize + 1)}
+            onClick={() => handleFontSizeChange(+(fontSize) + 1)}
             icon={<ZoomInOutlined />}
           />
         </Tooltip>

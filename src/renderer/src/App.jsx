@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState,useRef } from 'react'
 import { Layout, ConfigProvider, theme, Button } from 'antd'
 import { SunOutlined, MoonFilled } from '@ant-design/icons'
 import './App.scss'
@@ -104,6 +104,16 @@ const App = () => {
     document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light')
   }
 
+  useEffect(() => {
+    const loadInitBgTransparency = async () => {
+      const transparencySetting = await window.ipcApi.getBgTransparency();
+      document.documentElement.style.setProperty(
+        '--editor-background', 
+        `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ?  transparencySetting.dark / 100 : transparencySetting.light / 100})`);
+    }
+    loadInitBgTransparency();
+  }, [isDarkMode]);
+
   // 初始化主题
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
@@ -142,6 +152,79 @@ const App = () => {
       }
     })()
   }, [])
+
+  useEffect(() => {
+    const handleBgImageChange = async (event, filePath) => {
+      const randomBackground = await window.ipcApi.getState('randomBackground')
+      const imgPath = await window.electron.nativeImage.createFromPath(filePath)
+      document.documentElement.style.setProperty(
+        '--editor-background-image',
+        `url(${randomBackground ? filePath : imgPath.toDataURL()})`);
+    };
+  
+    window.ipcApi.onBgImageChange(handleBgImageChange);
+    return () => window.ipcApi.removeBgImageChange(handleBgImageChange);
+  }, []);
+
+  const isDarkModeRef = useRef(isDarkMode);
+
+    // 更新 ref 的值
+    useEffect(() => {
+      isDarkModeRef.current = isDarkMode;
+    }, [isDarkMode]);
+
+    useEffect(() => {
+      const handleBgTransparencyChange = (event, theme, transparency) => {
+        
+        // 使用 ref 获取最新 isDarkMode
+        if (theme === 'dark' && isDarkModeRef.current) {
+          document.documentElement.style.setProperty(
+            '--editor-background', 
+            `rgba(0, 0, 0, ${transparency / 100})`
+          );
+        } 
+        else if (theme === 'light' && !isDarkModeRef.current) {
+          document.documentElement.style.setProperty(
+            '--editor-background', 
+            `rgba(255, 255, 255, ${transparency / 100})`
+          );
+        }
+      };
+      // 注册监听（只运行一次）
+      window.ipcApi.onBgTransparencyChange(handleBgTransparencyChange);
+      
+      return () => {
+        // 确保移除的是同一个函数
+        window.ipcApi.removeBgTransparencyChange(handleBgTransparencyChange);
+      };
+    }, []); // 空依赖，避免重复绑定
+      
+
+  useEffect(() => {
+    // 这里写你要执行的方法
+    const loadInitialData = async () => {
+      try {
+        const bgImgPath = await window.ipcApi.getBgImage();
+        const randomBackground = await window.ipcApi.getState('randomBackground')
+        const img = await window.electron.nativeImage.createFromPath(bgImgPath);
+        document.documentElement.style.setProperty(
+          '--editor-background-image',
+          `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
+        )
+        
+        const transparencySetting = await window.ipcApi.getBgTransparency();
+        document.documentElement.style.setProperty(
+          '--editor-background', 
+          `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ?  transparencySetting.dark / 100 :  transparencySetting.light / 100})`);
+        }
+      // 其他初始化操作...
+      catch (error) {
+        console.error('加载初始数据失败:', error);
+      }
+    };
+
+    loadInitialData();  // 调用这个方法
+  }, []); // 空数组表示只在组件挂载时执行一次
 
   // 处理代码运行输出
   const handleRunCode = (output) => {

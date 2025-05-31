@@ -1,5 +1,5 @@
 .app-layout {
-  background-image: url(https://t.alcy.cc/moez) !important;
+  background-image: var(--editor-background-image) !important;
   //background-color: var(--background-color);
   background-size: cover;
   background-position: center;
@@ -29,8 +29,9 @@
 .monaco-editor .minimap-decorations-layer,
 .monaco-editor .minimap,
 .monaco-editor-background,
-.monaco-editor .margin,
-{ background-color: var(--editor-background) !important;
+.monaco-editor .margin
+{ 
+  background-color: var(--editor-background) !important;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -67,7 +68,6 @@
 /* 暗色主题适配 */
 [data-theme='dark'] {
     .console-layout {
-        background-color: var(--card-bg-color);
         border-top-color: #434343;
     }
 }

@@ -158,6 +158,9 @@ const AppHeader = () => {
     setIsModalVisible(false)
     setNewFileName('')
   }
+  const openSettingWindow = () => {
+    window.ipcApi.openSettingsWindow()
+  }
 
   // 文件菜单项
   const fileMenuItems = [
@@ -186,7 +189,7 @@ const AppHeader = () => {
       key: 'settings',
       label: '设置',
       icon: <SettingOutlined />,
-      onClick: () => console.log('打开设置')
+      onClick: openSettingWindow
     }
   ]
 
