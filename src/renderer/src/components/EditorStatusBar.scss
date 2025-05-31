@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   height: 24px;
-  background-color: var(--card-bg-color);
+  background-color: var(--editor-background);
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
@@ -24,36 +24,125 @@
       margin-right: 0;
     }
   }
+
   .file-path {
-    flex: 1; /* 占据剩余可用空间 */
-    min-width: 0; /* 允许内容溢出时被截断 */
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
+    position: relative;
+    padding-top: 4px; // 为上方滚动条留出空间
+
+    // 省略号效果
+    &::after {
+      content: '...';
+      position: absolute;
+      right: 0;
+      top: 4px;
+      bottom: 0;
+      width: 20px;
+      background: linear-gradient(to right, transparent, var(--bg-color) 50%);
+      color: var(--text-color-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    &.has-overflow::after {
+      opacity: 1;
+    }
+
+    // 自定义滚动条轨道
+    .scroll-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--scrollbar-track-color);
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    // 自定义滚动条滑块
+    .scroll-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 20%; // 初始宽度为20%
+      height: 4px;
+      background: var(--scrollbar-thumb-color);
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 3;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--scrollbar-thumb-hover-color);
+      }
+
+      &.dragging {
+        opacity: 1 !important;
+        transition: none; // 拖拽时禁用过渡效果
+        background: var(--scrollbar-thumb-active-color);
+      }
+    }
+
+    &:hover .scroll-thumb {
+      opacity: 1;
+    }
+
+    &.dragging .scroll-thumb {
+      opacity: 1;
+    }
+
+    .breadcrumb-container {
+      display: flex;
+      font-size: 12px;
+      line-height: 22px;
+      white-space: nowrap;
+      overflow-x: auto; // 启用横向滚动
+      overflow-y: hidden;
+
+      // 隐藏默认滚动条
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      // 隐藏Firefox滚动条
+      scrollbar-width: none;
+    }
 
     .ant-breadcrumb {
       display: flex;
       font-size: 12px;
       line-height: 22px;
       white-space: nowrap;
-      overflow: hidden;
 
       ol {
         display: flex;
         flex-wrap: nowrap;
-        overflow: hidden;
-        max-width: 100%;
+        overflow: visible;
+        max-width: none;
         padding: 0;
         margin: 0;
+        min-width: max-content; // 确保内容不被压缩
       }
 
       li {
-        flex-shrink: 0; /* 防止面包屑项被压缩 */
-        max-width: 150px; /* 可根据需要调整 */
+        flex-shrink: 0;
+        max-width: 150px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
 
         &:last-child {
-          flex-shrink: 1; /* 最后一个项可以适当收缩 */
+          flex-shrink: 0; // 最后一个项也不收缩
         }
       }
 

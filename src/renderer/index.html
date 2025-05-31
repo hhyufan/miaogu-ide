@@ -12,7 +12,13 @@
           worker-src 'self' blob:;
           img-src 'self' data: *" />
 </head>
-
+<style>
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2') format('woff2');
+    font-display: swap;
+  }
+</style>
 <body>
   <div id="root"></div>
   <script type="module" src="./src/main.jsx"></script>

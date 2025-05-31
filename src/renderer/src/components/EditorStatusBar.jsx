@@ -1,10 +1,10 @@
-import { Divider, Dropdown, Button, Breadcrumb, Tooltip } from 'antd'
+import { Breadcrumb, Button, Divider, Dropdown, Tooltip } from 'antd'
 import { useFile } from '../contexts/FileContext'
 import './EditorStatusBar.scss'
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ENCODING_CASE_MAP from './encoding-case.json'
-import { FolderOutlined, FileOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
-import { isFileBlacklisted, filterDirectoryContents } from '../configs/file-blacklist'
+import { FileOutlined, FolderOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
+import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
 
 function standardizeEncodingName(encoding) {
   // 转换为小写进行匹配
@@ -27,9 +27,20 @@ const EditorStatusBar = () => {
   const { currentFile, updateFileLineEnding, setOpenFile } = useFile()
   const encodingInputRef = useRef(null)
   const lineEndingInputRef = useRef(null)
+  const breadcrumbRef = useRef(null)
+  const filePathRef = useRef(null)
   const [pathSegments, setPathSegments] = useState([])
   const [directoryContents, setDirectoryContents] = useState({})
   const [fontSize, setFontSize] = useState(14)
+  const [scrollState, setScrollState] = useState({
+    canScroll: false,
+    scrollLeft: 0,
+    scrollWidth: 0,
+    clientWidth: 0
+  })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
+  const [dragStartScrollLeft, setDragStartScrollLeft] = useState(0)
   // Line ending options
   const lineEndingOptions = [
     { value: 'LF', label: 'LF' },
@@ -116,6 +127,145 @@ const EditorStatusBar = () => {
       setPathSegments([])
     }
   }, [currentFile.path, currentFile.isTemporary])
+
+  // 检查滚动状态和更新滚动条
+  const updateScrollState = () => {
+    if (breadcrumbRef.current && filePathRef.current) {
+      const breadcrumb = breadcrumbRef.current
+      const container = filePathRef.current
+
+      const scrollWidth = breadcrumb.scrollWidth
+      const clientWidth = breadcrumb.clientWidth
+      const scrollLeft = breadcrumb.scrollLeft
+      const canScroll = scrollWidth > clientWidth
+
+      setScrollState({
+        canScroll,
+        scrollLeft,
+        scrollWidth,
+        clientWidth
+      })
+
+      // 更新溢出状态的CSS类 - 只在有文件时显示省略号
+      // 检查是否滚动到结尾（允许1px的误差）
+      const isAtEnd = scrollLeft >= (scrollWidth - clientWidth - 1)
+      const hasFile = currentFile.path && !currentFile.isTemporary
+
+      if (hasFile && canScroll && !isAtEnd) {
+        container.classList.add('has-overflow')
+      } else {
+        container.classList.remove('has-overflow')
+      }
+
+      // 更新滚动条位置和宽度
+      const thumbElement = container.querySelector('.scroll-thumb')
+      if (thumbElement) {
+        if (canScroll) {
+          const scrollPercentage = scrollLeft / (scrollWidth - clientWidth)
+          const thumbWidth = Math.max(20, (clientWidth / scrollWidth) * 100)
+          const thumbLeft = scrollPercentage * (100 - thumbWidth)
+
+          thumbElement.style.width = `${thumbWidth}%`
+          thumbElement.style.left = `${thumbLeft}%`
+        } else {
+          // 当不需要滚动时，重置滑块样式
+          thumbElement.style.width = '20%'
+          thumbElement.style.left = '0%'
+        }
+      }
+    }
+  }
+
+  // 监听面包屑内容变化和窗口大小变化
+  useEffect(() => {
+    const timer = setTimeout(updateScrollState, 100)
+    return () => clearTimeout(timer)
+  }, [pathSegments])
+
+  // 组件挂载时立即更新滚动状态
+  useEffect(() => {
+    updateScrollState()
+  }, [])
+
+  useEffect(() => {
+    const handleResize = () => updateScrollState()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // 处理滚动条点击
+  const handleScrollBarClick = (e) => {
+    if (!breadcrumbRef.current || !scrollState.canScroll || isDragging) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const percentage = clickX / rect.width
+    const maxScroll = scrollState.scrollWidth - scrollState.clientWidth
+    breadcrumbRef.current.scrollLeft = percentage * maxScroll
+    updateScrollState()
+  }
+
+  // 处理滚动条拖拽开始
+  const handleThumbMouseDown = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!breadcrumbRef.current || !scrollState.canScroll) return
+
+    setIsDragging(true)
+    setDragStartX(e.clientX)
+    setDragStartScrollLeft(breadcrumbRef.current.scrollLeft)
+
+    // 添加拖拽状态的CSS类
+    if (filePathRef.current) {
+      filePathRef.current.classList.add('dragging')
+    }
+  }
+
+  // 处理鼠标移动（拖拽）
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleMouseMove = (e) => {
+    if (!isDragging || !breadcrumbRef.current || !filePathRef.current) return
+
+    const deltaX = e.clientX - dragStartX
+    const containerRect = filePathRef.current.getBoundingClientRect()
+    const containerWidth = containerRect.width
+    const maxScroll = scrollState.scrollWidth - scrollState.clientWidth
+
+    // 计算拖拽距离对应的滚动距离，设置灵敏度倍数
+    const sensitivity = 2.0 // 灵敏度倍数
+    const scrollDelta = (deltaX / containerWidth) * maxScroll * sensitivity
+    const newScrollLeft = Math.max(0, Math.min(maxScroll, dragStartScrollLeft + scrollDelta))
+
+    breadcrumbRef.current.scrollLeft = newScrollLeft
+    updateScrollState()
+  }
+
+  // 处理鼠标释放（拖拽结束）
+  const handleMouseUp = () => {
+    setIsDragging(false)
+
+    // 移除拖拽状态的CSS类
+    if (filePathRef.current) {
+      filePathRef.current.classList.remove('dragging')
+    }
+  }
+
+  // 添加全局鼠标事件监听
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragStartX, dragStartScrollLeft, handleMouseMove])
+
+  // 处理面包屑滚动
+  const handleBreadcrumbScroll = () => {
+    updateScrollState()
+  }
 
   // 获取目录内容
   const getDirectoryContents = async (path) => {
@@ -245,29 +395,48 @@ const EditorStatusBar = () => {
 
   return (
     <div className="editor-status-bar">
-      <div className="status-item file-path">
+      <div className="status-item file-path" ref={filePathRef}>
+        {/* 自定义滚动条轨道 - 只在有文件且需要滚动时显示 */}
+        {currentFile.path && !currentFile.isTemporary && scrollState.canScroll && (
+          <>
+            <div className="scroll-track" onClick={handleScrollBarClick}></div>
+            <div
+              className={`scroll-thumb ${isDragging ? 'dragging' : ''}`}
+              onMouseDown={handleThumbMouseDown}
+              style={{
+                cursor: isDragging ? 'grabbing' : 'grab'
+              }}
+            ></div>
+          </>
+        )}
         {pathSegments.length > 0 ? (
-          <Breadcrumb
-            separator={
-              <svg
-                className="icon"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                style={{ transform: 'translateY(3px)' }}
-              >
-                <path
-                  d="M704 514.368a52.864 52.864 0 0 1-15.808 37.888L415.872 819.2a55.296 55.296 0 0 1-73.984-2.752 52.608 52.608 0 0 1-2.816-72.512l233.6-228.928-233.6-228.992a52.736 52.736 0 0 1-17.536-53.056 53.952 53.952 0 0 1 40.192-39.424c19.904-4.672 40.832 1.92 54.144 17.216l272.32 266.88c9.92 9.792 15.616 23.04 15.808 36.8z"
-                  fill="#1296db"
-                  fillOpacity=".88"
-                ></path>
-              </svg>
-            }
+          <div
+            ref={breadcrumbRef}
+            onScroll={handleBreadcrumbScroll}
+            className="breadcrumb-container"
           >
-            {pathSegments.map(renderBreadcrumbItem)}
-          </Breadcrumb>
+            <Breadcrumb
+              separator={
+                <svg
+                  className="icon"
+                  viewBox="0 0 1024 1024"
+                  version="1.1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  style={{ transform: 'translateY(3px)' }}
+                >
+                  <path
+                    d="M704 514.368a52.864 52.864 0 0 1-15.808 37.888L415.872 819.2a55.296 55.296 0 0 1-73.984-2.752 52.608 52.608 0 0 1-2.816-72.512l233.6-228.928-233.6-228.992a52.736 52.736 0 0 1-17.536-53.056 53.952 53.952 0 0 1 40.192-39.424c19.904-4.672 40.832 1.92 54.144 17.216l272.32 266.88c9.92 9.792 15.616 23.04 15.808 36.8z"
+                    fill="#1296db"
+                    fillOpacity=".88"
+                  ></path>
+                </svg>
+              }
+            >
+              {pathSegments.map(renderBreadcrumbItem)}
+            </Breadcrumb>
+          </div>
         ) : (
           '未保存的文件'
         )}

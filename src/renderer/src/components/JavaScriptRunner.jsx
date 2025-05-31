@@ -52,6 +52,12 @@ const JavaScriptRunner = ({ code, onOutput, disabled = false }) => {
               .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
               .join(' ')
             onOutput && onOutput({ type: 'info', content: output })
+          },
+          md: (...args) => {
+            const output = args
+              .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+              .join(' ')
+            onOutput && onOutput({ type: 'markdown', content: output })
           }
         },
         setTimeout,
