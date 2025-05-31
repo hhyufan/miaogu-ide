@@ -59,11 +59,12 @@ const SettingsMenu = () => {
     const loadSettings = async () => {
       try {
         const savedSettings = await window.ipcApi.getSettings()
+        const savedImage = await window.ipcApi.getSavedImage()
         if (savedSettings) {
           setLocalSettings(savedSettings)
           setFontSize(savedSettings.fontSize)
           setFontFamily(savedSettings.fontFamily)
-          setBgImage(savedSettings.bgImage)
+          setBgImage(savedImage)
         }
       } catch (error) {
         console.error('加载字体大小设置失败:', error)
@@ -90,7 +91,6 @@ const SettingsMenu = () => {
   const saveSettings = async () => {
     localSettings.fontSize = fontSize
     localSettings.fontFamily = fontFamily
-    localSettings.bgImage = settingBgImage
     try {  
       await window.ipcApi.setFontSize(fontSize)
       await window.ipcApi.setSettings(localSettings)

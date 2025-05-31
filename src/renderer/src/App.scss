@@ -1,5 +1,5 @@
 .app-layout {
-  background-image: url(https://t.alcy.cc/moez) !important;
+  background-image: var(--editor-background-image) !important;
   //background-color: var(--background-color);
   background-size: cover;
   background-position: center;

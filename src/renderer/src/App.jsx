@@ -155,10 +155,11 @@ const App = () => {
 
   useEffect(() => {
     const handleBgImageChange = async (event, filePath) => {
+      const randomBackground = await window.ipcApi.getState('randomBackground')
       const imgPath = await window.electron.nativeImage.createFromPath(filePath)
       document.documentElement.style.setProperty(
         '--editor-background-image',
-        `url(${imgPath.toDataURL()})`);
+        `url(${randomBackground ? filePath : imgPath.toDataURL()})`);
     };
   
     window.ipcApi.onBgImageChange(handleBgImageChange);
@@ -204,10 +205,11 @@ const App = () => {
     const loadInitialData = async () => {
       try {
         const bgImgPath = await window.ipcApi.getBgImage();
+        const randomBackground = await window.ipcApi.getState('randomBackground')
         const img = await window.electron.nativeImage.createFromPath(bgImgPath);
         document.documentElement.style.setProperty(
           '--editor-background-image',
-          `url(${img.toDataURL()})`
+          `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
         )
         const transparencySetting = await window.ipcApi.getBgTransparency();
         document.documentElement.style.setProperty(

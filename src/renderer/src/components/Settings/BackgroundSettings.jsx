@@ -8,12 +8,16 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
     const [isVisible, setIsVisible] = useState(false)
     const [savedBgImage, setSavedBgImage] = useState('')
     const [bgTransparency, setBgTransparency] = useState({dark: 50, light: 50})
+    const [randomBackground, setRandomBackground] = useState(false)
 
     const handleSelectBgImage = async () => {
         const filePath = await window.ipcApi.selectBgImage()
+        setRandomBackground(false)
+        window.ipcApi.setState('randomBackground',false)
+        setBgImage(filePath)
+        setSavedBgImage(filePath)
         window.ipcApi.setSavedImage(filePath)
         window.ipcApi.setBgImage(filePath)
-        setBgImage(filePath)
       }
     
     const closeBgImage = async () => {
@@ -23,8 +27,7 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
     }
 
     const openBgImage = async () => {
-      window.ipcApi.setBgImage(savedBgImage)
-      setBgImage(savedBgImage)
+      window.ipcApi.setBgImage(randomBackground? 'https://t.alcy.cc/moez' : savedBgImage)
     }
 
     const handleBgTransparency = (theme, value) => {
@@ -34,6 +37,7 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
     const initSavedImage = async () => {
       const savedImage = await window.ipcApi.getSavedImage()
       const bgTransparency = await window.ipcApi.getBgTransparency()
+      const randomBackground = await window.ipcApi.getState('randomBackground')
       if (savedImage !== '') {
         setSavedBgImage(savedImage)
       }
@@ -42,6 +46,9 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
       }
       if (bgTransparency) {
         setBgTransparency(bgTransparency)
+      }
+      if (randomBackground) {
+        setRandomBackground(true)
       }
     }
 
@@ -71,8 +78,25 @@ const BackgroundSettings = ({ bgImage, setBgImage}) => {
 
         {isVisible && (
         <div id="bgImage" data-section style={{ marginBottom: 48,color: 'inherit' }}>
+          <Checkbox style={{color: 'inherit'}}
+            checked = {randomBackground}
+            onChange={(e) => {
+              if (e.target.checked) {
+                window.ipcApi.setState('randomBackground',true)
+                window.ipcApi.setBgImage('https://t.alcy.cc/moez')
+                setRandomBackground(true)
+              }
+              else {
+                window.ipcApi.setState('randomBackground',false)
+                setRandomBackground(false)
+                window.ipcApi.setBgImage(savedBgImage)
+              }
+            }
+          }>
+            <span>随机背景</span>
+          </Checkbox>
           <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start',marginTop: 32,marginBottom: 32 }}>
-            <Input value={bgImage? bgImage : savedBgImage} readOnly />
+            <Input value={bgImage ? bgImage : savedBgImage} readOnly />
             <Button icon={<UploadOutlined />} onClick={() => handleSelectBgImage()}>浏览</Button>
           </div>
           <div style={{display: 'flex', marginTop: 32,marginBottom: 50}}>

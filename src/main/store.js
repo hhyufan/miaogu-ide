@@ -24,8 +24,8 @@ const store = new Store({
     transparency: {
       light: 50,
       dark: 50
-    }
-
+    },
+    randomBackground:false,
   }
 })
 
