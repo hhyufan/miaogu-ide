@@ -18,37 +18,43 @@
         height: calc(100vh - var(--header-height) - var(--tab-bar-height) - 300px);
     }
 }
-.minimap .slider-mouseover, .sticky-widget {
-  display: none !important;
+
+.minimap .slider-mouseover,
+.sticky-widget {
+    display: none !important;
 }
+
 /* 同时覆盖编辑器和左侧边栏 */
 .current-line {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
 
 .monaco-editor .minimap-decorations-layer,
 .monaco-editor .minimap,
 .monaco-editor-background,
 .monaco-editor .margin
-{ 
+{
   background-color: var(--editor-background) !important;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
 }
 
-.monaco-editor, .monaco-diff-editor textarea:focus {
-  outline-color: var(--outline-color) !important;
+.monaco-editor,
+.monaco-diff-editor textarea:focus {
+    outline-color: var(--outline-color) !important;
 }
 
-.ant-card-bordered, .ant-tabs-nav-wrap {
-  box-shadow: none !important;
-  border: none transparent !important;
+.ant-card-bordered,
+.ant-tabs-nav-wrap {
+    box-shadow: none !important;
+    border: none transparent !important;
 }
 
 .monaco-editor {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
+
 .main-layout {
     background-color: transparent !important;
     display: flex;
@@ -68,6 +74,7 @@
 /* 暗色主题适配 */
 [data-theme='dark'] {
     .console-layout {
+        background-color: var(--card-bg-color);
         border-top-color: #434343;
     }
 }
@@ -88,7 +95,7 @@
     gap: 8px;
 }
 
-.js-runner-container {
+.code-runner-container {
     position: absolute;
     top: 60px;
     right: 24px;
@@ -136,6 +143,7 @@
     height: calc(100vh - var(--header-height) - var(--tab-bar-height));
     background-color: transparent !important;
     border: none !important;
+
     /* 调整高度，考虑header高度和边距 */
     &.with-console {
         height: calc(100vh - var(--header-height) - var(--tab-bar-height) + 24px - 300px);

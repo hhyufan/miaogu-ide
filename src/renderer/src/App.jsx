@@ -8,7 +8,7 @@ import Console from './components/Console'
 const { Content } = Layout
 import { FileProvider, useFile } from './contexts/FileContext'
 import EditorWithFileContext from './components/EditorWithFileContext'
-import JavaScriptRunner from './components/JavaScriptRunner'
+import CodeRunner from './components/CodeRunner'
 import EditorStatusBar from './components/EditorStatusBar'
 
 // 内部组件，用于访问文件上下文
@@ -34,6 +34,13 @@ const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onClos
     return ['js', 'jsx', 'mjs', 'cjs'].includes(ext)
   }
 
+  // 检查文件是否为HTML文件
+  const isHTMLFile = (fileName) => {
+    if (!fileName) return false
+    const ext = fileName.toLowerCase().split('.').pop()
+    return ['html', 'htm'].includes(ext)
+  }
+
   return (
     <>
       <div className="theme-toggle">
@@ -45,16 +52,20 @@ const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onClos
           className="theme-toggle-btn"
         />
       </div>
-      {/* JavaScript运行按钮 - 只在当前文件为JS文件时显示 */}
-      {currentFile && currentFile.name && isJavaScriptFile(currentFile.name) && (
-        <div className="js-runner-container">
-          <JavaScriptRunner
-            code={currentFile.content || ''}
-            onOutput={onRunCode}
-            disabled={false}
-          />
-        </div>
-      )}
+      {/* 代码运行按钮 - 支持JavaScript和HTML文件 */}
+      {currentFile &&
+        currentFile.name &&
+        (isJavaScriptFile(currentFile.name) || isHTMLFile(currentFile.name)) && (
+          <div className="code-runner-container">
+            <CodeRunner
+              code={currentFile.content || ''}
+              filePath={currentFile.path}
+              onOutput={onRunCode}
+              disabled={false}
+              fileType={isHTMLFile(currentFile.name) ? 'html' : 'javascript'}
+            />
+          </div>
+        )}
       <div className="content-container">
         <div className={`code-editor-container ${consoleVisible ? 'with-console' : ''}`}>
           <EditorWithFileContext isDarkMode={isDarkMode} />

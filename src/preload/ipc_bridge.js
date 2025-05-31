@@ -52,7 +52,7 @@ const ipcApi = {
   removeFontSizeChange: (callback) => {
     ipcRenderer.removeListener('font-size-changed', callback)
   },
-  
+
   // 字体设置
   setFontFamily: async (fontFamily) => {
     return ipcRenderer.invoke('set-font-family', fontFamily)
@@ -140,6 +140,11 @@ const ipcApi = {
     return ipcRenderer.invoke('ensure-temp-dir')
   },
 
+  // 创建临时文件
+  createTempFile: async (filePath, content = '') => {
+    return ipcRenderer.invoke('create-temp-file', { filePath, content })
+  },
+
   // 检查文件是否存在
   checkFileExists: async (filePath) => {
     return ipcRenderer.invoke('checkFileExists', filePath)
@@ -198,7 +203,7 @@ const ipcApi = {
   openExternal: (url) => {
     return ipcRenderer.invoke('open-external', url)
   },
-  
+
   getSettings: async () => {
     return ipcRenderer.invoke('get-settings')
   },
@@ -206,7 +211,7 @@ const ipcApi = {
   setSettings: async (settings) => {
     return ipcRenderer.invoke('set-settings', settings)
   },
-  
+
   selectBgImage: async () => {
     return ipcRenderer.invoke('select-bg-image')
   },
@@ -218,8 +223,8 @@ const ipcApi = {
   getBgImage: async () => {
     return ipcRenderer.invoke('get-bg-image')
   },
-   // 监听背景图片变化
-   onBgImageChange: (callback) => {
+  // 监听背景图片变化
+  onBgImageChange: (callback) => {
     ipcRenderer.on('bg-image-changed', callback)
   },
 
@@ -239,12 +244,11 @@ const ipcApi = {
   onBgTransparencyChange: (callback) => {
     ipcRenderer.on('bg-transparency-changed', callback)
   },
-  
+
   // 移除背景透明度变化监听
   removeBgTransparencyChange: (callback) => {
     ipcRenderer.removeListener('bg-transparency-changed', callback)
   },
-
 
   getSavedImage: async () => {
     return ipcRenderer.invoke('get-saved-image')
@@ -253,6 +257,16 @@ const ipcApi = {
   setSavedImage: async (savedImage) => {
     return ipcRenderer.invoke('set-saved-image', savedImage)
   },
+
+  // 运行HTML文件
+  runHtmlFile: async (filePath, content) => {
+    return ipcRenderer.invoke('run-html-file', { filePath, content })
+  },
+
+  // 更新临时HTML文件内容
+  updateTempHtmlFile: async (tempFilePath, content) => {
+    return ipcRenderer.invoke('update-temp-html-file', { tempFilePath, content })
+  }
 }
 
 // 暴露IPC API到渲染进程

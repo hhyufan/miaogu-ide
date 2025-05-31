@@ -10,8 +10,66 @@ Babel.registerPreset('browser-safe', {
 })
 
 // eslint-disable-next-line react/prop-types
-const JavaScriptRunner = ({ code, onOutput, disabled = false }) => {
+const CodeRunner = ({ code, filePath, onOutput, disabled = false, fileType = 'javascript' }) => {
   const [isRunning, setIsRunning] = useState(false)
+  // HTML执行函数
+  const executeHTML = useCallback(async () => {
+    // eslint-disable-next-line react/prop-types
+    if (!code || !code.trim()) {
+      message.warning('没有HTML代码可以执行')
+      return
+    }
+
+    setIsRunning(true)
+
+    try {
+      // 清空之前的输出
+      onOutput && onOutput({ type: 'clear' })
+
+      onOutput &&
+        onOutput({
+          type: 'info',
+          content: '正在在浏览器中打开HTML文件...'
+        })
+
+      // 优先使用内存中的content内容，而不是文件系统中的内容
+      const result = await window.ipcApi.runHtmlFile(filePath, code, false)
+
+      if (result.success) {
+        onOutput &&
+          onOutput({
+            type: 'log',
+            content: `✅ ${result.message}`
+          })
+
+        if (result.filePath) {
+          const isTemp = result.filePath.includes('temp_')
+          onOutput &&
+            onOutput({
+              type: 'info',
+              content: `文件路径: ${result.filePath}${isTemp ? ' (临时文件)' : ''}`
+            })
+        }
+      } else {
+        onOutput &&
+          onOutput({
+            type: 'error',
+            content: `${result.message}`
+          })
+        message.error(result.message)
+      }
+    } catch (error) {
+      const errorMessage = `运行HTML文件失败: ${error.message}`
+      onOutput &&
+        onOutput({
+          type: 'error',
+          content: `${errorMessage}`
+        })
+      message.error(errorMessage)
+    } finally {
+      setIsRunning(false)
+    }
+  }, [code, filePath, onOutput])
 
   const executeCode = useCallback(async () => {
     // eslint-disable-next-line react/prop-types
@@ -81,24 +139,6 @@ const JavaScriptRunner = ({ code, onOutput, disabled = false }) => {
         SyntaxError
       }
 
-      // 使用Babel转译代码（简化版本）
-      let transformedCode
-      try {
-        const result = Babel.transform(code, {
-          presets: ['browser-safe']
-        })
-        transformedCode = result.code
-      } catch (transformError) {
-        // 如果转译失败，直接使用原代码
-        transformedCode = code
-        console.warn(transformError)
-        // onOutput &&
-        //   onOutput({
-        //     type: 'warn',
-        //     content: `使用原生代码执行（转译跳过）: ${transformError.message}`
-        //   })
-      }
-
       // 创建函数并执行
       const sandboxKeys = Object.keys(sandbox)
       const sandboxValues = Object.values(sandbox)
@@ -106,7 +146,7 @@ const JavaScriptRunner = ({ code, onOutput, disabled = false }) => {
       // 包装代码以捕获返回值
       const wrappedCode = `
         try {
-          ${transformedCode}
+          ${code}
         } catch (error) {
           console.error('运行时错误:', error.message)
           throw error
@@ -166,19 +206,38 @@ const JavaScriptRunner = ({ code, onOutput, disabled = false }) => {
     }
   }, [code, onOutput])
 
+  // 根据文件类型选择执行函数
+  const handleExecute = fileType === 'html' ? executeHTML : executeCode
+
+  // 根据文件类型设置按钮样式和提示
+  const getButtonConfig = () => {
+    if (fileType === 'html') {
+      return {
+        color: '#1890ff',
+        title: '在浏览器中运行HTML文件'
+      }
+    }
+    return {
+      color: '#52c41a',
+      title: '运行JavaScript代码'
+    }
+  }
+
+  const buttonConfig = getButtonConfig()
+
   return (
     <Button
       type="text"
       icon={<PlayCircleOutlined />}
-      onClick={executeCode}
+      onClick={handleExecute}
       loading={isRunning}
       disabled={disabled}
       style={{
-        color: '#52c41a'
+        color: buttonConfig.color
       }}
-      title="运行JavaScript代码"
+      title={buttonConfig.title}
     />
   )
 }
 
-export default JavaScriptRunner
+export default CodeRunner

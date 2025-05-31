@@ -141,7 +141,7 @@ export const FileProvider = ({ children }) => {
   }
 
   // 创建新文件
-  const createFile = (fileName) => {
+  const createFile = async (fileName) => {
     if (!fileName.trim()) return
 
     // 检查文件名是否在黑名单中
@@ -150,23 +150,49 @@ export const FileProvider = ({ children }) => {
       return
     }
 
-    // 获取系统默认编码和行尾符号
-    // 可以根据操作系统类型设置默认行尾符号
-    const isWindows = navigator.platform.indexOf('Win') > -1
-    const defaultLineEnding = isWindows ? 'CRLF' : 'LF'
+    try {
+      // 获取temp目录路径
+      const tempDirResult = await window.ipcApi?.ensureTempDir()
+      if (!tempDirResult?.success) {
+        Modal.error({ title: '创建临时文件失败', content: '无法创建临时目录' })
+        return
+      }
 
-    const newFile = {
-      path: `temp://${Date.now()}_${fileName}`,
-      name: fileName,
-      isTemporary: true,
-      isModified: false,
-      content: '',
-      encoding: 'UTF-8',
-      lineEnding: defaultLineEnding
+      // 获取系统默认编码和行尾符号
+      // 可以根据操作系统类型设置默认行尾符号
+      const isWindows = navigator.platform.indexOf('Win') > -1
+      const defaultLineEnding = isWindows ? 'CRLF' : 'LF'
+
+      // 使用实际的temp目录路径
+      const tempFileName = `temp_${Date.now()}_${fileName}`
+      const tempFilePath = `${tempDirResult.tempDir}\\${tempFileName}`
+
+      const newFile = {
+        path: tempFilePath,
+        name: fileName,
+        isTemporary: true,
+        isModified: false,
+        content: '',
+        encoding: 'UTF-8',
+        lineEnding: defaultLineEnding
+      }
+
+      // 创建实际的物理文件
+      const createResult = await window.ipcApi?.createTempFile(tempFilePath, '')
+      if (!createResult?.success) {
+        Modal.error({
+          title: '创建临时文件失败',
+          content: createResult?.message || '无法创建物理文件'
+        })
+        return
+      }
+
+      setOpenedFiles((prev) => [...prev, newFile])
+      setCurrentFilePath(newFile.path)
+    } catch (error) {
+      console.error('创建临时文件失败:', error)
+      Modal.error({ title: '创建临时文件失败', content: error.message || '未知错误' })
     }
-
-    setOpenedFiles((prev) => [...prev, newFile])
-    setCurrentFilePath(newFile.path)
   }
 
   // 更新代码内容
@@ -187,6 +213,13 @@ export const FileProvider = ({ children }) => {
           : file
       )
     )
+
+    // 如果是临时文件，自动保存到磁盘
+    if (currentFile && currentFile.isTemporary && currentFilePath) {
+      window.ipcApi?.createTempFile(currentFilePath, newCode).catch(error => {
+        console.error('自动保存临时文件失败:', error)
+      })
+    }
 
     if (window.ipcApi?.setCodeEditorContent) {
       window.ipcApi.setCodeEditorContent(newCode).catch(console.error)
@@ -454,29 +487,43 @@ export const FileProvider = ({ children }) => {
 
     // 如果是临时文件，直接更新路径以保持一致性
     if (currentFile.isTemporary) {
-      // 更新openedFiles中的文件名和修改状态
-      const newPath = `temp://${Date.now()}_${newName}`
+      try {
+        // 获取temp目录路径
+        const tempDirResult = await window.ipcApi?.ensureTempDir()
+        if (!tempDirResult?.success) {
+          Modal.error({ title: '重命名失败', content: '无法获取临时目录' })
+          return { success: false }
+        }
 
-      // 检查是否已存在同名临时文件
-      const duplicateFile = openedFiles.find(
-        (f) => f.path !== currentFilePath && f.name === newName && f.isTemporary
-      )
+        // 使用实际的temp目录路径
+        const tempFileName = `temp_${Date.now()}_${newName}`
+        const newPath = `${tempDirResult.tempDir}\\${tempFileName}`
 
-      if (duplicateFile) {
-        // 如果已存在同名临时文件，选择覆盖
-        closeFile(duplicateFile.path)
-        return { success: false, conflict: true }
-      }
-
-      setOpenedFiles((prev) =>
-        prev.map((file) =>
-          file.path === currentFilePath
-            ? { ...file, name: newName, path: newPath, isModified: true }
-            : file
+        // 检查是否已存在同名临时文件
+        const duplicateFile = openedFiles.find(
+          (f) => f.path !== currentFilePath && f.name === newName && f.isTemporary
         )
-      )
-      setCurrentFilePath(newPath)
-      return { success: true }
+
+        if (duplicateFile) {
+          // 如果已存在同名临时文件，选择覆盖
+          closeFile(duplicateFile.path)
+          return { success: false, conflict: true }
+        }
+
+        setOpenedFiles((prev) =>
+          prev.map((file) =>
+            file.path === currentFilePath
+              ? { ...file, name: newName, path: newPath, isModified: true }
+              : file
+          )
+        )
+        setCurrentFilePath(newPath)
+        return { success: true }
+      } catch (error) {
+        console.error('重命名临时文件失败:', error)
+        Modal.error({ title: '重命名失败', content: error.message || '未知错误' })
+        return { success: false }
+      }
     } else {
       // 处理本地文件的重命名
       try {
@@ -564,8 +611,7 @@ export const FileProvider = ({ children }) => {
       !window.ipcApi?.importCodeFromFile ||
       !window.ipcApi?.getFileEncoding ||
       !window.ipcApi?.getFileLineEnding ||
-      !filePath ||
-      filePath.startsWith('temp://')
+      !filePath
     )
       return
 

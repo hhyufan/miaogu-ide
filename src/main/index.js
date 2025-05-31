@@ -165,7 +165,6 @@ function createWindow() {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']).then()
@@ -460,10 +459,37 @@ app.whenReady().then(() => {
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true })
       }
-      return { success: true }
+      return { success: true, tempDir }
     } catch (error) {
       console.error('创建临时目录失败:', error)
       return { success: false, message: `创建临时目录失败: ${error.message}` }
+    }
+  })
+
+  // 创建临时文件（不弹出对话框）
+  ipcMain.handle('create-temp-file', async (event, { filePath, content = '' }) => {
+    try {
+      if (!filePath || typeof filePath !== 'string') {
+        return { success: false, message: '未提供有效的文件路径' }
+      }
+
+      // 确保目录存在
+      const dirPath = filePath.substring(0, filePath.lastIndexOf('\\'))
+      if (dirPath && !fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true })
+      }
+
+      // 直接写入文件，不弹出对话框
+      fs.writeFileSync(filePath, content, 'utf8')
+
+      return {
+        success: true,
+        filePath,
+        message: '临时文件创建成功'
+      }
+    } catch (error) {
+      console.error('创建临时文件失败:', error)
+      return { success: false, message: error.message }
     }
   })
 
@@ -521,7 +547,9 @@ app.whenReady().then(() => {
     stateStore.setFontSize(fontSize)
     // 广播字体大小变化事件到所有窗口
     BrowserWindow.getAllWindows().forEach((window) => {
-      window.webContents.send('font-size-changed', fontSize)
+      if (window && window.webContents) {
+        window.webContents.send('font-size-changed', fontSize)
+      }
     })
     return true
   })
@@ -759,6 +787,142 @@ app.whenReady().then(() => {
     }
   })
 
+  // 运行HTML文件
+  ipcMain.handle('run-html-file', async (event, { filePath, content }) => {
+    try {
+      if (!filePath && !content) {
+        return { success: false, message: '未提供文件路径或内容' }
+      }
+
+      let htmlContent = content
+      let targetFilePath = filePath
+
+      // 如果没有提供内容，从文件读取
+      if (!htmlContent && filePath) {
+        // 验证文件路径
+        if (!filePath || typeof filePath !== 'string') {
+          return { success: false, message: '文件路径无效' }
+        }
+
+        // 检查文件是否存在
+        if (!fs.existsSync(filePath)) {
+          return { success: false, message: `文件不存在: ${filePath}` }
+        }
+
+        try {
+          const buffer = fs.readFileSync(filePath)
+          const encoding = detectFileEncoding(buffer)
+          htmlContent = new TextDecoder(encoding).decode(buffer)
+          targetFilePath = filePath
+        } catch (readError) {
+          return { success: false, message: `读取文件失败: ${readError.message}` }
+        }
+      }
+
+      // 如果是临时内容，创建临时文件
+      if (!filePath && content) {
+        try {
+          const tempDir = join(app.getPath('userData'), 'temp')
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true })
+          }
+          const tempFileName = `temp_${Date.now()}.html`
+          targetFilePath = join(tempDir, tempFileName)
+          fs.writeFileSync(targetFilePath, htmlContent, 'utf8')
+        } catch (tempError) {
+          return { success: false, message: `创建临时文件失败: ${tempError.message}` }
+        }
+      }
+      // 最终验证目标文件是否存在
+      if (!fs.existsSync(targetFilePath)) {
+        return { success: false, message: `目标文件不存在: ${targetFilePath}` }
+      }
+
+      // 在默认浏览器中打开HTML文件
+      // 使用正确的文件URL格式，特别是在Windows上
+      let fileUrl
+      if (process.platform === 'win32') {
+        // Windows平台：确保路径格式正确
+        const normalizedPath = targetFilePath.replace(/\\/g, '/')
+        fileUrl = `file:///${normalizedPath}`
+      } else {
+        // Unix-like平台
+        fileUrl = `file://${targetFilePath}`
+      }
+
+      try {
+        try {
+          await shell.openExternal(fileUrl)
+
+          return {
+            success: true,
+            message: 'HTML文件已在浏览器中打开',
+            filePath: targetFilePath,
+            fileUrl: fileUrl
+          }
+        } catch (openError) {
+          // 尝试备用方案
+          try {
+            const { exec } = require('child_process')
+            if (process.platform === 'win32') {
+              // Windows备用方案：使用start命令
+              exec(`start "" "${fileUrl}"`, (error) => {
+                if (error) {
+                  console.error('备用方案也失败:', error)
+                }
+              })
+              return {
+                success: true,
+                message: 'HTML文件已通过备用方案在浏览器中打开',
+                filePath: targetFilePath,
+                fileUrl: fileUrl
+              }
+            }
+          } catch (backupError) {
+            console.error('备用方案失败:', backupError)
+          }
+
+          return {
+            success: false,
+            message: `打开浏览器失败: ${openError.message}。请检查系统是否安装了默认浏览器，或尝试手动打开文件: ${fileUrl}`
+          }
+        }
+      } catch (error) {
+        console.error('运行HTML文件失败:', error)
+        return { success: false, message: `运行HTML文件失败: ${error.message}` }
+      }
+    } catch (error) {
+      console.error('运行HTML文件失败:', error)
+      return { success: false, message: `运行HTML文件失败: ${error.message}` }
+    }
+  })
+
+  // 更新临时HTML文件内容
+  ipcMain.handle('update-temp-html-file', async (event, { tempFilePath, content }) => {
+    try {
+      if (!tempFilePath || !content) {
+        return { success: false, message: '未提供临时文件路径或内容' }
+      }
+
+      // 检查临时文件是否存在
+      if (!fs.existsSync(tempFilePath)) {
+        return { success: false, message: `临时文件不存在: ${tempFilePath}` }
+      }
+
+      // 更新临时文件内容
+      fs.writeFileSync(tempFilePath, content, 'utf8')
+
+      return {
+        success: true,
+        message: '临时HTML文件已更新',
+        filePath: tempFilePath
+      }
+    } catch (error) {
+      console.error('更新临时HTML文件失败:', error)
+      return { success: false, message: `更新临时HTML文件失败: ${error.message}` }
+    }
+  })
+
   // 设置文件行尾序列
   ipcMain.handle('set-file-line-ending', async (event, { filePath, lineEnding }) => {
     try {
@@ -849,7 +1013,7 @@ function startWatchingFile(filePath, window) {
         const encoding = detectFileEncoding(buffer)
 
         // 使用检测到的编码解码内容 - 确保使用正确的编码
-        let content = ''
+        let content
         try {
           // 使用TextDecoder解码，确保编码名称格式正确
           content = new TextDecoder(encoding).decode(buffer)
@@ -867,6 +1031,8 @@ function startWatchingFile(filePath, window) {
           lineEnding = 'CR'
         }
 
+        // 检查是否为HTML文件
+        path.toLowerCase().endsWith('.html') || path.toLowerCase().endsWith('.htm')
         // 通知渲染进程文件已被外部修改，同时提供编码和行尾序列信息
         window.webContents.send('file-changed-externally', {
           filePath: path,

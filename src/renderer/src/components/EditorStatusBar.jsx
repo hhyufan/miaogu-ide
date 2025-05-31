@@ -205,6 +205,7 @@ const EditorStatusBar = () => {
     updateScrollState()
   }
 
+
   // 处理滚动条拖拽开始
   const handleThumbMouseDown = (e) => {
     e.preventDefault()
