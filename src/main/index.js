@@ -177,9 +177,9 @@ let settingsWindow = null
 
 function createSettingsWindow() {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
-    settingsWindow.show();
-    settingsWindow.focus();
-    return;
+    settingsWindow.show()
+    settingsWindow.focus()
+    return
   }
 
   settingsWindow = new BrowserWindow({
@@ -194,25 +194,25 @@ function createSettingsWindow() {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
-  });
+  })
 
   settingsWindow.on('ready-to-show', () => {
-    settingsWindow.show();
-  });
+    settingsWindow.show()
+  })
 
   settingsWindow.on('closed', () => {
-    settingsWindow = null;
-  });
+    settingsWindow = null
+  })
 
   settingsWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    settingsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`);
+    settingsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`)
   } else {
-    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html'));
+    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html'))
   }
 }
 
@@ -1079,7 +1079,7 @@ function stopWatchingFile() {
 async function handleStoreBgImage() {
   const result = await dialog.showOpenDialog({
     properties: ['openFile'],
-    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg','gif'] }]
+    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg', 'gif'] }]
   })
   if (!result.canceled && result.filePaths.length > 0) {
     const filePath = result.filePaths[0]
@@ -1093,7 +1093,7 @@ async function handleStoreBgImage() {
   return null
 }
 
-ipcMain.handle('set-bg-image', (_, bgImage)=>{
+ipcMain.handle('set-bg-image', (_, bgImage) => {
   // 通知所有窗口背景图片已更改
   stateStore.setBgImage(bgImage)
   BrowserWindow.getAllWindows().forEach((win) => {
@@ -1103,7 +1103,7 @@ ipcMain.handle('set-bg-image', (_, bgImage)=>{
 })
 
 ipcMain.handle('set-bg-transparency', (_, theme, transparency) => {
-  stateStore.setTransparency(theme,transparency)
+  stateStore.setTransparency(theme, transparency)
   BrowserWindow.getAllWindows().forEach((win) => {
     win.webContents.send('bg-transparency-changed', theme, transparency)
   })
@@ -1117,7 +1117,6 @@ ipcMain.handle('set-font-family', (_, fontFamily) => {
   })
   return true
 })
-
 
 ipcMain.handle('select-bg-image', handleStoreBgImage)
 
@@ -1148,7 +1147,3 @@ ipcMain.handle('set-saved-image', (event, savedImage) => {
 ipcMain.handle('get-bg-transparency', () => {
   return stateStore.getTransparency()
 })
-
-
-
-

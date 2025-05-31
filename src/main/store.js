@@ -12,20 +12,21 @@ const store = new Store({
     theme: 'light',
     // 演练场代码编辑内容
     codeEditorContents: {},
-    settings: {    // 字体大小
-        fontSize:14,
-        // 字体
-        fontFamily: 'JetBrains Mono',
-        // 背景图片
-        bgImage: ''
-      },
-    savedImage:'',
+    settings: {
+      // 字体大小
+      fontSize: 14,
+      // 字体
+      fontFamily: 'JetBrains Mono',
+      // 背景图片
+      bgImage: ''
+    },
+    savedImage: '',
     // 透明度
     transparency: {
       light: 50,
       dark: 50
     },
-    randomBackground:false,
+    randomBackground: false
   }
 })
 

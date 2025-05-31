@@ -23,7 +23,15 @@ const MarkdownRenderer = memo(({ content }) => {
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.getAttribute('data-theme') === 'dark'
   )
+  const [fontFamily, setFontFamily] = useState('JetBrains Mono')
 
+  useEffect(() => {
+    const initFamily = async () => {
+      const settings = await window.ipcApi.getSettings()
+      setFontFamily(settings.fontFamily || 'JetBrains Mono')
+    }
+    initFamily().catch(console.error)
+  }, [])
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -378,7 +386,7 @@ const MarkdownRenderer = memo(({ content }) => {
                   {...props}
                   style={{
                     fontSize: '0.9rem',
-                    fontFamily: '"JetBrains Mono", monospace'
+                    fontFamily: `'${fontFamily}', monospace`
                   }}
                 >
                   {children}
@@ -389,7 +397,7 @@ const MarkdownRenderer = memo(({ content }) => {
                 style={{
                   backgroundColor: token['colorBgTextHover'],
                   padding: '2px 4px',
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: `'${fontFamily}', monospace`,
                   borderRadius: '4px',
                   fontSize: '1em',
                   color: token['colorText']
