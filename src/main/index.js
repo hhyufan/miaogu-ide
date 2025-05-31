@@ -174,6 +174,49 @@ function createWindow() {
   }
 }
 
+let settingsWindow = null
+
+function createSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+
+  settingsWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    frame: false,
+    title: '设置',
+    icon: icon,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  settingsWindow.on('ready-to-show', () => {
+    settingsWindow.show();
+  });
+
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
+
+  settingsWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    settingsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`);
+  } else {
+    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html'));
+  }
+}
+
 // 处理通过"打开方式"打开文件
 const handleOpenWithFile = (filePath) => {
   if (!filePath) return
@@ -866,3 +909,80 @@ function stopWatchingFile() {
     lastModifiedTime = null
   }
 }
+
+async function handleStoreBgImage() {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'jpeg','gif'] }]
+  })
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0]
+    stateStore.setBgImage(filePath)
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      windows[0].webContents.send('bg-image-changed', { filePath })
+    }
+    return filePath
+  }
+  return null
+}
+
+ipcMain.handle('set-bg-image', (_, bgImage)=>{
+  // 通知所有窗口背景图片已更改
+  stateStore.setBgImage(bgImage)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('bg-image-changed', bgImage)
+  })
+  return true
+})
+
+ipcMain.handle('set-bg-transparency', (_, theme, transparency) => {
+  stateStore.setTransparency(theme,transparency)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('bg-transparency-changed', theme, transparency)
+  })
+  return true
+})
+
+ipcMain.handle('set-font-family', (_, fontFamily) => {
+  stateStore.setFontFamily(fontFamily)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('font-family-changed', fontFamily)
+  })
+  return true
+})
+
+
+ipcMain.handle('select-bg-image', handleStoreBgImage)
+
+ipcMain.on('open-settings-window', () => {
+  createSettingsWindow()
+})
+
+ipcMain.handle('get-settings', () => {
+  return stateStore.getSettings()
+})
+
+ipcMain.handle('set-settings', (event, settings) => {
+  return stateStore.setSettings(settings)
+})
+
+ipcMain.handle('get-bg-image', () => {
+  return stateStore.getBgImage()
+})
+
+ipcMain.handle('get-saved-image', () => {
+  return stateStore.getSavedImage()
+})
+
+ipcMain.handle('set-saved-image', (event, savedImage) => {
+  return stateStore.setSavedImage(savedImage)
+})
+
+ipcMain.handle('get-bg-transparency', () => {
+  return stateStore.getTransparency()
+})
+
+
+
+

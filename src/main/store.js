@@ -10,13 +10,22 @@ const store = new Store({
   defaults: {
     // 主题设置
     theme: 'light',
-    // 代码编辑内容
+    // 演练场代码编辑内容
     codeEditorContents: {},
-    settings: {
-      fontSize: 14,
-      fontFamily: 'Courier New',
-      bgImage: ''
-    }
+    settings: {    // 字体大小
+        fontSize:14,
+        // 字体
+        fontFamily: 'JetBrains Mono',
+        // 背景图片
+        bgImage: ''
+      },
+    savedImage:'',
+    // 透明度
+    transparency: {
+      light: 50,
+      dark: 50
+    },
+    randomBackground:false,
   }
 })
 
@@ -52,6 +61,17 @@ function getFontSize() {
 function setFontSize(fontSize) {
   const settings = store.get('settings')
   settings.fontSize = fontSize
+  store.set('settings', settings)
+}
+
+/**
+ * 设置字体
+ * @param {string} fontFamily 字体名称
+ */
+
+function setFontFamily(fontFamily) {
+  const settings = store.get('settings')
+  settings.fontFamily = fontFamily
   store.set('settings', settings)
 }
 
@@ -101,6 +121,74 @@ function setState(key, value) {
   }
 }
 
+/**
+ * 获取设置
+ * @returns {Object} 存储的设置值
+ */
+function getSettings() {
+  return store.get('settings')
+}
+
+/**
+ * 设置设置
+ * @param {Object} settings 要存储的设置值
+ * @returns {boolean} 操作是否成功
+ */
+function setSettings(settings) {
+  try {
+    store.set('settings', settings)
+    return true
+  } catch (error) {
+    console.error(`设置失败:`, error)
+    return false
+  }
+}
+
+/**
+ * 获取背景图片路径
+ * @returns {string} 背景图片路径
+ */
+function getBgImage() {
+  const settings = store.get('settings')
+  return settings.bgImage || ''
+}
+
+/**
+ * 设置背景图片路径
+ * @param {string} bgImage 背景图片路径
+ */
+function setBgImage(bgImage) {
+  const settings = store.get('settings')
+  settings.bgImage = bgImage
+  store.set('settings', settings)
+}
+
+/**
+ * 获取保存的图片路径
+ * @returns {string} 保存的图片路径
+ */
+function getSavedImage() {
+  return store.get('savedImage')
+}
+
+/**
+ * 设置保存的图片路径
+ * @param {string} savedImage 保存的图片路径
+ */
+function setSavedImage(savedImage) {
+  store.set('savedImage', savedImage)
+}
+
+function setTransparency(theme, value) {
+  const transparency = store.get('transparency') || {}
+  transparency[theme] = value
+  store.set('transparency', transparency)
+}
+
+function getTransparency() {
+  return store.get('transparency')
+}
+
 export default {
   getTheme,
   setTheme,
@@ -109,5 +197,14 @@ export default {
   getCodeEditorContent,
   setCodeEditorContent,
   getState,
-  setState
+  setState,
+  getSettings,
+  setSettings,
+  getBgImage,
+  setBgImage,
+  getSavedImage,
+  setSavedImage,
+  getTransparency,
+  setTransparency,
+  setFontFamily
 }

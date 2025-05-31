@@ -1,0 +1,57 @@
+.custom-settings-menu {
+  background-color: var(--background-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+
+  // 父菜单项：左对齐，字体颜色明确
+  .ant-menu-submenu-title {
+    text-align: left;
+    color: var(--text-color);
+    font-weight: 600;
+  }
+
+  // 子菜单项：右对齐，字体颜色明确
+  .ant-menu-item {
+    text-align: right;
+    padding-right: 16px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+
+    // 鼠标悬浮效果，改用主题色带透明度
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--text-secondary-color);
+    }
+
+    // 选中状态
+    &.ant-menu-item-selected {
+      background-color: rgba(var(--text-secondary-color), 0.2);
+      color: var(--primary-color);
+    }
+  }
+
+  // 去除圆角
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    border-radius: 0;
+  }
+}
+
+.floating-save-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  
+  // 可选：添加一些视觉效果
+  .ant-btn {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    transition: all 0.3s ease;
+  }
+}
