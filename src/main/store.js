@@ -3,31 +3,31 @@ import Store from 'electron-store'
 import { app } from 'electron'
 // 创建Store实例用于持久化存储
 const store = new Store({
-  name: 'user-state', // 存储文件名
-  // 确保存储在用户数据目录下
-  cwd: app.getPath('userData'),
-  // 定义存储结构的默认值
-  defaults: {
-    // 主题设置
-    theme: 'light',
-    // 演练场代码编辑内容
-    codeEditorContents: {},
-    settings: {
-      // 字体大小
-      fontSize: 14,
-      // 字体
-      fontFamily: 'JetBrains Mono',
-      // 背景图片
-      bgImage: ''
-    },
-    savedImage: '',
-    // 透明度
-    transparency: {
-      light: 50,
-      dark: 50
-    },
-    randomBackground: false
-  }
+    name: 'user-state', // 存储文件名
+    // 确保存储在用户数据目录下
+    cwd: app.getPath('userData'),
+    // 定义存储结构的默认值
+    defaults: {
+        // 主题设置
+        theme: 'light',
+        // 演练场代码编辑内容
+        codeEditorContents: {},
+        settings: {
+            // 字体大小
+            fontSize: 14,
+            // 字体
+            fontFamily: 'JetBrains Mono',
+            // 背景图片
+            bgImage: ''
+        },
+        savedImage: '',
+        // 透明度
+        transparency: {
+            light: 50,
+            dark: 50
+        },
+        randomBackground: false
+    }
 })
 
 /**
@@ -35,7 +35,7 @@ const store = new Store({
  * @returns {string} 主题名称 ('light' 或 'dark')
  */
 function getTheme() {
-  return store.get('theme')
+    return store.get('theme')
 }
 
 /**
@@ -43,7 +43,7 @@ function getTheme() {
  * @param {string} theme 主题名称 ('light' 或 'dark')
  */
 function setTheme(theme) {
-  store.set('theme', theme)
+    store.set('theme', theme)
 }
 
 /**
@@ -51,8 +51,8 @@ function setTheme(theme) {
  * @returns {number} 字体大小
  */
 function getFontSize() {
-  const settings = store.get('settings')
-  return settings.fontSize || 14
+    const settings = store.get('settings')
+    return settings.fontSize || 14
 }
 
 /**
@@ -60,9 +60,9 @@ function getFontSize() {
  * @param {number} fontSize 字体大小
  */
 function setFontSize(fontSize) {
-  const settings = store.get('settings')
-  settings.fontSize = fontSize
-  store.set('settings', settings)
+    const settings = store.get('settings')
+    settings.fontSize = fontSize
+    store.set('settings', settings)
 }
 
 /**
@@ -71,9 +71,9 @@ function setFontSize(fontSize) {
  */
 
 function setFontFamily(fontFamily) {
-  const settings = store.get('settings')
-  settings.fontFamily = fontFamily
-  store.set('settings', settings)
+    const settings = store.get('settings')
+    settings.fontFamily = fontFamily
+    store.set('settings', settings)
 }
 
 /**
@@ -81,9 +81,9 @@ function setFontFamily(fontFamily) {
  * @returns {string} 保存的代码内容
  */
 function getCodeEditorContent() {
-  const codeEditorContents = store.get('codeEditorContents')
-  const key = `code-editor`
-  return codeEditorContents[key] || ''
+    const codeEditorContents = store.get('codeEditorContents')
+    const key = `code-editor`
+    return codeEditorContents[key] || ''
 }
 
 /**
@@ -91,10 +91,10 @@ function getCodeEditorContent() {
  * @param {string} content 代码内容
  */
 function setCodeEditorContent(content) {
-  const codeEditorContents = store.get('codeEditorContents')
-  const key = `code-editor`
-  codeEditorContents[key] = content
-  store.set('codeEditorContents', codeEditorContents)
+    const codeEditorContents = store.get('codeEditorContents')
+    const key = `code-editor`
+    codeEditorContents[key] = content
+    store.set('codeEditorContents', codeEditorContents)
 }
 
 /**
@@ -103,7 +103,7 @@ function setCodeEditorContent(content) {
  * @returns {any} 存储的状态值
  */
 function getState(key) {
-  return store.get(key, null)
+    return store.get(key, null)
 }
 
 /**
@@ -113,13 +113,13 @@ function getState(key) {
  * @returns {boolean} 操作是否成功
  */
 function setState(key, value) {
-  try {
-    store.set(key, value)
-    return true
-  } catch (error) {
-    console.error(`设置状态[${key}]失败:`, error)
-    return false
-  }
+    try {
+        store.set(key, value)
+        return true
+    } catch (error) {
+        console.error(`设置状态[${key}]失败:`, error)
+        return false
+    }
 }
 
 /**
@@ -127,7 +127,7 @@ function setState(key, value) {
  * @returns {Object} 存储的设置值
  */
 function getSettings() {
-  return store.get('settings')
+    return store.get('settings')
 }
 
 /**
@@ -136,13 +136,13 @@ function getSettings() {
  * @returns {boolean} 操作是否成功
  */
 function setSettings(settings) {
-  try {
-    store.set('settings', settings)
-    return true
-  } catch (error) {
-    console.error(`设置失败:`, error)
-    return false
-  }
+    try {
+        store.set('settings', settings)
+        return true
+    } catch (error) {
+        console.error(`设置失败:`, error)
+        return false
+    }
 }
 
 /**
@@ -150,8 +150,8 @@ function setSettings(settings) {
  * @returns {string} 背景图片路径
  */
 function getBgImage() {
-  const settings = store.get('settings')
-  return settings.bgImage || ''
+    const settings = store.get('settings')
+    return settings.bgImage || ''
 }
 
 /**
@@ -159,9 +159,9 @@ function getBgImage() {
  * @param {string} bgImage 背景图片路径
  */
 function setBgImage(bgImage) {
-  const settings = store.get('settings')
-  settings.bgImage = bgImage
-  store.set('settings', settings)
+    const settings = store.get('settings')
+    settings.bgImage = bgImage
+    store.set('settings', settings)
 }
 
 /**
@@ -169,7 +169,7 @@ function setBgImage(bgImage) {
  * @returns {string} 保存的图片路径
  */
 function getSavedImage() {
-  return store.get('savedImage')
+    return store.get('savedImage')
 }
 
 /**
@@ -177,35 +177,35 @@ function getSavedImage() {
  * @param {string} savedImage 保存的图片路径
  */
 function setSavedImage(savedImage) {
-  store.set('savedImage', savedImage)
+    store.set('savedImage', savedImage)
 }
 
 function setTransparency(theme, value) {
-  const transparency = store.get('transparency') || {}
-  transparency[theme] = value
-  store.set('transparency', transparency)
+    const transparency = store.get('transparency') || {}
+    transparency[theme] = value
+    store.set('transparency', transparency)
 }
 
 function getTransparency() {
-  return store.get('transparency')
+    return store.get('transparency')
 }
 
 export default {
-  getTheme,
-  setTheme,
-  getFontSize,
-  setFontSize,
-  getCodeEditorContent,
-  setCodeEditorContent,
-  getState,
-  setState,
-  getSettings,
-  setSettings,
-  getBgImage,
-  setBgImage,
-  getSavedImage,
-  setSavedImage,
-  getTransparency,
-  setTransparency,
-  setFontFamily
+    getTheme,
+    setTheme,
+    getFontSize,
+    setFontSize,
+    getCodeEditorContent,
+    setCodeEditorContent,
+    getState,
+    setState,
+    getSettings,
+    setSettings,
+    getBgImage,
+    setBgImage,
+    getSavedImage,
+    setSavedImage,
+    getTransparency,
+    setTransparency,
+    setFontFamily
 }

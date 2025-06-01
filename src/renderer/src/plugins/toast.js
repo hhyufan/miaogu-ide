@@ -1,106 +1,106 @@
 class ToastManager {
-  constructor() {
-    this.container = null
-    this.toasts = new Map()
-    this.debounceTimers = new Map()
-    this.nextId = 0
-    this.init()
-  }
-
-  // 改进防抖逻辑：仅在防抖期结束后执行显示
-  #checkDebounce(key, debounceTime) {
-    if (this.debounceTimers.has(key)) return false
-
-    this.debounceTimers.set(
-      key,
-      setTimeout(() => {
-        this.debounceTimers.delete(key)
-      }, debounceTime)
-    )
-
-    return true
-  }
-
-  async show(message, type = 'info', options = {}) {
-    if (typeof document === 'undefined') return
-
-    // 生成防抖唯一键（增加选项序列化以区分不同配置）
-    const debounceKey = JSON.stringify({ type, message, options })
-    const debounceTime = options.debounce || 1000
-
-    if (debounceTime > 0) {
-      if (!this.#checkDebounce(debounceKey, debounceTime)) return
+    constructor() {
+        this.container = null
+        this.toasts = new Map()
+        this.debounceTimers = new Map()
+        this.nextId = 0
+        this.init()
     }
 
-    const id = this.nextId++
-    const toastElement = this.createToastElement(id, message, type, options)
+    // 改进防抖逻辑：仅在防抖期结束后执行显示
+    #checkDebounce(key, debounceTime) {
+        if (this.debounceTimers.has(key)) return false
 
-    this.toasts.set(id, toastElement)
-    this.container.appendChild(toastElement)
+        this.debounceTimers.set(
+            key,
+            setTimeout(() => {
+                this.debounceTimers.delete(key)
+            }, debounceTime)
+        )
 
-    if (options.duration !== 0) {
-      setTimeout(() => this.remove(id), options.duration || 4000)
+        return true
     }
 
-    return id
-  }
+    async show(message, type = 'info', options = {}) {
+        if (typeof document === 'undefined') return
 
-  init() {
-    if (typeof document !== 'undefined' && !this.container) {
-      this.container = document.createElement('div')
-      this.container.className = 'global-toast-container'
-      document.body.appendChild(this.container)
+        // 生成防抖唯一键（增加选项序列化以区分不同配置）
+        const debounceKey = JSON.stringify({ type, message, options })
+        const debounceTime = options.debounce || 1000
+
+        if (debounceTime > 0) {
+            if (!this.#checkDebounce(debounceKey, debounceTime)) return
+        }
+
+        const id = this.nextId++
+        const toastElement = this.createToastElement(id, message, type, options)
+
+        this.toasts.set(id, toastElement)
+        this.container.appendChild(toastElement)
+
+        if (options.duration !== 0) {
+            setTimeout(() => this.remove(id), options.duration || 4000)
+        }
+
+        return id
     }
-  }
 
-  createToastElement(id, message, type, options) {
-    const toast = document.createElement('div')
-    toast.className = `toast-item toast-${type}`
-    toast.innerHTML = `
+    init() {
+        if (typeof document !== 'undefined' && !this.container) {
+            this.container = document.createElement('div')
+            this.container.className = 'global-toast-container'
+            document.body.appendChild(this.container)
+        }
+    }
+
+    createToastElement(id, message, type, options) {
+        const toast = document.createElement('div')
+        toast.className = `toast-item toast-${type}`
+        toast.innerHTML = `
             ${message}
             ${options.closable ? `<button class="toast-close" data-id="${id}">&times;</button>` : ''}
         `
 
-    if (options.closable) {
-      const closeBtn = toast.querySelector('.toast-close')
-      closeBtn.addEventListener('click', () => this.remove(id))
+        if (options.closable) {
+            const closeBtn = toast.querySelector('.toast-close')
+            closeBtn.addEventListener('click', () => this.remove(id))
+        }
+
+        toast.style.animation = 'toastSlideIn 0.3s ease'
+        return toast
     }
 
-    toast.style.animation = 'toastSlideIn 0.3s ease'
-    return toast
-  }
-
-  remove(id) {
-    const toast = this.toasts.get(id)
-    if (toast) {
-      toast.style.animation = 'toastSlideOut 0.3s ease'
-      setTimeout(() => {
-        toast.remove()
-        this.toasts.delete(id)
-      }, 300)
+    remove(id) {
+        const toast = this.toasts.get(id)
+        if (toast) {
+            toast.style.animation = 'toastSlideOut 0.3s ease'
+            setTimeout(() => {
+                toast.remove()
+                this.toasts.delete(id)
+            }, 300)
+        }
     }
-  }
 }
 
 const toastInstance = typeof window !== 'undefined' ? new ToastManager() : null
 
 export const toast = {
-  show: (...args) => toastInstance?.show(...args),
-  remove: (...args) => toastInstance?.remove(...args),
-  success: (msg, opts) => toastInstance?.show(msg, 'success', opts),
-  error: (msg, opts = {}) => {
-    console.error(msg, opts.error)
-    return toastInstance?.show(msg, 'error', { duration: 1000, ...opts })
-  },
-  warning: (msg, opts) => {
-    console.warn(msg)
-    return toastInstance?.show(msg, 'warning', opts)
-  }
+    show: (...args) => toastInstance?.show(...args),
+    remove: (...args) => toastInstance?.remove(...args),
+    success: (msg, opts) => toastInstance?.show(msg, 'success', opts),
+    error: (msg, opts = {}) => {
+        console.error(msg, opts.error)
+        return toastInstance?.show(msg, 'error', { duration: 1000, ...opts })
+    },
+    warning: (msg, opts) => {
+        console.warn(msg)
+        return toastInstance?.show(msg, 'warning', opts)
+    }
 }
 
 if (typeof document !== 'undefined') {
-  const style = document.createElement('style')
-  style.textContent = `
+    const style = document.createElement('style')
+    style.textContent = `
     .global-toast-container {
         position: fixed;
         top: 20px;
@@ -154,5 +154,5 @@ if (typeof document !== 'undefined') {
         to { transform: translateY(-30px); opacity: 0; }
     }
     `
-  document.head.appendChild(style)
+    document.head.appendChild(style)
 }
