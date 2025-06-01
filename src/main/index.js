@@ -851,41 +851,25 @@ app.whenReady().then(() => {
       }
 
       try {
+        // 尝试备用方案
         try {
-          await shell.openExternal(fileUrl)
+          const { exec } = require('child_process')
+          if (process.platform === 'win32') {
 
-          return {
-            success: true,
-            message: 'HTML文件已在浏览器中打开',
-            filePath: targetFilePath,
-            fileUrl: fileUrl
-          }
-        } catch (openError) {
-          // 尝试备用方案
-          try {
-            const { exec } = require('child_process')
-            if (process.platform === 'win32') {
-              // Windows备用方案：使用start命令
-              exec(`start "" "${fileUrl}"`, (error) => {
-                if (error) {
-                  console.error('备用方案也失败:', error)
-                }
-              })
-              return {
-                success: true,
-                message: 'HTML文件已通过备用方案在浏览器中打开',
-                filePath: targetFilePath,
-                fileUrl: fileUrl
+            exec(`start "" "${fileUrl}"`, (error) => {
+              if (error) {
+                console.error('启动HTML失败:', error)
               }
+            })
+            return {
+              success: true,
+              message: 'HTML文件已在浏览器中打开',
+              filePath: targetFilePath,
+              fileUrl: fileUrl
             }
-          } catch (backupError) {
-            console.error('备用方案失败:', backupError)
           }
-
-          return {
-            success: false,
-            message: `打开浏览器失败: ${openError.message}。请检查系统是否安装了默认浏览器，或尝试手动打开文件: ${fileUrl}`
-          }
+        } catch (backupError) {
+          console.error('启动HTML失败:', backupError)
         }
       } catch (error) {
         console.error('运行HTML文件失败:', error)
