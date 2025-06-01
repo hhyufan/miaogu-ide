@@ -352,7 +352,7 @@ const MarkdownRenderer = memo(({ content }) => {
               onClick={(e) => {
                 e.preventDefault()
                 if (href && window.ipcApi?.openExternal) {
-                  window.ipcApi.openExternal(href)
+                  window.ipcApi.openExternal(href).catch((e) => console.error(e))
                 }
               }}
             >

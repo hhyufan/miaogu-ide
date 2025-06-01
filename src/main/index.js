@@ -7,6 +7,7 @@ import stateStore from './store'
 import chokidar from 'chokidar'
 import { TextDecoder } from 'text-encoding'
 import jschardet from 'jschardet'
+import { exec } from 'child_process'
 function detectFileEncoding(buffer) {
   // 优先检查BOM标记
   if (buffer.length >= 4) {
@@ -205,14 +206,16 @@ function createSettingsWindow() {
   })
 
   settingsWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    shell.openExternal(details.url).catch(console.error)
     return { action: 'deny' }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    settingsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`)
+    settingsWindow
+      .loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`)
+      .catch(console.error)
   } else {
-    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html'))
+    settingsWindow.loadFile(join(__dirname, '../renderer/settings.html')).catch(console.error)
   }
 }
 
@@ -838,38 +841,22 @@ app.whenReady().then(() => {
         return { success: false, message: `目标文件不存在: ${targetFilePath}` }
       }
 
-      // 在默认浏览器中打开HTML文件
-      // 使用正确的文件URL格式，特别是在Windows上
-      let fileUrl
-      if (process.platform === 'win32') {
-        // Windows平台：确保路径格式正确
-        const normalizedPath = targetFilePath.replace(/\\/g, '/')
-        fileUrl = `file:///${normalizedPath}`
-      } else {
-        // Unix-like平台
-        fileUrl = `file://${targetFilePath}`
-      }
-
+      const fileUrl = targetFilePath
       try {
-        // 尝试备用方案
-        try {
-          const { exec } = require('child_process')
-          if (process.platform === 'win32') {
-
+        if (process.platform === 'win32') {
+          shell.openExternal(fileUrl).catch(() => {
             exec(`start "" "${fileUrl}"`, (error) => {
               if (error) {
-                console.error('启动HTML失败:', error)
+                console.error('HTML文件已在浏览器中打开失败:', error)
               }
             })
-            return {
-              success: true,
-              message: 'HTML文件已在浏览器中打开',
-              filePath: targetFilePath,
-              fileUrl: fileUrl
-            }
+          })
+          return {
+            success: true,
+            message: 'HTML文件已在浏览器中打开',
+            filePath: targetFilePath,
+            fileUrl: fileUrl
           }
-        } catch (backupError) {
-          console.error('启动HTML失败:', backupError)
         }
       } catch (error) {
         console.error('运行HTML文件失败:', error)
@@ -878,32 +865,6 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('运行HTML文件失败:', error)
       return { success: false, message: `运行HTML文件失败: ${error.message}` }
-    }
-  })
-
-  // 更新临时HTML文件内容
-  ipcMain.handle('update-temp-html-file', async (event, { tempFilePath, content }) => {
-    try {
-      if (!tempFilePath || !content) {
-        return { success: false, message: '未提供临时文件路径或内容' }
-      }
-
-      // 检查临时文件是否存在
-      if (!fs.existsSync(tempFilePath)) {
-        return { success: false, message: `临时文件不存在: ${tempFilePath}` }
-      }
-
-      // 更新临时文件内容
-      fs.writeFileSync(tempFilePath, content, 'utf8')
-
-      return {
-        success: true,
-        message: '临时HTML文件已更新',
-        filePath: tempFilePath
-      }
-    } catch (error) {
-      console.error('更新临时HTML文件失败:', error)
-      return { success: false, message: `更新临时HTML文件失败: ${error.message}` }
     }
   })
 
