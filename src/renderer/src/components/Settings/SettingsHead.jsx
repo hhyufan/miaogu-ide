@@ -13,6 +13,7 @@ import {
 const SettingsHead = () => {
   const [isMaximized, setIsMaximized] = useState(false)
 
+
   const handleMinimize = () => {
     window.ipcApi.minimizeWindow()
   }
@@ -25,6 +26,7 @@ const SettingsHead = () => {
   const handleClose = async () => {
     window.ipcApi.closeWindow()
   }
+
 
   return (
     <Header className="settings-header">

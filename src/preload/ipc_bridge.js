@@ -33,6 +33,7 @@ const ipcApi = {
     return ipcRenderer.invoke('set-theme', theme)
   },
 
+
   // 获取字体大小设置
   getFontSize: async () => {
     return ipcRenderer.invoke('get-state', 'fontSize')
@@ -79,8 +80,8 @@ const ipcApi = {
   },
 
   // 监听切换主题事件 (Ctrl+T)
-  onToggleTheme: (callback) => {
-    ipcRenderer.on('toggle-theme', callback)
+  onToggleTheme: (callback, theme) => {
+    ipcRenderer.on('toggle-theme', callback, theme)
   },
 
   // 移除切换主题事件监听

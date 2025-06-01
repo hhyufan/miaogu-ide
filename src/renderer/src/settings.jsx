@@ -20,7 +20,47 @@ const Settings = () => {
   })
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
-  }, [localStorage.getItem('theme')])
+  }, [isDarkMode])
+
+
+    const toggleTheme = () => {
+    const newTheme = !isDarkMode
+    setIsDarkMode(newTheme)
+
+    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light')
+  }
+
+
+  useEffect(() => {
+      const handleToggleTheme = () => {
+        toggleTheme()
+      }
+
+      // 添加事件监听器
+      window.ipcApi.onToggleTheme(handleToggleTheme)
+
+      // 清理事件监听器
+      return () => {
+        window.ipcApi.removeToggleTheme(handleToggleTheme)
+      }
+    }, [toggleTheme])
+
+  useEffect(() => {
+    ;(async () => {
+      if (window.ipcApi && window.ipcApi.getTheme) {
+        try {
+          const savedTheme = await window.ipcApi.getTheme()
+          if (savedTheme) {
+            const isDark = savedTheme === 'dark'
+            setIsDarkMode(isDark)
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
+          }
+        } catch (error) {
+          console.error('加载保存的主题设置失败:', error)
+        }
+      }
+    })()
+  }, [])
 
   return (
     <div className="settings-container">

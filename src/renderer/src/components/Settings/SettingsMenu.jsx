@@ -29,6 +29,7 @@ const SettingsMenu = () => {
   const [fontFamily, setFontFamily] = useState('')
   const [currentSection, setCurrentSection] = useState('textEditor')
   const [settingBgImage, setBgImage] = useState('')
+  
 
   const renderContent = () => {
     switch (currentSection) {
@@ -47,6 +48,7 @@ const SettingsMenu = () => {
         return null
     }
   }
+  
 
   useEffect(() => {
     const loadSettings = async () => {

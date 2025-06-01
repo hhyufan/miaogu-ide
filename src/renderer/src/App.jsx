@@ -100,20 +100,23 @@ const App = () => {
 
   // 切换主题
   const toggleTheme = () => {
+    // 同时保存到electron-store
+    if (window.ipcApi && window.ipcApi.setTheme) {
+      window.ipcApi.setTheme(!isDarkMode ? 'dark' : 'light').catch((error) => {
+        console.error('保存主题设置失败:', error)
+      })
+    }
+
+  }
+
+  const changeTheme = () => {
     const newTheme = !isDarkMode
     setIsDarkMode(newTheme)
 
     // 保存到localStorage（向后兼容）
     localStorage.setItem('theme', newTheme ? 'dark' : 'light')
-
-    // 同时保存到electron-store
-    if (window.ipcApi && window.ipcApi.setTheme) {
-      window.ipcApi.setTheme(newTheme ? 'dark' : 'light').catch((error) => {
-        console.error('保存主题设置失败:', error)
-      })
-    }
-
     document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light')
+
   }
 
   useEffect(() => {
@@ -141,7 +144,7 @@ const App = () => {
   useEffect(() => {
     // 监听来自主进程的toggle-theme事件
     const handleToggleTheme = () => {
-      toggleTheme()
+      changeTheme()
     }
 
     // 添加事件监听器
