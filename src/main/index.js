@@ -867,6 +867,31 @@ app.whenReady().then(() => {
       return { success: false, message: `运行HTML文件失败: ${error.message}` }
     }
   })
+  // 更新临时HTML文件内容
+  ipcMain.handle('update-temp-html-file', async (event, { tempFilePath, content }) => {
+    try {
+      if (!tempFilePath || !content) {
+        return { success: false, message: '未提供临时文件路径或内容' }
+      }
+
+      // 检查临时文件是否存在
+      if (!fs.existsSync(tempFilePath)) {
+        return { success: false, message: `临时文件不存在: ${tempFilePath}` }
+      }
+
+      // 更新临时文件内容
+      fs.writeFileSync(tempFilePath, content, 'utf8')
+
+      return {
+        success: true,
+        message: '临时HTML文件已更新',
+        filePath: tempFilePath
+      }
+    } catch (error) {
+      console.error('更新临时HTML文件失败:', error)
+      return { success: false, message: `更新临时HTML文件失败: ${error.message}` }
+    }
+  })
 
   // 设置文件行尾序列
   ipcMain.handle('set-file-line-ending', async (event, { filePath, lineEnding }) => {
