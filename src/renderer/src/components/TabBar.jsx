@@ -1,11 +1,13 @@
-import { Tabs } from 'antd'
-import { useFile } from '../contexts/FileContext'
 import './TabBar.scss'
-import { EditOutlined, FileAddOutlined } from '@ant-design/icons'
-import { useEffect } from 'react'
 
+import { useEffect } from 'react'
+import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { useFile } from '../contexts/FileContext'
+import { EditOutlined, FileAddOutlined } from '@ant-design/icons'
+import { Tabs } from 'antd'
 const TabBar = () => {
   const { openedFiles, currentFile, switchFile, closeFile } = useFile()
+  const hasBackground = useBackgroundStatus()
 
   // 使用useEffect设置或移除CSS变量
   useEffect(() => {
@@ -53,7 +55,7 @@ const TabBar = () => {
   }))
 
   return (
-    <div className="tab-bar">
+    <div className={`tab-bar ${hasBackground ? 'with-background' : ''}`}>
       <Tabs
         type="editable-card"
         onChange={onChange}

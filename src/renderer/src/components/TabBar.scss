@@ -1,8 +1,12 @@
 .tab-bar {
-    background-color: var(--bar-background-color, var(--editor-background));
+    background-color: var(--bar-background-color);
     border-bottom: 1px solid var(--border-color);
     padding: 0 8px;
     height: var(--tab-bar-height);
+
+    &.with-background {
+        background-color: var(--editor-background);
+    }
 
     .ant-tabs {
         .ant-tabs-nav {

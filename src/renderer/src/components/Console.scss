@@ -11,18 +11,27 @@
   }
 
   .console-card {
-    background-color: var(--bar-background-color, var(--editor-background));
     margin: 0;
     border-radius: 0 0 0 0;
     border-bottom: none;
+    background-color: transparent !important;
 
     .ant-card-head {
       min-height: 40px;
       padding: 0 16px;
       border-bottom: 1px solid #f0f0f0;
+      background-color: var(--bar-background-color);
 
       .ant-card-head-title {
         padding: 8px 0;
+      }
+    }
+  }
+
+  &.with-background {
+    .console-card {
+      .ant-card-head {
+        background-color: transparent;
       }
     }
 
@@ -34,6 +43,7 @@
   }
 
   .console-header {
+
     display: flex;
     justify-content: space-between;
     align-items: center;

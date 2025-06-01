@@ -1,10 +1,13 @@
-import { Breadcrumb, Button, Divider, Dropdown, Tooltip } from 'antd'
-import { useFile } from '../contexts/FileContext'
 import './EditorStatusBar.scss'
-import { useEffect, useRef, useState } from 'react'
 import ENCODING_CASE_MAP from './encoding-case.json'
+
+import { Breadcrumb, Divider } from 'antd'
+import { useFile } from '../contexts/FileContext'
+import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { useEffect, useRef, useState } from 'react'
 import { FileOutlined, FolderOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
 import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
+import { Button, Tooltip, Dropdown } from 'antd'
 
 function standardizeEncodingName(encoding) {
   // 转换为小写进行匹配
@@ -32,6 +35,7 @@ const EditorStatusBar = () => {
   const [pathSegments, setPathSegments] = useState([])
   const [directoryContents, setDirectoryContents] = useState({})
   const [fontSize, setFontSize] = useState(14)
+  const hasBackground = useBackgroundStatus()
   const [scrollState, setScrollState] = useState({
     canScroll: false,
     scrollLeft: 0,
@@ -76,7 +80,7 @@ const EditorStatusBar = () => {
     }
 
     // 初始加载字体大小
-    loadFontSize()
+    loadFontSize().catch(console.error)
 
     // 监听字体大小变化事件
     const handleFontSizeChange = (event, newFontSize) => {
@@ -91,6 +95,8 @@ const EditorStatusBar = () => {
       window.ipcApi.removeFontSizeChange(handleFontSizeChange)
     }
   }, [])
+
+
 
   // 处理字体大小变化
   const handleFontSizeChange = async (newSize) => {
@@ -180,17 +186,20 @@ const EditorStatusBar = () => {
   useEffect(() => {
     const timer = setTimeout(updateScrollState, 100)
     return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathSegments])
 
   // 组件挂载时立即更新滚动状态
   useEffect(() => {
     updateScrollState()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     const handleResize = () => updateScrollState()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // 处理滚动条点击
@@ -234,9 +243,10 @@ const EditorStatusBar = () => {
     // 计算拖拽距离对应的滚动距离，设置灵敏度倍数
     const sensitivity = 2.0 // 灵敏度倍数
     const scrollDelta = (deltaX / containerWidth) * maxScroll * sensitivity
-    const newScrollLeft = Math.max(0, Math.min(maxScroll, dragStartScrollLeft + scrollDelta))
-
-    breadcrumbRef.current.scrollLeft = newScrollLeft
+    breadcrumbRef.current.scrollLeft = Math.max(
+      0,
+      Math.min(maxScroll, dragStartScrollLeft + scrollDelta)
+    )
     updateScrollState()
   }
 
@@ -393,7 +403,7 @@ const EditorStatusBar = () => {
   }
 
   return (
-    <div className="editor-status-bar">
+    <div className={`editor-status-bar ${hasBackground ? 'with-background' : ''}`}>
       <div className="status-item file-path" ref={filePathRef}>
         {/* 自定义滚动条轨道 - 只在有文件且需要滚动时显示 */}
         {currentFile.path && !currentFile.isTemporary && scrollState.canScroll && (

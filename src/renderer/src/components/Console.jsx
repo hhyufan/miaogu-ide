@@ -1,13 +1,16 @@
-import { useRef, useEffect, useState } from 'react'
-import { Button, Card } from 'antd'
-import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
 import './Console.scss'
+
 import MarkdownRenderer from './MarkdownRenderer'
 
+import { useEffect, useRef, useState } from 'react'
+import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
+import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { Button, Card } from 'antd'
 // eslint-disable-next-line react/prop-types
 const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
   const outputRef = useRef(null)
   const [fontFamily, setFontFamily] = useState('JetBrains Mono')
+  const hasBackground = useBackgroundStatus()
 
   useEffect(() => {
     const initFamily = async () => {
@@ -76,7 +79,7 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
     }
   }
   return (
-    <div className={`console-container`}>
+    <div className={`console-container ${hasBackground ? 'with-background' : ''}`}>
       <Card
         size="small"
         title={
