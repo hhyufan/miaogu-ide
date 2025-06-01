@@ -155,13 +155,13 @@ const CodeRunner = ({ code, filePath, onOutput, disabled = false, fileType = 'ja
 
             // 包装代码以捕获返回值
             const wrappedCode = `
-        try {
-          ${code}
-        } catch (error) {
-          console.error('运行时错误:', error.message)
-          throw error
-        }
-      `
+                try {
+                    ${code}
+                } catch (error) {
+                    console.error('运行时错误:', error.message)
+                    throw error
+                }
+            `
 
             const func = new Function(...sandboxKeys, wrappedCode)
 

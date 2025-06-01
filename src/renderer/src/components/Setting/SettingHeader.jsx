@@ -1,6 +1,6 @@
 import { Layout, Button } from 'antd'
 import { useState } from 'react'
-import './SettingsHeader.scss'
+import './SettingHeader.scss'
 
 const { Header } = Layout
 import {
@@ -10,7 +10,7 @@ import {
     FullscreenExitOutlined
 } from '@ant-design/icons'
 
-const SettingsHead = () => {
+const SettingHeader = () => {
     const [isMaximized, setIsMaximized] = useState(false)
 
     const handleMinimize = () => {
@@ -27,8 +27,8 @@ const SettingsHead = () => {
     }
 
     return (
-        <Header className="settings-header">
-            <div className="settingsHead-title">设置</div>
+        <Header className="setting-header">
+            <div className="settingHead-title">设置</div>
             <div className="window-controls">
                 <Button
                     type="text"
@@ -53,4 +53,4 @@ const SettingsHead = () => {
     )
 }
 
-export default SettingsHead
+export default SettingHeader

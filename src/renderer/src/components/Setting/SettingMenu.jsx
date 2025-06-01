@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button, message } from 'antd'
 import { Menu } from 'antd'
-import './SettingsMenu.scss'
+import './SettingMenu.scss'
 import TextEditor from './TextEditor'
-import BackgroundSettings from './BackgroundSettings'
+import BackgroundSetting from './BackgroundSetting'
 
-const SettingsMenuList = [
+const settingMenuList = [
     {
         key: 'textEditor',
         label: '文本',
@@ -21,14 +21,14 @@ const SettingsMenuList = [
     }
 ]
 
-const SettingsMenu = () => {
+const SettingMenu = () => {
     const [activeKey, setActiveKey] = useState('')
     const contentRef = useRef(null)
-    const [localSettings, setLocalSettings] = useState({})
+    const [localSetting, setLocalSetting] = useState({})
     const [fontSize, setFontSize] = useState(14)
     const [fontFamily, setFontFamily] = useState('')
     const [currentSection, setCurrentSection] = useState('textEditor')
-    const [settingBgImage, setBgImage] = useState('')
+    const [bgImage, setBgImage] = useState('')
 
     const renderContent = () => {
         switch (currentSection) {
@@ -42,21 +42,21 @@ const SettingsMenu = () => {
                     />
                 )
             case 'background':
-                return <BackgroundSettings bgImage={settingBgImage} setBgImage={setBgImage} />
+                return <BackgroundSetting bgImage={bgImage} setBgImage={setBgImage} />
             default:
                 return null
         }
     }
 
     useEffect(() => {
-        const loadSettings = async () => {
+        const LoadSetting = async () => {
             try {
-                const savedSettings = await window.ipcApi.getSettings()
+                const savedSetting = await window.ipcApi.getSetting()
                 const savedImage = await window.ipcApi.getSavedImage()
-                if (savedSettings) {
-                    setLocalSettings(savedSettings)
-                    setFontSize(savedSettings.fontSize)
-                    setFontFamily(savedSettings.fontFamily)
+                if (savedSetting) {
+                    setLocalSetting(savedSetting)
+                    setFontSize(savedSetting.fontSize)
+                    setFontFamily(savedSetting.fontFamily)
                     setBgImage(savedImage)
                 }
             } catch (error) {
@@ -65,7 +65,7 @@ const SettingsMenu = () => {
         }
 
         // 初始加载字体大小
-        loadSettings().catch(console.error)
+        LoadSetting().catch(console.error)
 
         // 监听字体大小变化事件
         const handleFontSizeChange = (event, newFontSize) => {
@@ -81,13 +81,13 @@ const SettingsMenu = () => {
         }
     }, [])
 
-    const saveSettings = async () => {
-        localSettings.fontSize = fontSize
-        localSettings.fontFamily = fontFamily
+    const saveSetting = async () => {
+        localSetting.fontSize = fontSize
+        localSetting.fontFamily = fontFamily
         try {
             await window.ipcApi.setFontSize(fontSize)
             await window.ipcApi.setFontFamily(fontFamily)
-            await window.ipcApi.setSettings(localSettings)
+            await window.ipcApi.setSetting(localSetting)
             message.success('设置保存成功')
         } catch (error) {
             message.error('设置保存失败')
@@ -100,11 +100,11 @@ const SettingsMenu = () => {
             <div style={{ display: 'flow-root' }}>
                 <Menu
                     mode="inline"
-                    className="custom-settings-menu"
+                    className="custom-setting-menu"
                     selectedKeys={[activeKey]}
                     style={{ width: 180, height: '100%', overflow: 'auto' }}
                 >
-                    {SettingsMenuList.map((group) => (
+                    {settingMenuList.map((group) => (
                         <Menu.SubMenu
                             key={group.key}
                             title={group.label}
@@ -148,7 +148,7 @@ const SettingsMenu = () => {
                     zIndex: 1000 // 确保按钮在最上层
                 }}
             >
-                <Button type="primary" onClick={() => saveSettings()}>
+                <Button type="primary" onClick={() => saveSetting()}>
                     保存
                 </Button>
             </div>
@@ -156,4 +156,4 @@ const SettingsMenu = () => {
     )
 }
 
-export default SettingsMenu
+export default SettingMenu

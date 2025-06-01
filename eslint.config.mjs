@@ -10,7 +10,7 @@ export default [
     eslintPluginReact.configs.flat.recommended,
     eslintPluginReact.configs.flat['jsx-runtime'],
     {
-        settings: {
+        setting: {
             react: {
                 version: 'detect'
             }

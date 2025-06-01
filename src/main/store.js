@@ -12,7 +12,7 @@ const store = new Store({
         theme: 'light',
         // 演练场代码编辑内容
         codeEditorContents: {},
-        settings: {
+        setting: {
             // 字体大小
             fontSize: 14,
             // 字体
@@ -51,8 +51,8 @@ function setTheme(theme) {
  * @returns {number} 字体大小
  */
 function getFontSize() {
-    const settings = store.get('settings')
-    return settings.fontSize || 14
+    const setting = store.get('setting')
+    return setting.fontSize || 14
 }
 
 /**
@@ -60,9 +60,9 @@ function getFontSize() {
  * @param {number} fontSize 字体大小
  */
 function setFontSize(fontSize) {
-    const settings = store.get('settings')
-    settings.fontSize = fontSize
-    store.set('settings', settings)
+    const setting = store.get('setting')
+    setting.fontSize = fontSize
+    store.set('setting', setting)
 }
 
 /**
@@ -71,9 +71,9 @@ function setFontSize(fontSize) {
  */
 
 function setFontFamily(fontFamily) {
-    const settings = store.get('settings')
-    settings.fontFamily = fontFamily
-    store.set('settings', settings)
+    const setting = store.get('setting')
+    setting.fontFamily = fontFamily
+    store.set('setting', setting)
 }
 
 /**
@@ -126,18 +126,18 @@ function setState(key, value) {
  * 获取设置
  * @returns {Object} 存储的设置值
  */
-function getSettings() {
-    return store.get('settings')
+function getSetting() {
+    return store.get('setting')
 }
 
 /**
  * 设置设置
- * @param {Object} settings 要存储的设置值
+ * @param {Object} setting 要存储的设置值
  * @returns {boolean} 操作是否成功
  */
-function setSettings(settings) {
+function setSetting(setting) {
     try {
-        store.set('settings', settings)
+        store.set('setting', setting)
         return true
     } catch (error) {
         console.error(`设置失败:`, error)
@@ -150,8 +150,8 @@ function setSettings(settings) {
  * @returns {string} 背景图片路径
  */
 function getBgImage() {
-    const settings = store.get('settings')
-    return settings.bgImage || ''
+    const setting = store.get('setting')
+    return setting.bgImage || ''
 }
 
 /**
@@ -159,9 +159,9 @@ function getBgImage() {
  * @param {string} bgImage 背景图片路径
  */
 function setBgImage(bgImage) {
-    const settings = store.get('settings')
-    settings.bgImage = bgImage
-    store.set('settings', settings)
+    const setting = store.get('setting')
+    setting.bgImage = bgImage
+    store.set('setting', setting)
 }
 
 /**
@@ -199,8 +199,8 @@ export default {
     setCodeEditorContent,
     getState,
     setState,
-    getSettings,
-    setSettings,
+    getSetting,
+    setSetting,
     getBgImage,
     setBgImage,
     getSavedImage,

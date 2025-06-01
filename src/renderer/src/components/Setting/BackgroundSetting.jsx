@@ -3,7 +3,7 @@ import { UploadOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 
 // eslint-disable-next-line react/prop-types
-const BackgroundSettings = ({ bgImage, setBgImage }) => {
+const BackgroundSetting = ({ bgImage, setBgImage }) => {
     const [isVisible, setIsVisible] = useState(false)
     const [savedBgImage, setSavedBgImage] = useState('')
     const [bgTransparency, setBgTransparency] = useState({ dark: 50, light: 50 })
@@ -55,6 +55,7 @@ const BackgroundSettings = ({ bgImage, setBgImage }) => {
 
     useEffect(() => {
         initSavedImage().catch(console.error)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -90,13 +91,19 @@ const BackgroundSettings = ({ bgImage, setBgImage }) => {
                             checked={randomBackground}
                             onChange={(e) => {
                                 if (e.target.checked) {
-                                    window.ipcApi.setState('randomBackground', true)
-                                    window.ipcApi.setBgImage('https://t.alcy.cc/moez')
+                                    window.ipcApi
+                                        .setState('randomBackground', true)
+                                        .catch(console.error)
+                                    window.ipcApi
+                                        .setBgImage('https://t.alcy.cc/moez')
+                                        .catch(console.error)
                                     setRandomBackground(true)
                                 } else {
-                                    window.ipcApi.setState('randomBackground', false)
+                                    window.ipcApi
+                                        .setState('randomBackground', false)
+                                        .catch(console.error)
                                     setRandomBackground(false)
-                                    window.ipcApi.setBgImage(savedBgImage)
+                                    window.ipcApi.setBgImage(savedBgImage).catch(console.error)
                                 }
                             }}
                         >
@@ -149,4 +156,4 @@ const BackgroundSettings = ({ bgImage, setBgImage }) => {
     )
 }
 
-export default BackgroundSettings
+export default BackgroundSetting

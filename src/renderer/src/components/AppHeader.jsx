@@ -164,7 +164,7 @@ const AppHeader = () => {
         setNewFileName('')
     }
     const openSettingWindow = () => {
-        window.ipcApi.openSettingsWindow()
+        window.ipcApi.openSettingWindow()
     }
 
     // 文件菜单项
@@ -191,7 +191,7 @@ const AppHeader = () => {
             extra: 'Ctrl + Shift + S'
         },
         {
-            key: 'settings',
+            key: 'setting',
             label: '设置',
             icon: <SettingOutlined />,
             onClick: openSettingWindow

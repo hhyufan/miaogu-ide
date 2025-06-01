@@ -31,7 +31,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'index.html'),
-                settings: resolve(__dirname, 'settings.html') // ✅ 添加 settings 页面
+                setting: resolve(__dirname, 'setting.html') // ✅ 添加 setting 页面
             }
         }
     }

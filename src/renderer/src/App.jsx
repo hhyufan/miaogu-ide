@@ -119,9 +119,9 @@ const App = () => {
     useEffect(() => {
         const loadInitBgTransparency = async () => {
             const transparencySetting = await window.ipcApi.getBgTransparency()
-            const bgImgPath = await window.ipcApi.getBgImage()
+            const savedImage = await window.ipcApi.getSavedImage()
             // 如果背景图片路径为空，说明背景图片被关闭，不改变透明度
-            if (!bgImgPath || bgImgPath === '') {
+            if (!savedImage || savedImage === '') {
                 return
             }
             document.documentElement.style.setProperty(
@@ -237,9 +237,9 @@ const App = () => {
         const handleBgTransparencyChange = async (event, theme, transparency) => {
             // 如果正在更新背景图片，跳过透明度更新，避免冲突
             if (isUpdatingBackground) return
-            const bgImgPath = await window.ipcApi.getBgImage()
+            const savedImage = await window.ipcApi.getSavedImage()
             // 如果背景图片路径为空，说明背景图片被关闭，不改变透明度
-            if (!bgImgPath || bgImgPath === '') {
+            if (!savedImage || savedImage === '') {
                 return
             }
             // 使用 ref 获取最新 isDarkMode
@@ -272,11 +272,11 @@ const App = () => {
         // 这里写你要执行的方法
         const loadInitialData = async () => {
             try {
-                const bgImgPath = await window.ipcApi.getBgImage()
+                const savedImage = await window.ipcApi.getSavedImage()
                 const randomBackground = await window.ipcApi.getState('randomBackground')
 
                 // 如果背景图片路径为空，说明背景图片被关闭，设置为透明色
-                if (!bgImgPath || bgImgPath === '') {
+                if (!savedImage || savedImage === '') {
                     requestAnimationFrame(() => {
                         document.documentElement.style.setProperty(
                             '--editor-background',
@@ -293,7 +293,7 @@ const App = () => {
                     const backgroundRgba = `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
 
                     // 然后加载背景图片
-                    const img = await window.electron.nativeImage.createFromPath(bgImgPath)
+                    const img = await window.electron.nativeImage.createFromPath(savedImage)
                     const backgroundImage = `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
 
                     // 批量更新CSS变量，减少重绘次数

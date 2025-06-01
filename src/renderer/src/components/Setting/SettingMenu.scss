@@ -1,5 +1,5 @@
-.custom-settings-menu {
-  background-color: var(--background-color);
+.custom-setting-menu {
+  background-color: var(--setting-background-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   color: var(--text-color);
 
@@ -14,7 +14,7 @@
   .ant-menu-item {
     text-align: right;
     padding-right: 16px;
-    background-color: var(--background-color);
+    background-color: var(--setting-background-color);
     color: var(--text-color);
 
     // 鼠标悬浮效果，改用主题色带透明度
@@ -42,16 +42,16 @@
   bottom: 20px;
   right: 20px;
   z-index: 1000;
-  
+
   // 可选：添加一些视觉效果
   .ant-btn {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    
+
     transition: all 0.3s ease;
   }
 }

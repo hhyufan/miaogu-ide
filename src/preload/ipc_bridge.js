@@ -17,8 +17,8 @@ const ipcApi = {
         ipcRenderer.send('window-control', 'close')
     },
     // 打开设置窗口
-    openSettingsWindow: () => {
-        ipcRenderer.send('open-settings-window')
+    openSettingWindow: () => {
+        ipcRenderer.send('open-setting-window')
     },
 
     // 状态持久化相关API
@@ -204,12 +204,12 @@ const ipcApi = {
         return ipcRenderer.invoke('open-external', url)
     },
 
-    getSettings: async () => {
-        return ipcRenderer.invoke('get-settings')
+    getSetting: async () => {
+        return ipcRenderer.invoke('get-setting')
     },
 
-    setSettings: async (settings) => {
-        return ipcRenderer.invoke('set-settings', settings)
+    setSetting: async (setting) => {
+        return ipcRenderer.invoke('set-setting', setting)
     },
 
     selectBgImage: async () => {

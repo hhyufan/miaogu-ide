@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
-import SettingsHead from './components/Settings/SettingsHead'
-import SettingsMenu from './components/Settings/SettingsMenu'
+import './setting.scss'
 
-const Settings = () => {
+import { useState, useEffect } from 'react'
+import SettingHeader from './components/Setting/SettingHeader'
+import SettingMenu from './components/Setting/SettingMenu'
+
+const Setting = () => {
     const [isDarkMode] = useState(() => {
         // 首先尝试从localStorage获取（向后兼容）
         const savedTheme = localStorage.getItem('theme')
@@ -21,13 +23,13 @@ const Settings = () => {
     }, [isDarkMode])
 
     return (
-        <div className="settings-container">
-            <SettingsHead />
-            <div className="settings-content" style={{ height: '100vh', width: '100%' }}>
-                <SettingsMenu />
+        <div className="setting-container">
+            <SettingHeader />
+            <div className="setting-content" style={{ height: '100vh', width: '100%' }}>
+                <SettingMenu />
             </div>
         </div>
     )
 }
 
-export default Settings
+export default Setting

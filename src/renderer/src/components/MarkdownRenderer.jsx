@@ -27,8 +27,8 @@ const MarkdownRenderer = memo(({ content }) => {
 
     useEffect(() => {
         const initFamily = async () => {
-            const settings = await window.ipcApi.getSettings()
-            setFontFamily(settings.fontFamily || 'JetBrains Mono')
+            const setting = await window.ipcApi.getSetting()
+            setFontFamily(setting.fontFamily || 'JetBrains Mono')
         }
         initFamily().catch(console.error)
     }, [])

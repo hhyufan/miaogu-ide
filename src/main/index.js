@@ -174,16 +174,16 @@ function createWindow() {
     }
 }
 
-let settingsWindow = null
+let settingWindow = null
 
-function createSettingsWindow() {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-        settingsWindow.show()
-        settingsWindow.focus()
+function createSettingWindow() {
+    if (settingWindow && !settingWindow.isDestroyed()) {
+        settingWindow.show()
+        settingWindow.focus()
         return
     }
 
-    settingsWindow = new BrowserWindow({
+    settingWindow = new BrowserWindow({
         width: 900,
         height: 670,
         show: false,
@@ -197,25 +197,25 @@ function createSettingsWindow() {
         }
     })
 
-    settingsWindow.on('ready-to-show', () => {
-        settingsWindow.show()
+    settingWindow.on('ready-to-show', () => {
+        settingWindow.show()
     })
 
-    settingsWindow.on('closed', () => {
-        settingsWindow = null
+    settingWindow.on('closed', () => {
+        settingWindow = null
     })
 
-    settingsWindow.webContents.setWindowOpenHandler((details) => {
+    settingWindow.webContents.setWindowOpenHandler((details) => {
         shell.openExternal(details.url).catch(console.error)
         return { action: 'deny' }
     })
 
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        settingsWindow
-            .loadURL(`${process.env['ELECTRON_RENDERER_URL']}/settings.html`)
+        settingWindow
+            .loadURL(`${process.env['ELECTRON_RENDERER_URL']}/setting.html`)
             .catch(console.error)
     } else {
-        settingsWindow.loadFile(join(__dirname, '../renderer/settings.html')).catch(console.error)
+        settingWindow.loadFile(join(__dirname, '../renderer/setting.html')).catch(console.error)
     }
 }
 
@@ -536,7 +536,7 @@ app.whenReady().then(() => {
             case 'fontSize':
                 return stateStore.getFontSize()
             default:
-                // 对于其他键（如aiSettings），使用通用的getState方法
+                // 对于其他键（如aisetting），使用通用的getState方法
                 return stateStore.getState(key)
         }
     })
@@ -1090,16 +1090,16 @@ ipcMain.handle('set-font-family', (_, fontFamily) => {
 
 ipcMain.handle('select-bg-image', handleStoreBgImage)
 
-ipcMain.on('open-settings-window', () => {
-    createSettingsWindow()
+ipcMain.on('open-setting-window', () => {
+    createSettingWindow()
 })
 
-ipcMain.handle('get-settings', () => {
-    return stateStore.getSettings()
+ipcMain.handle('get-setting', () => {
+    return stateStore.getSetting()
 })
 
-ipcMain.handle('set-settings', (event, settings) => {
-    return stateStore.setSettings(settings)
+ipcMain.handle('set-setting', (event, setting) => {
+    return stateStore.setSetting(setting)
 })
 
 ipcMain.handle('get-bg-image', () => {

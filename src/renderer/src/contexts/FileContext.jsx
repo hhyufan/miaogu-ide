@@ -616,6 +616,41 @@ export const FileProvider = ({ children }) => {
         return { success: false }
     }
 
+    // 内联函数：更新文件信息和编辑器内容
+    const updateFileContent = (filePath, newContent, fileEncoding, fileLineEnding) => {
+        // 查找对应的文件
+        const targetFile = openedFiles.find((file) => file.path === filePath)
+        if (!targetFile) return
+
+        // 检查编码或行尾字符是否发生变化
+        const encodingChanged = targetFile.encoding !== fileEncoding
+        const lineEndingChanged = targetFile.lineEnding !== fileLineEnding
+
+        // 更新文件信息
+        setOpenedFiles((prev) =>
+            prev.map((file) => {
+                if (file.path === filePath) {
+                    return {
+                        ...file,
+                        content: newContent,
+                        originalContent: newContent, // 更新原始内容
+                        isModified: false,
+                        encoding: fileEncoding,
+                        lineEnding: fileLineEnding
+                    }
+                }
+                return file
+            })
+        )
+
+        // 如果当前文件是正在编辑的文件，且编码或行尾字符发生变化，需要更新编辑器内容
+        if (filePath === currentFilePath && (encodingChanged || lineEndingChanged)) {
+            if (window.ipcApi?.setCodeEditorContent) {
+                window.ipcApi.setCodeEditorContent(newContent).catch(console.error)
+            }
+        }
+    }
+
     // 监听文件变化并更新内容
     const refreshFileContent = async (filePath) => {
         if (
@@ -635,39 +670,10 @@ export const FileProvider = ({ children }) => {
             let fileEncoding = await window.ipcApi.getFileEncoding(filePath)
             let fileLineEnding = await window.ipcApi.getFileLineEnding(filePath)
 
-            // 查找对应的文件
-            const targetFile = openedFiles.find((file) => file.path === filePath)
-            if (!targetFile) return
-
-            // 检查编码或行尾字符是否发生变化
-            console.log('targetFile', JSON.stringify(targetFile))
+            console.log('targetFile', JSON.stringify(openedFiles.find((file) => file.path === filePath)))
             console.log('File', JSON.stringify(fileLineEnding))
-            const encodingChanged = targetFile.encoding !== fileEncoding
-            const lineEndingChanged = targetFile.lineEnding !== fileLineEnding
 
-            // 更新文件信息
-            setOpenedFiles((prev) =>
-                prev.map((file) => {
-                    if (file.path === filePath) {
-                        return {
-                            ...file,
-                            content: newContent,
-                            originalContent: newContent, // 更新原始内容
-                            isModified: false,
-                            encoding: fileEncoding,
-                            lineEnding: fileLineEnding
-                        }
-                    }
-                    return file
-                })
-            )
-
-            // 如果当前文件是正在编辑的文件，且编码或行尾字符发生变化，需要更新编辑器内容
-            if (filePath === currentFilePath && (encodingChanged || lineEndingChanged)) {
-                if (window.ipcApi?.setCodeEditorContent) {
-                    window.ipcApi.setCodeEditorContent(newContent).catch(console.error)
-                }
-            }
+            updateFileContent(filePath, newContent, fileEncoding, fileLineEnding)
         } catch (error) {
             console.error('刷新文件内容失败:', error)
         }
@@ -811,40 +817,8 @@ export const FileProvider = ({ children }) => {
                         const fileEncoding = data.encoding
                         const fileLineEnding = data.lineEnding
 
-                        // 查找对应的文件
-                        const targetFile = openedFiles.find((file) => file.path === filePath)
-                        if (!targetFile) return
-
-                        // 检查编码或行尾字符是否发生变化
-                        const encodingChanged = targetFile.encoding !== fileEncoding
-                        const lineEndingChanged = targetFile.lineEnding !== fileLineEnding
-
-                        // 更新文件信息
-                        setOpenedFiles((prev) =>
-                            prev.map((file) => {
-                                if (file.path === filePath) {
-                                    return {
-                                        ...file,
-                                        content: newContent,
-                                        originalContent: newContent, // 更新原始内容
-                                        isModified: false,
-                                        encoding: fileEncoding,
-                                        lineEnding: fileLineEnding
-                                    }
-                                }
-                                return file
-                            })
-                        )
-
-                        // 如果当前文件是正在编辑的文件，且编码或行尾字符发生变化，需要更新编辑器内容
-                        if (
-                            filePath === currentFilePath &&
-                            (encodingChanged || lineEndingChanged)
-                        ) {
-                            if (window.ipcApi?.setCodeEditorContent) {
-                                window.ipcApi.setCodeEditorContent(newContent).catch(console.error)
-                            }
-                        }
+                        // 使用内联函数更新文件内容
+                        updateFileContent(filePath, newContent, fileEncoding, fileLineEnding)
                     } else {
                         // 如果没有完整信息，则回退到原来的方式读取文件
                         refreshFileContent(data.filePath).catch(console.error)
@@ -869,14 +843,6 @@ export const FileProvider = ({ children }) => {
         return () => {
             if (window.ipcApi?.stopWatchingFile) {
                 window.ipcApi.stopWatchingFile().catch(console.error)
-            }
-            // 清理文件变化监听器
-            if (window.ipcApi?.removeFileChangedExternally && handleFileChanged) {
-                window.ipcApi.removeFileChangedExternally(handleFileChanged)
-            }
-            // 清理文件删除监听器
-            if (window.ipcApi?.removeFileDeletedExternally && handleFileDeleted) {
-                window.ipcApi.removeFileDeletedExternally(handleFileDeleted)
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

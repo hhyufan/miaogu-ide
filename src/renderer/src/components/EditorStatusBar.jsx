@@ -71,9 +71,9 @@ const EditorStatusBar = () => {
     useEffect(() => {
         const loadFontSize = async () => {
             try {
-                const savedSettings = await window.ipcApi.getSettings()
-                if (savedSettings.fontSize) {
-                    setFontSize(savedSettings.fontSize)
+                const savedSetting = await window.ipcApi.getSetting()
+                if (savedSetting.fontSize) {
+                    setFontSize(savedSetting.fontSize)
                 }
             } catch (error) {
                 console.error('加载字体大小设置失败:', error)
