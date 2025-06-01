@@ -24,9 +24,7 @@ export default defineConfig({
         }
       }
     },
-    plugins: [
-      react()
-    ]
+    plugins: [react()]
   },
   plugins: [react()],
   build: {

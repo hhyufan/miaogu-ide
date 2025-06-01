@@ -202,21 +202,21 @@ export const FileProvider = ({ children }) => {
       prev.map((file) =>
         file.path === currentFilePath
           ? {
-            ...file,
-            content: newCode,
-            // 使用更可靠的字符串比较方式，避免中文编码问题
-            isModified:
-              file.originalContent !== undefined
-                ? file.originalContent !== newCode
-                : file.content !== newCode
-          }
+              ...file,
+              content: newCode,
+              // 使用更可靠的字符串比较方式，避免中文编码问题
+              isModified:
+                file.originalContent !== undefined
+                  ? file.originalContent !== newCode
+                  : file.content !== newCode
+            }
           : file
       )
     )
 
     // 如果是临时文件，自动保存到磁盘
     if (currentFile && currentFile.isTemporary && currentFilePath) {
-      window.ipcApi?.createTempFile(currentFilePath, newCode).catch(error => {
+      window.ipcApi?.createTempFile(currentFilePath, newCode).catch((error) => {
         console.error('自动保存临时文件失败:', error)
       })
     }
@@ -285,14 +285,14 @@ export const FileProvider = ({ children }) => {
           prev.map((file) =>
             file.path === currentFilePath
               ? {
-                ...file,
-                path: targetPath,
-                name: fileName,
-                isTemporary: false,
-                encoding: 'UTF-8', // 存储始终为UTF-8
-                isModified: false,
-                originalContent: contentToSave // 更新原始内容
-              }
+                  ...file,
+                  path: targetPath,
+                  name: fileName,
+                  isTemporary: false,
+                  encoding: 'UTF-8', // 存储始终为UTF-8
+                  isModified: false,
+                  originalContent: contentToSave // 更新原始内容
+                }
               : file
           )
         )
@@ -376,14 +376,14 @@ export const FileProvider = ({ children }) => {
           prev.map((f) =>
             f.path === file.path
               ? {
-                ...f,
-                content: file.content,
-                originalContent: file.content, // 更新原始内容
-                path: targetPath,
-                name: targetPath.split(/[\\/]/).pop(),
-                isTemporary: false,
-                isModified: false
-              }
+                  ...f,
+                  content: file.content,
+                  originalContent: file.content, // 更新原始内容
+                  path: targetPath,
+                  name: targetPath.split(/[\\/]/).pop(),
+                  isTemporary: false,
+                  isModified: false
+                }
               : f
           )
         )
@@ -584,12 +584,12 @@ export const FileProvider = ({ children }) => {
             prev.map((file) =>
               file.path === currentFilePath
                 ? {
-                  ...file,
-                  path: newPath,
-                  name: newName,
-                  isModified: false,
-                  originalContent: file.content
-                }
+                    ...file,
+                    path: newPath,
+                    name: newName,
+                    isModified: false,
+                    originalContent: file.content
+                  }
                 : file
             )
           )
@@ -781,9 +781,12 @@ export const FileProvider = ({ children }) => {
       }
     })
 
+    let handleFileChanged = null
+    let handleFileDeleted = null
+
     // 设置文件变化的回调函数
     if (window.ipcApi?.onFileChangedExternally) {
-      const handleFileChanged = (data) => {
+      handleFileChanged = (data) => {
         if (data && data.filePath) {
           // 检查是否包含完整的文件信息（内容、编码和行尾序列）
           if (data.content !== undefined && data.encoding && data.lineEnding) {
@@ -836,7 +839,7 @@ export const FileProvider = ({ children }) => {
 
     // 设置文件删除的回调函数
     if (window.ipcApi?.onFileDeletedExternally) {
-      const handleFileDeleted = (data) => {
+      handleFileDeleted = (data) => {
         if (data && data.filePath) {
           closeFile(data.filePath)
         }
@@ -848,6 +851,14 @@ export const FileProvider = ({ children }) => {
     return () => {
       if (window.ipcApi?.stopWatchingFile) {
         window.ipcApi.stopWatchingFile().catch(console.error)
+      }
+      // 清理文件变化监听器
+      if (window.ipcApi?.removeFileChangedExternally && handleFileChanged) {
+        window.ipcApi.removeFileChangedExternally(handleFileChanged)
+      }
+      // 清理文件删除监听器
+      if (window.ipcApi?.removeFileDeletedExternally && handleFileDeleted) {
+        window.ipcApi.removeFileDeletedExternally(handleFileDeleted)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

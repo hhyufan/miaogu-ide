@@ -1,11 +1,9 @@
-import  { useState, useEffect } from'react'
+import { useState, useEffect } from 'react'
 import SettingsHead from './components/Settings/SettingsHead'
 import SettingsMenu from './components/Settings/SettingsMenu'
 
-
-
-const Settings = () =>{
-    const [isDarkMode, setIsDarkMode] = useState(() => {
+const Settings = () => {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
     // 首先尝试从localStorage获取（向后兼容）
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
@@ -25,11 +23,11 @@ const Settings = () =>{
   }, [localStorage.getItem('theme')])
 
   return (
-    <div className='settings-container'>
-        <SettingsHead />
-        <div className='settings-content' style={{ height: '100vh' ,width:'100%'}}>
-            <SettingsMenu />
-        </div>
+    <div className="settings-container">
+      <SettingsHead />
+      <div className="settings-content" style={{ height: '100vh', width: '100%' }}>
+        <SettingsMenu />
+      </div>
     </div>
   )
 }

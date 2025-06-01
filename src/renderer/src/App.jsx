@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from 'react'
 import { Layout, ConfigProvider, theme, Button } from 'antd'
 import { SunOutlined, MoonFilled } from '@ant-design/icons'
@@ -118,6 +119,11 @@ const App = () => {
   useEffect(() => {
     const loadInitBgTransparency = async () => {
       const transparencySetting = await window.ipcApi.getBgTransparency()
+      const bgImgPath = await window.ipcApi.getBgImage()
+      // 如果背景图片路径为空，说明背景图片被关闭，不改变透明度
+      if (!bgImgPath || bgImgPath === '') {
+        return
+      }
       document.documentElement.style.setProperty(
         '--editor-background',
         `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
@@ -145,7 +151,7 @@ const App = () => {
     return () => {
       window.ipcApi.removeToggleTheme(handleToggleTheme)
     }
-  }, [toggleTheme])
+  }, [toggleTheme]) // Now safe to include toggleTheme since it's memoized with useCallback
 
   // 从electron-store加载保存的主题
   useEffect(() => {
@@ -209,7 +215,7 @@ const App = () => {
 
     window.ipcApi.onBgImageChange(handleBgImageChange)
     return () => window.ipcApi.removeBgImageChange(handleBgImageChange)
-  }, [isDarkMode, isUpdatingBackground])
+  }, [isDarkMode])
 
   const isDarkModeRef = useRef(isDarkMode)
 
@@ -219,10 +225,14 @@ const App = () => {
   }, [isDarkMode])
 
   useEffect(() => {
-    const handleBgTransparencyChange = (event, theme, transparency) => {
+    const handleBgTransparencyChange = async (event, theme, transparency) => {
       // 如果正在更新背景图片，跳过透明度更新，避免冲突
       if (isUpdatingBackground) return
-
+      const bgImgPath = await window.ipcApi.getBgImage()
+      // 如果背景图片路径为空，说明背景图片被关闭，不改变透明度
+      if (!bgImgPath || bgImgPath === '') {
+        return
+      }
       // 使用 ref 获取最新 isDarkMode
       if (theme === 'dark' && isDarkModeRef.current) {
         requestAnimationFrame(() => {
@@ -247,7 +257,7 @@ const App = () => {
       // 确保移除的是同一个函数
       window.ipcApi.removeBgTransparencyChange(handleBgTransparencyChange)
     }
-  }, [isUpdatingBackground]) // 添加isUpdatingBackground依赖
+  }, [])
 
   useEffect(() => {
     // 这里写你要执行的方法

@@ -148,7 +148,7 @@ const EditorStatusBar = () => {
 
       // 更新溢出状态的CSS类 - 只在有文件时显示省略号
       // 检查是否滚动到结尾（允许1px的误差）
-      const isAtEnd = scrollLeft >= (scrollWidth - clientWidth - 1)
+      const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 1
       const hasFile = currentFile.path && !currentFile.isTemporary
 
       if (hasFile && canScroll && !isAtEnd) {
@@ -204,7 +204,6 @@ const EditorStatusBar = () => {
     breadcrumbRef.current.scrollLeft = percentage * maxScroll
     updateScrollState()
   }
-
 
   // 处理滚动条拖拽开始
   const handleThumbMouseDown = (e) => {
@@ -393,7 +392,6 @@ const EditorStatusBar = () => {
     }
   }
 
-
   return (
     <div className="editor-status-bar">
       <div className="status-item file-path" ref={filePathRef}>
@@ -449,7 +447,7 @@ const EditorStatusBar = () => {
             type="text"
             size="small"
             className="status-item"
-            onClick={() => handleFontSizeChange(+(fontSize) - 1)}
+            onClick={() => handleFontSizeChange(+fontSize - 1)}
             icon={<ZoomOutOutlined />}
           />
         </Tooltip>
@@ -465,7 +463,7 @@ const EditorStatusBar = () => {
             type="text"
             size="small"
             className="status-item"
-            onClick={() => handleFontSizeChange(+(fontSize) + 1)}
+            onClick={() => handleFontSizeChange(+fontSize + 1)}
             icon={<ZoomInOutlined />}
           />
         </Tooltip>

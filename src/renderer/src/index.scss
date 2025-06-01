@@ -1,6 +1,7 @@
 :root {
   /* 亮色主题变量 */
   --editor-background: rgba(255, 255, 255, 0.5);
+  --bar-background-color: #FFFFFF;
   --primary-color: #1677ff;
   --primary-color-rgb: 22, 119, 255;
   --primary-hover: #4096ff;
@@ -24,16 +25,17 @@
   --sidebar-width: 250px;
   --header-height: 42px;
   --tab-bar-height: 38px;
-  --editor-background-image:url(https://t.alcy.cc/moez);
+  --editor-background-image: url(https://t.alcy.cc/moez);
 }
 
 [data-theme='dark'] {
   /* 暗色主题变量 */
   --editor-background: rgba(0, 0, 0, 0.5);
+  --bar-background-color: #1f1f1f;
   --primary-color: #177ddc;
   --primary-color-rgb: 23, 125, 220;
   --primary-hover: #1668dc;
-  --background-color: #303030;
+  --background-color: #1e1f22;
   --card-bg-color: #1f1f1f;
   --text-color: #f0f0f0;
   --text-secondary-color: #a0a0a0;
@@ -42,7 +44,7 @@
   --warning-color: #d89614;
   --error-color: #a61d24;
   --code-bg-color: #282c34;
-  --console-font-family:'"JetBrains Mono", monospace';
+  --console-font-family: '"JetBrains Mono", monospace';
 
   // 滚动条颜色
   --scrollbar-track-color: rgba(255, 255, 255, 0.1);

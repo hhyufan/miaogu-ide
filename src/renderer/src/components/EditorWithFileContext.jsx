@@ -31,14 +31,14 @@ const EditorWithFileContext = ({ isDarkMode }) => {
   const prevCodeRef = useRef(currentCode)
   const prevEncodingRef = useRef(currentFile.encoding)
   const [fontSize, setFontSize] = useState(14)
-  const [fontFamily, setFontFamily] = useState("JetBrains Mono")
+  const [fontFamily, setFontFamily] = useState('JetBrains Mono')
 
   useEffect(() => {
     let mounted = true
     initializeHighlighter()
       .then(() => mounted && setIsShikiReady(true))
       .catch(console.error)
-    
+
     return () => {
       mounted = false
     }
@@ -78,8 +78,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     //监听字体变化
     const handleFontFamilyChange = (event, newFontFamily) => {
       setFontFamily(newFontFamily)
-    } 
-    
+    }
 
     // 添加事件监听器
     window.ipcApi.onFontSizeChange(handleFontSizeChange)

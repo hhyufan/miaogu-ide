@@ -11,10 +11,10 @@
   }
 
   .console-card {
+    background-color: var(--bar-background-color, var(--editor-background));
     margin: 0;
     border-radius: 0 0 0 0;
     border-bottom: none;
-    background-color: transparent !important;
 
     .ant-card-head {
       min-height: 40px;
