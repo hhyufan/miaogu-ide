@@ -1,4 +1,4 @@
-import { useEffect, useState,useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Layout, ConfigProvider, theme, Button } from 'antd'
 import { SunOutlined, MoonFilled } from '@ant-design/icons'
 import './App.scss'
@@ -117,13 +117,14 @@ const App = () => {
 
   useEffect(() => {
     const loadInitBgTransparency = async () => {
-      const transparencySetting = await window.ipcApi.getBgTransparency();
+      const transparencySetting = await window.ipcApi.getBgTransparency()
       document.documentElement.style.setProperty(
-        '--editor-background', 
-        `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ?  transparencySetting.dark / 100 : transparencySetting.light / 100})`);
+        '--editor-background',
+        `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
+      )
     }
-    loadInitBgTransparency();
-  }, [isDarkMode]);
+    loadInitBgTransparency().catch(console.error)
+  }, [isDarkMode])
 
   // 初始化主题
   useEffect(() => {
@@ -148,7 +149,7 @@ const App = () => {
 
   // 从electron-store加载保存的主题
   useEffect(() => {
-    ; (async () => {
+    ;(async () => {
       if (window.ipcApi && window.ipcApi.getTheme) {
         try {
           const savedTheme = await window.ipcApi.getTheme()
@@ -164,78 +165,125 @@ const App = () => {
     })()
   }, [])
 
+  // 添加状态锁定，防止频闪
+  const [isUpdatingBackground, setIsUpdatingBackground] = useState(false)
+
   useEffect(() => {
     const handleBgImageChange = async (event, filePath) => {
-      const randomBackground = await window.ipcApi.getState('randomBackground')
-      const imgPath = await window.electron.nativeImage.createFromPath(filePath)
-      document.documentElement.style.setProperty(
-        '--editor-background-image',
-        `url(${randomBackground ? filePath : imgPath.toDataURL()})`);
-    };
-  
-    window.ipcApi.onBgImageChange(handleBgImageChange);
-    return () => window.ipcApi.removeBgImageChange(handleBgImageChange);
-  }, []);
+      // 防止重复更新
+      if (isUpdatingBackground) return
+      setIsUpdatingBackground(true)
 
-  const isDarkModeRef = useRef(isDarkMode);
+      try {
+        const randomBackground = await window.ipcApi.getState('randomBackground')
 
-    // 更新 ref 的值
-    useEffect(() => {
-      isDarkModeRef.current = isDarkMode;
-    }, [isDarkMode]);
-
-    useEffect(() => {
-      const handleBgTransparencyChange = (event, theme, transparency) => {
-        
-        // 使用 ref 获取最新 isDarkMode
-        if (theme === 'dark' && isDarkModeRef.current) {
-          document.documentElement.style.setProperty(
-            '--editor-background', 
-            `rgba(0, 0, 0, ${transparency / 100})`
-          );
-        } 
-        else if (theme === 'light' && !isDarkModeRef.current) {
-          document.documentElement.style.setProperty(
-            '--editor-background', 
-            `rgba(255, 255, 255, ${transparency / 100})`
-          );
+        // 如果背景图片路径为空，说明背景图片被关闭，设置为透明色
+        if (!filePath || filePath === '') {
+          document.documentElement.style.setProperty('--editor-background', 'transparent')
+          document.documentElement.style.setProperty('--editor-background-image', 'none')
+          return
         }
-      };
-      // 注册监听（只运行一次）
-      window.ipcApi.onBgTransparencyChange(handleBgTransparencyChange);
-      
-      return () => {
-        // 确保移除的是同一个函数
-        window.ipcApi.removeBgTransparencyChange(handleBgTransparencyChange);
-      };
-    }, []); // 空依赖，避免重复绑定
-      
+
+        // 先设置背景滤镜（透明度）
+        const transparencySetting = await window.ipcApi.getBgTransparency()
+        const backgroundRgba = `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
+
+        // 然后加载背景图片
+        const imgPath = await window.electron.nativeImage.createFromPath(filePath)
+        const backgroundImage = `url(${randomBackground ? filePath : imgPath.toDataURL()})`
+
+        // 批量更新CSS变量，减少重绘次数
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--editor-background', backgroundRgba)
+          document.documentElement.style.setProperty('--editor-background-image', backgroundImage)
+        })
+      } catch (error) {
+        console.error('背景图片更新失败:', error)
+      } finally {
+        // 添加短暂延迟，确保更新完成
+        setTimeout(() => {
+          setIsUpdatingBackground(false)
+        }, 100)
+      }
+    }
+
+    window.ipcApi.onBgImageChange(handleBgImageChange)
+    return () => window.ipcApi.removeBgImageChange(handleBgImageChange)
+  }, [isDarkMode, isUpdatingBackground])
+
+  const isDarkModeRef = useRef(isDarkMode)
+
+  // 更新 ref 的值
+  useEffect(() => {
+    isDarkModeRef.current = isDarkMode
+  }, [isDarkMode])
+
+  useEffect(() => {
+    const handleBgTransparencyChange = (event, theme, transparency) => {
+      // 如果正在更新背景图片，跳过透明度更新，避免冲突
+      if (isUpdatingBackground) return
+
+      // 使用 ref 获取最新 isDarkMode
+      if (theme === 'dark' && isDarkModeRef.current) {
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty(
+            '--editor-background',
+            `rgba(0, 0, 0, ${transparency / 100})`
+          )
+        })
+      } else if (theme === 'light' && !isDarkModeRef.current) {
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty(
+            '--editor-background',
+            `rgba(255, 255, 255, ${transparency / 100})`
+          )
+        })
+      }
+    }
+    // 注册监听（只运行一次）
+    window.ipcApi.onBgTransparencyChange(handleBgTransparencyChange)
+
+    return () => {
+      // 确保移除的是同一个函数
+      window.ipcApi.removeBgTransparencyChange(handleBgTransparencyChange)
+    }
+  }, [isUpdatingBackground]) // 添加isUpdatingBackground依赖
 
   useEffect(() => {
     // 这里写你要执行的方法
     const loadInitialData = async () => {
       try {
-        const bgImgPath = await window.ipcApi.getBgImage();
+        const bgImgPath = await window.ipcApi.getBgImage()
         const randomBackground = await window.ipcApi.getState('randomBackground')
-        const img = await window.electron.nativeImage.createFromPath(bgImgPath);
-        document.documentElement.style.setProperty(
-          '--editor-background-image',
-          `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
-        )
-        
-        const transparencySetting = await window.ipcApi.getBgTransparency();
-        document.documentElement.style.setProperty(
-          '--editor-background', 
-          `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ?  transparencySetting.dark / 100 :  transparencySetting.light / 100})`);
-        }
-      // 其他初始化操作...
-      catch (error) {
-        console.error('加载初始数据失败:', error);
-      }
-    };
 
-    loadInitialData();  // 调用这个方法
-  }, []); // 空数组表示只在组件挂载时执行一次
+        // 如果背景图片路径为空，说明背景图片被关闭，设置为透明色
+        if (!bgImgPath || bgImgPath === '') {
+          requestAnimationFrame(() => {
+            document.documentElement.style.setProperty('--editor-background', 'transparent')
+            document.documentElement.style.setProperty('--editor-background-image', 'none')
+          })
+        } else {
+          // 背景图片开启时，先设置背景滤镜（透明度）
+          const transparencySetting = await window.ipcApi.getBgTransparency()
+          const backgroundRgba = `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
+
+          // 然后加载背景图片
+          const img = await window.electron.nativeImage.createFromPath(bgImgPath)
+          const backgroundImage = `url(${randomBackground ? 'https://t.alcy.cc/moez' : img.toDataURL()})`
+
+          // 批量更新CSS变量，减少重绘次数
+          requestAnimationFrame(() => {
+            document.documentElement.style.setProperty('--editor-background', backgroundRgba)
+            document.documentElement.style.setProperty('--editor-background-image', backgroundImage)
+          })
+        }
+      } catch (error) {
+        console.error('加载初始数据失败:', error)
+      }
+    }
+
+    loadInitialData().catch(console.error) // 调用这个方法
+  }, [])
 
   // 处理代码运行输出
   const handleRunCode = (output) => {
