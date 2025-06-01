@@ -79,8 +79,8 @@ const ipcApi = {
     },
 
     // 监听切换主题事件 (Ctrl+T)
-    onToggleTheme: (callback) => {
-        ipcRenderer.on('toggle-theme', callback)
+    onToggleTheme: (callback, theme) => {
+        ipcRenderer.on('toggle-theme', callback, theme)
     },
 
     // 移除切换主题事件监听

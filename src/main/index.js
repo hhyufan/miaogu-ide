@@ -290,10 +290,14 @@ app.whenReady().then(() => {
 
     // Ctrl+T 切换主题
     globalShortcut.register('CommandOrControl+T', () => {
-        const win = BrowserWindow.getFocusedWindow()
-        if (win) {
-            win.webContents.send('toggle-theme')
+      const currentTheme = stateStore.getTheme()
+      const nextTheme = currentTheme === 'light' ? 'dark' : 'light'
+      stateStore.setTheme(nextTheme)
+      BrowserWindow.getAllWindows().forEach((window) => {
+        if (window && window.webContents) {
+          window.webContents.send('toggle-theme', currentTheme)
         }
+      })
     })
 
     // 处理窗口控制
@@ -536,13 +540,18 @@ app.whenReady().then(() => {
             case 'fontSize':
                 return stateStore.getFontSize()
             default:
-                // 对于其他键（如aisetting），使用通用的getState方法
+                // 对于其他键（如aiSetting），使用通用的getState方法
                 return stateStore.getState(key)
         }
     })
 
     ipcMain.handle('set-theme', (event, theme) => {
         stateStore.setTheme(theme)
+        BrowserWindow.getAllWindows().forEach((window) => {
+            if (window && window.webContents) {
+            window.webContents.send('toggle-theme', theme)
+            }
+        })
         return true
     })
 
