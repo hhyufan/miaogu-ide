@@ -4,13 +4,13 @@ import MarkdownRenderer from './MarkdownRenderer'
 
 import { useEffect, useRef, useState } from 'react'
 import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
-import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { Button, Card } from 'antd'
 // eslint-disable-next-line react/prop-types
 const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
     const outputRef = useRef(null)
     const [fontFamily, setFontFamily] = useState('JetBrains Mono')
-    const hasBackground = useBackgroundStatus()
+    const { hasBackground } = useBackgroundManager()
 
     useEffect(() => {
         const initFamily = async () => {

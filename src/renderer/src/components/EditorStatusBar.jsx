@@ -3,7 +3,7 @@ import ENCODING_CASE_MAP from './encoding-case.json'
 
 import { Breadcrumb, Divider } from 'antd'
 import { useFile } from '../contexts/FileContext'
-import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { useEffect, useRef, useState } from 'react'
 import { FileOutlined, FolderOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
 import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
@@ -35,7 +35,7 @@ const EditorStatusBar = () => {
     const [pathSegments, setPathSegments] = useState([])
     const [directoryContents, setDirectoryContents] = useState({})
     const [fontSize, setFontSize] = useState(14)
-    const hasBackground = useBackgroundStatus()
+    const { hasBackground } = useBackgroundManager()
     const [scrollState, setScrollState] = useState({
         canScroll: false,
         scrollLeft: 0,

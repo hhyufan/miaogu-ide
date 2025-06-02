@@ -28,8 +28,6 @@ const SettingMenu = () => {
     const [fontSize, setFontSize] = useState(14)
     const [fontFamily, setFontFamily] = useState('')
     const [currentSection, setCurrentSection] = useState('textEditor')
-    const [bgImage, setBgImage] = useState('')
-
     const renderContent = () => {
         switch (currentSection) {
             case 'textEditor':
@@ -42,7 +40,7 @@ const SettingMenu = () => {
                     />
                 )
             case 'background':
-                return <BackgroundSetting bgImage={bgImage} setBgImage={setBgImage} />
+                return <BackgroundSetting/>
             default:
                 return null
         }
@@ -52,12 +50,10 @@ const SettingMenu = () => {
         const LoadSetting = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
-                const savedImage = await window.ipcApi.getSavedImage()
                 if (savedSetting) {
                     setLocalSetting(savedSetting)
                     setFontSize(savedSetting.fontSize)
                     setFontFamily(savedSetting.fontFamily)
-                    setBgImage(savedImage)
                 }
             } catch (error) {
                 console.error('加载字体大小设置失败:', error)

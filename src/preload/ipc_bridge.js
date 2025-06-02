@@ -250,12 +250,12 @@ const ipcApi = {
         ipcRenderer.removeListener('bg-transparency-changed', callback)
     },
 
-    getSavedImage: async () => {
-        return ipcRenderer.invoke('get-saved-image')
+    getBgEnabled: async () => {
+        return ipcRenderer.invoke('get-bg-enabled')
     },
 
-    setSavedImage: async (savedImage) => {
-        return ipcRenderer.invoke('set-saved-image', savedImage)
+    setBgEnabled: async (enabled) => {
+        return ipcRenderer.invoke('set-bg-enabled', enabled)
     },
 
     // 运行HTML文件

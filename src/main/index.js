@@ -1115,12 +1115,18 @@ ipcMain.handle('get-bg-image', () => {
     return stateStore.getBgImage()
 })
 
-ipcMain.handle('get-saved-image', () => {
-    return stateStore.getSavedImage()
+ipcMain.handle('get-bg-enabled', () => {
+    return stateStore.getBgEnabled()
 })
 
-ipcMain.handle('set-saved-image', (event, savedImage) => {
-    return stateStore.setSavedImage(savedImage)
+ipcMain.handle('set-bg-enabled', (event, enabled) => {
+    stateStore.setBgEnabled(enabled)
+    // 通知所有窗口背景开关状态已更改
+    const bgImage = stateStore.getBgImage()
+    BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send('bg-image-changed', enabled ? bgImage : '')
+    })
+    return true
 })
 
 ipcMain.handle('get-bg-transparency', () => {

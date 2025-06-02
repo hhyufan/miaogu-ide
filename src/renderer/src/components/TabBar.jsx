@@ -1,13 +1,13 @@
 import './TabBar.scss'
 
 import { useEffect } from 'react'
-import { useBackgroundStatus } from '../hooks/useBackgroundStatus'
+import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { useFile } from '../contexts/FileContext'
 import { EditOutlined, FileAddOutlined } from '@ant-design/icons'
 import { Tabs } from 'antd'
 const TabBar = () => {
     const { openedFiles, currentFile, switchFile, closeFile } = useFile()
-    const hasBackground = useBackgroundStatus()
+    const { hasBackground } = useBackgroundManager()
 
     // 使用useEffect设置或移除CSS变量
     useEffect(() => {

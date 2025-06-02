@@ -20,13 +20,13 @@ const store = new Store({
             // 背景图片
             bgImage: ''
         },
-        savedImage: '',
+        // 背景开关
+        bgEnabled: false,
         // 透明度
         transparency: {
             light: 50,
             dark: 50
-        },
-        randomBackground: false
+        }
     }
 })
 
@@ -165,19 +165,19 @@ function setBgImage(bgImage) {
 }
 
 /**
- * 获取保存的图片路径
- * @returns {string} 保存的图片路径
+ * 获取背景开关状态
+ * @returns {boolean} 背景是否开启
  */
-function getSavedImage() {
-    return store.get('savedImage')
+function getBgEnabled() {
+    return store.get('bgEnabled')
 }
 
 /**
- * 设置保存的图片路径
- * @param {string} savedImage 保存的图片路径
+ * 设置背景开关状态
+ * @param {boolean} enabled 背景是否开启
  */
-function setSavedImage(savedImage) {
-    store.set('savedImage', savedImage)
+function setBgEnabled(enabled) {
+    store.set('bgEnabled', enabled)
 }
 
 function setTransparency(theme, value) {
@@ -203,8 +203,8 @@ export default {
     setSetting,
     getBgImage,
     setBgImage,
-    getSavedImage,
-    setSavedImage,
+    getBgEnabled,
+    setBgEnabled,
     getTransparency,
     setTransparency,
     setFontFamily
