@@ -24,14 +24,13 @@ export default defineConfig({
                 }
             }
         },
-        plugins: [react()]
-    },
-    plugins: [react()],
-    build: {
-        rollupOptions: {
-            input: {
-                main: resolve(__dirname, 'index.html'),
-                setting: resolve(__dirname, 'setting.html') // ✅ 添加 setting 页面
+        plugins: [react()],
+        build: {
+            rollupOptions: {
+                input: {
+                    main: resolve(__dirname, 'src/renderer/index.html'),
+                    setting: resolve(__dirname, 'src/renderer/setting.html')
+                }
             }
         }
     }
