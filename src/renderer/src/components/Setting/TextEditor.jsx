@@ -37,7 +37,7 @@ const TextEditor = ({
                     min={1.0}
                     max={3.0}
                     step={0.1}
-                    style={{ width: 68}}
+                    style={{ width: 66}}
                     onChange={(value) => setLineHeight(value)}
                   />
                 </div>
