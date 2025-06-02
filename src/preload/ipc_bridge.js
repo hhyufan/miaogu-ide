@@ -48,9 +48,24 @@ const ipcApi = {
         ipcRenderer.on('font-size-changed', callback)
     },
 
+    // 设置行高
+    setLineHeight: async (lineHeight) => {
+        return ipcRenderer.invoke('set-line-height', lineHeight)
+    },
+
+    // 监听行高变化
+    onLineHeightChange: (callback) => {
+        ipcRenderer.on('line-height-changed', callback)
+    },
+
     // 移除字体大小变化监听
     removeFontSizeChange: (callback) => {
         ipcRenderer.removeListener('font-size-changed', callback)
+    },
+
+    // 移除行高变化监听
+    removeLineHeightChange: (callback) => {
+        ipcRenderer.removeListener('line-height-changed', callback)
     },
 
     // 字体设置

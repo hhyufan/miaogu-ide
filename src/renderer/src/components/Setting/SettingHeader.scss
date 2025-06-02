@@ -14,7 +14,7 @@
     /* 允许拖拽窗口 */
 }
 
-.settingHead-title{
+.settingHead-title {
     position: relative;
     left: 50%;
     transform: translateX(-50%);
@@ -44,13 +44,14 @@
 }
 
 .window-control-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(128, 128, 128, 0.2);
+}
+
+[data-theme='dark'] .window-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .window-control-btn.close-btn:hover {
     background-color: #e81123;
     color: white;
 }
-
-
-

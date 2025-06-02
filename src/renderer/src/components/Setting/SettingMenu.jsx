@@ -1,89 +1,95 @@
 import { useState, useRef, useEffect } from 'react'
-import { Button, message } from 'antd'
-import { Menu } from 'antd'
+import { Button, message, Menu } from 'antd'
 import './SettingMenu.scss'
 import TextEditor from './TextEditor'
 import BackgroundSetting from './BackgroundSetting'
 
-const settingMenuList = [
+const items = [
     {
         key: 'textEditor',
-        label: '文本',
-        children: [
-            { key: 'fontSize', label: '字体大小' },
-            { key: 'fontFamily', label: '字体' }
-        ]
+        label: '通用',
     },
     {
         key: 'background',
-        label: '背景',
-        children: []
+        label: '外观',
     }
 ]
 
 const SettingMenu = () => {
-    const [activeKey, setActiveKey] = useState('')
+    const [activeKey, setActiveKey] = useState('textEditor')
     const contentRef = useRef(null)
     const [localSetting, setLocalSetting] = useState({})
     const [fontSize, setFontSize] = useState(14)
+    const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('')
-    const [currentSection, setCurrentSection] = useState('textEditor')
+
     const renderContent = () => {
-        switch (currentSection) {
+        switch (activeKey) {
             case 'textEditor':
                 return (
                     <TextEditor
                         fontSize={fontSize}
+                        lineHeight={lineHeight}
+                        setLineHeight={setLineHeight}
                         setFontSize={setFontSize}
                         fontFamily={fontFamily}
                         setFontFamily={setFontFamily}
                     />
                 )
             case 'background':
-                return <BackgroundSetting/>
+                return <BackgroundSetting />
             default:
                 return null
         }
     }
 
     useEffect(() => {
-        const LoadSetting = async () => {
+        const loadSetting = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
                 if (savedSetting) {
                     setLocalSetting(savedSetting)
+                    setLineHeight(savedSetting.lineHeight)
                     setFontSize(savedSetting.fontSize)
                     setFontFamily(savedSetting.fontFamily)
                 }
             } catch (error) {
-                console.error('加载字体大小设置失败:', error)
+                console.error('加载设置失败:', error)
             }
         }
 
-        // 初始加载字体大小
-        LoadSetting().catch(console.error)
+        loadSetting().catch(console.error)
 
-        // 监听字体大小变化事件
         const handleFontSizeChange = (event, newFontSize) => {
             setFontSize(newFontSize)
         }
+        const handleLineHeightChange = (event, newLineHeight) => {
+            setLineHeight(newLineHeight)
+        }
 
-        // 添加事件监听器
         window.ipcApi.onFontSizeChange(handleFontSizeChange)
+        window.ipcApi.onLineHeightChange(handleLineHeightChange)
 
-        // 清理事件监听器
         return () => {
             window.ipcApi.removeFontSizeChange(handleFontSizeChange)
+            window.ipcApi.removeLineHeightChange(handleLineHeightChange)
         }
     }, [])
 
     const saveSetting = async () => {
-        localSetting.fontSize = fontSize
-        localSetting.fontFamily = fontFamily
+        const updatedSetting = {
+            ...localSetting,
+            fontSize,
+            lineHeight,
+            fontFamily
+        }
+
         try {
             await window.ipcApi.setFontSize(fontSize)
+            await window.ipcApi.setLineHeight(lineHeight)
             await window.ipcApi.setFontFamily(fontFamily)
-            await window.ipcApi.setSetting(localSetting)
+            await window.ipcApi.setSetting(updatedSetting)
+            setLocalSetting(updatedSetting)
             message.success('设置保存成功')
         } catch (error) {
             message.error('设置保存失败')
@@ -93,58 +99,35 @@ const SettingMenu = () => {
 
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
-            <div style={{ display: 'flow-root' }}>
-                <Menu
-                    mode="inline"
-                    className="custom-setting-menu"
-                    selectedKeys={[activeKey]}
-                    style={{ width: 180, height: '100%', overflow: 'auto' }}
-                >
-                    {settingMenuList.map((group) => (
-                        <Menu.SubMenu
-                            key={group.key}
-                            title={group.label}
-                            onTitleClick={() => {
-                                setCurrentSection(group.key)
-                                setActiveKey(group.key)
-                            }}
-                        >
-                            {group.children.map((item) => (
-                                <Menu.Item
-                                    key={item.key}
-                                    onClick={() => {
-                                        setCurrentSection(group.key)
-                                        setActiveKey(item.key)
-                                    }}
-                                >
-                                    {item.label}
-                                </Menu.Item>
-                            ))}
-                        </Menu.SubMenu>
-                    ))}
-                </Menu>
-            </div>
+            <Menu
+                mode="inline"
+                className="custom-setting-menu"
+                selectedKeys={[activeKey]}
+                items={items}
+                style={{ width: 180, height: '100%', overflow: 'auto' }}
+                onClick={({ key }) => setActiveKey(key)}
+            />
+
             <div
                 ref={contentRef}
                 style={{
                     flex: 1,
-                    display: 'flow-root',
                     overflow: 'auto',
                     padding: 36
                 }}
             >
                 {renderContent()}
             </div>
+
             <div
-                id="save"
                 style={{
                     position: 'fixed',
                     bottom: 20,
                     right: 20,
-                    zIndex: 1000 // 确保按钮在最上层
+                    zIndex: 1000
                 }}
             >
-                <Button type="primary" onClick={() => saveSetting()}>
+                <Button type="primary" onClick={saveSetting}>
                     保存
                 </Button>
             </div>

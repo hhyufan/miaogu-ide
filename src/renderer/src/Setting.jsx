@@ -1,6 +1,7 @@
 import './Setting.scss'
 
 import { useState, useEffect } from 'react'
+import { ConfigProvider, theme } from 'antd'
 import SettingMenu from './components/Setting/SettingMenu'
 import SettingHeader from './components/Setting/SettingHeader'
 
@@ -65,12 +66,27 @@ const Setting = () => {
   }, [])
 
   return (
-    <div className="setting-container">
-      <SettingHeader />
-      <div className="setting-content" style={{ height: '100vh', width: '100%' }}>
-        <SettingMenu />
+    <ConfigProvider
+      theme={{
+        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        token: {
+          colorPrimary: isDarkMode ? '#177ddc' : '#1677ff',
+          colorBgContainer: isDarkMode ? '#1f1f1f' : '#ffffff',
+          colorBgElevated: isDarkMode ? '#1f1f1f' : '#ffffff',
+          colorText: isDarkMode ? '#f0f0f0' : '#333333',
+          colorTextSecondary: isDarkMode ? '#a0a0a0' : '#666666',
+          colorBorder: isDarkMode ? '#303030' : '#e8e8e8',
+          colorBgLayout: isDarkMode ? '#1e1f22' : '#f5f5f5',
+        },
+      }}
+    >
+      <div className="setting-container">
+        <SettingHeader />
+        <div className="setting-content" style={{ height: '100vh', width: '100%' }}>
+          <SettingMenu />
+        </div>
       </div>
-    </div>
+    </ConfigProvider>
   )
 }
 

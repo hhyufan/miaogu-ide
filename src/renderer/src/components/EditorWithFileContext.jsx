@@ -31,6 +31,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     const prevCodeRef = useRef(currentCode)
     const prevEncodingRef = useRef(currentFile.encoding)
     const [fontSize, setFontSize] = useState(14)
+    const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('JetBrains Mono')
 
     useEffect(() => {
@@ -52,29 +53,38 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         return extensionToLanguage[extension] || 'plaintext'
     }, [currentFile?.name])
 
-    // 获取保存的字体大小设置并监听变化
+    // 获取保存的设置并监听变化
     useEffect(() => {
-        const loadFontSize = async () => {
+        const loadSettings = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
                 if (savedSetting.fontSize) {
                     setFontSize(savedSetting.fontSize)
                 }
+                if (savedSetting.lineHeight) {
+                    setLineHeight(savedSetting.lineHeight)
+                }
                 if (savedSetting.fontFamily) {
                     setFontFamily(savedSetting.fontFamily)
                 }
             } catch (error) {
-                console.error('加载字体大小设置失败:', error)
+                console.error('加载设置失败:', error)
             }
         }
 
-        // 初始加载字体大小
-        loadFontSize().catch(console.error)
+        // 初始加载设置
+        loadSettings().catch(console.error)
 
         // 监听字体大小变化事件
         const handleFontSizeChange = (event, newFontSize) => {
             setFontSize(newFontSize)
         }
+
+        // 监听行高变化事件
+        const handleLineHeightChange = (event, newLineHeight) => {
+            setLineHeight(newLineHeight)
+        }
+
         //监听字体变化
         const handleFontFamilyChange = (event, newFontFamily) => {
             setFontFamily(newFontFamily)
@@ -82,11 +92,13 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
         // 添加事件监听器
         window.ipcApi.onFontSizeChange(handleFontSizeChange)
+        window.ipcApi.onLineHeightChange(handleLineHeightChange)
         window.ipcApi.onFontFamilyChange(handleFontFamilyChange)
 
         // 清理事件监听器
         return () => {
             window.ipcApi.removeFontSizeChange(handleFontSizeChange)
+            window.ipcApi.removeLineHeightChange(handleLineHeightChange)
             window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
         }
     }, [])
@@ -99,6 +111,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             theme: isDarkMode ? 'one-dark-pro' : 'one-light',
             minimap: { enabled: false },
             fontSize: fontSize,
+            lineHeight: lineHeight,
             fontFamily: `"${fontFamily}", monospace`,
             scrollBeyondLastLine: false,
             automaticLayout: true,
@@ -182,13 +195,16 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         monaco.editor.setTheme(isDarkMode ? 'one-dark-pro' : 'one-light')
     }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
 
-    // 监听字体大小变化并更新编辑器
+    // 监听字体大小、行高和字体变化并更新编辑器
     useEffect(() => {
         if (!editorRef.current) return
 
-        editorRef.current.updateOptions({ fontSize: fontSize })
-        editorRef.current.updateOptions({ fontFamily: `"${fontFamily}", monospace` })
-    }, [fontSize, fontFamily])
+        editorRef.current.updateOptions({
+            fontSize: fontSize,
+            lineHeight: lineHeight,
+            fontFamily: `"${fontFamily}", monospace`
+        })
+    }, [fontSize, lineHeight, fontFamily])
 
     // 检查当前文件是否在黑名单中
     const isCurrentFileBlacklisted = useMemo(() => {

@@ -17,6 +17,8 @@ const store = new Store({
             fontSize: 14,
             // 字体
             fontFamily: 'JetBrains Mono',
+            // 行高
+            lineHeight: 1.2,
             // 背景图片
             bgImage: ''
         },
@@ -66,10 +68,28 @@ function setFontSize(fontSize) {
 }
 
 /**
+ * 获取行高设置
+ * @returns {number} 行高
+ */
+function getLineHeight() {
+    const setting = store.get('setting')
+    return setting.lineHeight || 1.2
+}
+
+/**
+ * 设置行高
+ * @param {number} lineHeight 行高
+ */
+function setLineHeight(lineHeight) {
+    const setting = store.get('setting')
+    setting.lineHeight = lineHeight
+    store.set('setting', setting)
+}
+
+/**
  * 设置字体
  * @param {string} fontFamily 字体名称
  */
-
 function setFontFamily(fontFamily) {
     const setting = store.get('setting')
     setting.fontFamily = fontFamily
@@ -195,6 +215,8 @@ export default {
     setTheme,
     getFontSize,
     setFontSize,
+    getLineHeight,
+    setLineHeight,
     getCodeEditorContent,
     setCodeEditorContent,
     getState,

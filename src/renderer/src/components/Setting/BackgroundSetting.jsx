@@ -1,4 +1,4 @@
-import { Button, Checkbox, Input, Slider } from 'antd'
+import { Button, Checkbox, Col, Input, InputNumber, Row, Slider, ConfigProvider } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
 import { useEffect, useState } from 'react'
 import { useBackgroundManager } from '../../hooks/useBackgroundManager'
@@ -29,7 +29,7 @@ const BackgroundSetting = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div id="background">
-                <h2>背景设置</h2>
+                <h2 style={{ fontWeight: 500, color: 'var(--text-secondary-color)' }}>外观</h2>
                 <div
                     style={{
                         display: 'flex',
@@ -65,26 +65,73 @@ const BackgroundSetting = () => {
                                 浏览
                             </Button>
                         </div>
-                        <div style={{ display: 'flex', marginTop: 32, marginBottom: 50 }}>
-                            <label style={{ marginRight: 16 }}>深色背景透明度</label>
-                            <Slider
-                                style={{ marginLeft: 16, width: 200 }}
-                                value={backgroundState.transparency.dark}
+                        <h3 style={{ marginTop: 32, marginBottom: 24, fontSize: '16px', fontWeight: 600 }}>背景透明度</h3>
+
+                        <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <label style={{ minWidth: '50px', textAlign: 'left' }}>深色:</label>
+                            <ConfigProvider
+                                theme={{
+                                    components: {
+                                        Slider: {
+                                            trackBg: '#1677ff',
+                                            handleColor: '#1677ff',
+                                            handleActiveColor: '#1677ff',
+                                            dotActiveBorderColor: '#1677ff'
+                                        }
+                                    }
+                                }}
+                            >
+                                <Slider
+                                    value={backgroundState.transparency.dark}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    style={{ width: '200px' }}
+                                    onChange={(value) => handleBgTransparency('dark', value)}
+                                />
+                            </ConfigProvider>
+                            <InputNumber
                                 min={0}
                                 max={100}
                                 step={1}
+                                value={backgroundState.transparency.dark}
                                 onChange={(value) => handleBgTransparency('dark', value)}
+                                addonAfter="%"
+                                style={{ width: 92 }}
                             />
                         </div>
-                        <div style={{ display: 'flex', marginTop: 32, marginBottom: 50 }}>
-                            <label style={{ marginRight: 16 }}>浅色背景透明度</label>
-                            <Slider
-                                style={{ marginLeft: 16, width: 200 }}
-                                value={backgroundState.transparency.light}
+
+                        <div style={{ marginBottom: 50, display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <label style={{ minWidth: '50px', textAlign: 'left' }}>浅色:</label>
+                            <ConfigProvider
+                                theme={{
+                                    components: {
+                                        Slider: {
+                                            trackBg: '#1677ff',
+                                            handleColor: '#1677ff',
+                                            handleActiveColor: '#1677ff',
+                                            dotActiveBorderColor: '#1677ff'
+                                        }
+                                    }
+                                }}
+                            >
+                                <Slider
+                                    value={backgroundState.transparency.light}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    onChange={(value) => handleBgTransparency('light', value)}
+                                    style={{ width: '200px' }}
+                                />
+                            </ConfigProvider>
+                            <InputNumber
                                 min={0}
                                 max={100}
                                 step={1}
+                                value={backgroundState.transparency.light}
                                 onChange={(value) => handleBgTransparency('light', value)}
+                                addonAfter="%"
+                                style={{ width: 92 }}
                             />
                         </div>
                     </div>

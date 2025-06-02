@@ -1,39 +1,63 @@
 .custom-setting-menu {
-  background-color: var(--setting-background-color);
+  background-color: var(--setting-background-color) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: var(--text-color);
+  padding-top: 50px;
+  color: var(--text-color) !important;
+  text-align: left;
+  border-right: 1px solid var(--border-color) !important;
 
-  // 父菜单项：左对齐，字体颜色明确
-  .ant-menu-submenu-title {
-    text-align: left;
-    color: var(--text-color);
-    font-weight: 600;
-  }
-
-  // 子菜单项：右对齐，字体颜色明确
+  // 菜单项基础样式
   .ant-menu-item {
-    text-align: right;
-    padding-right: 16px;
-    background-color: var(--setting-background-color);
-    color: var(--text-color);
+    color: var(--text-color) !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
+    margin: 4px 8px !important;
+    padding: 12px 16px !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
 
-    // 鼠标悬浮效果，改用主题色带透明度
+    // 悬浮状态
     &:hover {
-      background-color: rgba(var(--primary-color-rgb), 0.1);
-      color: var(--text-secondary-color);
+      background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+      color: var(--primary-color) !important;
+      transform: translateX(2px) !important;
     }
 
     // 选中状态
     &.ant-menu-item-selected {
-      background-color: rgba(var(--text-secondary-color), 0.2);
-      color: var(--primary-color);
+      background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+      color: var(--primary-color) !important;
+      transform: translateX(2px) !important;
+    }
+
+    // 活跃状态
+    &.ant-menu-item-active {
+      background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+      color: var(--primary-color) !important;
+      transform: translateX(2px) !important;
     }
   }
 
-  // 去除圆角
-  .ant-menu-item,
+  // 子菜单标题样式
   .ant-menu-submenu-title {
-    border-radius: 0;
+    color: var(--text-color) !important;
+    border-radius: 8px !important;
+    margin: 4px 8px !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+      color: var(--primary-color) !important;
+      transform: translateX(2px) !important;
+    }
+  }
+
+  // 移除默认的选中指示器
+  &.ant-menu-inline .ant-menu-item::after {
+    display: none !important;
   }
 }
 

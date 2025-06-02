@@ -563,7 +563,16 @@ app.whenReady().then(() => {
                 window.webContents.send('font-size-changed', fontSize)
             }
         })
-        return true
+    })
+
+    ipcMain.handle('set-line-height', (event, lineHeight) => {
+        stateStore.setLineHeight(lineHeight)
+        // 广播行高变化事件到所有窗口
+        BrowserWindow.getAllWindows().forEach((window) => {
+            if (window && window.webContents) {
+                window.webContents.send('line-height-changed', lineHeight)
+            }
+        })
     })
 
     // 处理通用状态设置（包括AI设置）
