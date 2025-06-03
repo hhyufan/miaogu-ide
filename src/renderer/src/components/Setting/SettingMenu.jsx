@@ -125,18 +125,20 @@ const SettingMenu = () => {
                 {renderContent()}
             </div>
 
-            <div
-                style={{
-                    position: 'fixed',
-                    bottom: 20,
-                    right: 20,
-                    zIndex: 1000
-                }}
-            >
-                <Button type="primary" onClick={saveSetting}>
-                    保存
-                </Button>
-            </div>
+            {activeKey !== 'background' && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        bottom: 20,
+                        right: 20,
+                        zIndex: 1000
+                    }}
+                >
+                    <Button type="primary" onClick={saveSetting}>
+                        保存
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }

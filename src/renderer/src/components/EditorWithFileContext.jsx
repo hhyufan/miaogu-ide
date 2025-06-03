@@ -209,7 +209,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             )
         }
 
-        monaco.editor.setTheme(isDarkMode ? allHighLight[highLight][0] : allHighLight[highLight][1])
+        monaco.editor.setTheme(isDarkMode ? allHighLight?.[highLight][0] : allHighLight?.[highLight][1])
 
     }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
 

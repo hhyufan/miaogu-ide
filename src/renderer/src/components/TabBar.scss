@@ -44,7 +44,9 @@
                     }
                 }
             }
-
+            .ant-tabs-nav-wrap {
+              height: var(--tab-bar-height);
+            }
             .ant-tabs-ink-bar {
                 background-color: var(--primary-color);
             }
