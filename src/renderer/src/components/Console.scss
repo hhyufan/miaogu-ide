@@ -26,21 +26,20 @@
                 padding: 8px 0;
             }
         }
-    }
-
-    &.with-background {
-        .console-card {
-            .ant-card-head {
-                background-color: transparent;
+        .ant-card-body {
+            background-color: transparent!important;
+            padding: 0;
+        }
+        &.with-background {
+            .console-card {
+                .ant-card-head {
+                    background-color: transparent;
+                }
             }
         }
-
-        .ant-card-body {
-            padding: 0;
-            max-height: 250px;
-            overflow: hidden;
-        }
     }
+
+
 
     .console-header {
 
@@ -407,6 +406,7 @@
 
             .ant-card-body {
                 background-color: transparent !important;
+                padding: 0;
             }
 
             &.with-background {
@@ -414,11 +414,6 @@
                     .ant-card-head {
                         background-color: transparent;
                     }
-                }
-                .ant-card-body {
-                    padding: 0;
-                    max-height: 250px;
-                    overflow: hidden;
                 }
             }
         }

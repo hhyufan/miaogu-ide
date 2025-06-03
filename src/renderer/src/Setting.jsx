@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ConfigProvider, theme } from 'antd'
 import SettingMenu from './components/Setting/SettingMenu'
 import SettingHeader from './components/Setting/SettingHeader'
+import useThemeLoader from './hooks/useThemeLoader'
 
 const Setting = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -48,22 +49,8 @@ const Setting = () => {
     }
   }, [toggleTheme])
 
-  useEffect(() => {
-    ; (async () => {
-      if (window.ipcApi && window.ipcApi.getTheme) {
-        try {
-          const savedTheme = await window.ipcApi.getTheme()
-          if (savedTheme) {
-            const isDark = savedTheme === 'dark'
-            setIsDarkMode(isDark)
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-          }
-        } catch (error) {
-          console.error('加载保存的主题设置失败:', error)
-        }
-      }
-    })()
-  }, [])
+  // 使用自定义hook加载保存的主题
+  useThemeLoader(setIsDarkMode)
 
   return (
     <ConfigProvider

@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 // 设置IPC事件最大监听器数量，防止内存泄漏警告
-ipcRenderer.setMaxListeners(50)
+ipcRenderer.setMaxListeners(100)
 // 创建API接口，用于替代原有的HTTP API
 const ipcApi = {
     // 窗口控制 - 最小化

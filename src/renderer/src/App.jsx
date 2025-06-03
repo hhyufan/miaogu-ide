@@ -1,16 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useRef } from 'react'
-import { Layout, ConfigProvider, theme, Button } from 'antd'
-import { SunOutlined, MoonFilled } from '@ant-design/icons'
+import { useEffect, useRef, useState } from 'react'
+import { Button, ConfigProvider, Layout, theme } from 'antd'
+import { MoonFilled, SunOutlined } from '@ant-design/icons'
 import './App.scss'
 import AppHeader from './components/AppHeader'
 import TabBar from './components/TabBar'
 import Console from './components/Console'
-const { Content } = Layout
 import { FileProvider, useFile } from './contexts/FileContext'
 import EditorWithFileContext from './components/EditorWithFileContext'
 import CodeRunner from './components/CodeRunner'
 import EditorStatusBar from './components/EditorStatusBar'
+import useThemeLoader from './hooks/useThemeLoader'
+
+const { Content } = Layout
 
 // 内部组件，用于访问文件上下文
 // eslint-disable-next-line react/prop-types
@@ -80,6 +82,7 @@ const App = () => {
     // 控制台状态
     const [consoleVisible, setConsoleVisible] = useState(false)
     const [consoleOutputs, setConsoleOutputs] = useState([])
+    const [consoleAnimating, setConsoleAnimating] = useState(null)
 
     const consoleLayoutRef = useRef(null);
     const [consoleHeight, setConsoleHeight] = useState(276);
@@ -158,26 +161,8 @@ const App = () => {
         }
     }, [toggleTheme]) // Now safe to include toggleTheme since it's memoized with useCallback
 
-    // 从electron-store加载保存的主题
-    useEffect(() => {
-        ; (async () => {
-            if (window.ipcApi && window.ipcApi.getTheme) {
-                try {
-                    const savedTheme = await window.ipcApi.getTheme()
-                    if (savedTheme) {
-                        const isDark = savedTheme === 'dark'
-                        setIsDarkMode(isDark)
-                        document.documentElement.setAttribute(
-                            'data-theme',
-                            isDark ? 'dark' : 'light'
-                        )
-                    }
-                } catch (error) {
-                    console.error('加载保存的主题设置失败:', error)
-                }
-            }
-        })()
-    }, [])
+    // 使用自定义hook加载保存的主题
+    useThemeLoader(setIsDarkMode)
 
     // 添加状态锁定，防止频闪
     const [isUpdatingBackground, setIsUpdatingBackground] = useState(false)
@@ -363,21 +348,36 @@ const App = () => {
     // 监听窗口大小变化，重新计算控制台高度限制
     useEffect(() => {
         const handleResize = () => {
-            if (consoleLayoutRef.current && consoleVisible) {
+            if (consoleLayoutRef.current) {
                 const containerHeight = consoleLayoutRef.current.parentElement.clientHeight;
-                const maxHeight = containerHeight - CONSOLE_MARGIN;
-                const minHeight = CONSOLE_MIN_HEIGHT;
+                // 如果编辑器高度小于margin * 2常量，隐藏console
+                if (containerHeight < CONSOLE_MARGIN * 2) {
+                    if (consoleVisible) {
+                        setConsoleVisible(false);
+                    }
+                    return;
+                }
 
-                // 如果当前控制台高度超出了新的最大高度限制，则调整到最大允许高度
-                if (consoleHeight > maxHeight) {
-                    setConsoleHeight(maxHeight);
-                } else if (consoleHeight < minHeight) {
-                    setConsoleHeight(minHeight);
+                // 重新计算控制台高度限制（仅在console可见时）
+                if (consoleVisible) {
+                    const maxHeight = containerHeight - CONSOLE_MARGIN;
+                    const minHeight = CONSOLE_MIN_HEIGHT;
+
+                    // 如果当前控制台高度超出了新的最大高度限制，则调整到最大允许高度
+                    if (consoleHeight > maxHeight) {
+                        setConsoleHeight(maxHeight);
+                    } else if (consoleHeight < minHeight) {
+                        setConsoleHeight(minHeight);
+                    }
                 }
             }
         };
 
         window.addEventListener('resize', handleResize);
+
+        // 初始检查一次
+        handleResize();
+
         return () => window.removeEventListener('resize', handleResize);
     }, [consoleHeight, consoleVisible]);
 
@@ -391,7 +391,12 @@ const App = () => {
 
         // 显示控制台
         if (!consoleVisible) {
+            setConsoleAnimating('opening')
             setConsoleVisible(true)
+            // 动画完成后重置动画状态
+            setTimeout(() => {
+                setConsoleAnimating(null)
+            }, 300)
         }
     }
 
@@ -405,8 +410,13 @@ const App = () => {
 
     // 关闭控制台
     const handleCloseConsole = () => {
-        setConsoleVisible(false)
-        setConsoleOutputs([])
+        setConsoleAnimating('closing')
+        // 延迟隐藏控制台，让关闭动画播放完成
+        setTimeout(() => {
+            setConsoleVisible(false)
+            setConsoleOutputs([])
+            setConsoleAnimating(null)
+        }, 300)
     }
     return (
         <FileProvider>
@@ -435,7 +445,12 @@ const App = () => {
                             />
                         </Content>
                         {consoleVisible && (
-                            <div className="console-layout" ref={consoleLayoutRef}>
+                            <div
+                                className={`console-layout ${consoleAnimating === 'opening' ? 'console-slide-up' :
+                                    consoleAnimating === 'closing' ? 'console-slide-down' : ''
+                                    }`}
+                                ref={consoleLayoutRef}
+                            >
                                 <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
                                 <Console
                                     outputs={consoleOutputs}

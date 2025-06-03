@@ -30,10 +30,10 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
         }
     }, [])
 
-    // 自动滚动到底部
+    // 自动滚动到顶部
     useEffect(() => {
         if (outputRef.current) {
-            outputRef.current.scrollTop = outputRef.current.scrollHeight
+            outputRef.current.scrollTop = 0
         }
     }, [outputs])
 
