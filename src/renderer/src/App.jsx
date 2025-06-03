@@ -81,6 +81,9 @@ const App = () => {
     const [consoleVisible, setConsoleVisible] = useState(false)
     const [consoleOutputs, setConsoleOutputs] = useState([])
 
+    const consoleLayoutRef = useRef(null);
+    const [consoleHeight, setConsoleHeight] = useState(276);
+
     // 主题设置
     const [isDarkMode, setIsDarkMode] = useState(() => {
         // 首先尝试从localStorage获取（向后兼容）
@@ -323,6 +326,36 @@ const App = () => {
         loadInitialData().catch(console.error) // 调用这个方法
     }, [])
 
+    useEffect(() => {
+        document.documentElement.style.setProperty('--console-layout-height', `${consoleHeight}px`)
+    }, [consoleHeight])
+
+    function initConsoleDragEvent(event) {
+        event.preventDefault();
+
+        const startY = event.clientY;
+        const startHeight = parseInt(document.defaultView.getComputedStyle(consoleLayoutRef.current).height, 10);
+
+        const containerHeight = consoleLayoutRef.current.parentElement.clientHeight;
+
+        function doDrag(event) {
+            const newHeight = startHeight + (startY - event.clientY);
+
+            const minHeight = 115;
+            const maxHeight = containerHeight - 50;
+
+            setConsoleHeight(Math.max(minHeight, Math.min(maxHeight, newHeight)));
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+    }
+
     // 处理代码运行输出
     const handleRunCode = (output) => {
         if (output.type === 'clear') {
@@ -336,6 +369,9 @@ const App = () => {
             setConsoleVisible(true)
         }
     }
+
+    // 拖拽控制台高度
+    const handleDragConsole = (evnet) => initConsoleDragEvent(evnet);
 
     // 清空控制台
     const handleClearConsole = () => {
@@ -374,7 +410,8 @@ const App = () => {
                             />
                         </Content>
                         {consoleVisible && (
-                            <div className="console-layout">
+                            <div className="console-layout" ref={consoleLayoutRef}>
+                                <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
                                 <Console
                                     outputs={consoleOutputs}
                                     onClear={handleClearConsole}
