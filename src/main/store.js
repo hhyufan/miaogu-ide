@@ -20,7 +20,9 @@ const store = new Store({
             // 行高
             lineHeight: 1.2,
             // 背景图片
-            bgImage: ''
+            bgImage: '',
+            //高亮主题
+            highLight:'One'
         },
         // 背景开关
         bgEnabled: false,
@@ -28,7 +30,22 @@ const store = new Store({
         transparency: {
             light: 50,
             dark: 50
-        }
+        },
+
+        allTheme:  {
+            "One": ["one-dark-pro", "one-light"],
+            "GitHub" : ["github-dark", "github-light"],
+            "Material": ["material-theme-darker", "material-theme-lighter"],
+            "Min": ["min-dark", "min-light"],
+            "Gruvbox": ["gruvbox-dark-hard", "gruvbox-light-hard"],
+            "Everforest": ["everforest-dark", "everforest-light"],
+            "Kanagawa": ["kanagawa-wave", "kanagawa-lotus"],
+            "Rose Pine":["rose-pine-moon", "rose-pine-dawn"],
+            "Slack":["slack-dark", "slack-ochin"],
+            "Solarized":["solarized-dark", "solarized-light"],
+            "Vitesse": ["vitesse-dark", "vitesse-light"]
+          }
+
     }
 })
 
@@ -164,6 +181,28 @@ function setSetting(setting) {
         return false
     }
 }
+/**
+ * 设置设置
+ * @param {string} highLight 要存储的设置值
+ */
+function setHighLight(highLight){
+    try {
+        const setting = store.get('setting')
+        setting.highLight = highLight
+        store.set('setting', setting)
+    }
+    catch (error){
+        console.error('设置失败',error)
+    }
+}
+/**
+ * 设置设置
+ * @return {string}
+ */
+function getHighLight(){
+    const setting = store.get('setting')
+    return setting.highLight
+}
 
 /**
  * 获取背景图片路径
@@ -213,6 +252,8 @@ function getTransparency() {
 export default {
     getTheme,
     setTheme,
+    getHighLight,
+    setHighLight,
     getFontSize,
     setFontSize,
     getLineHeight,

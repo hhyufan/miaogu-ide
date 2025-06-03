@@ -227,6 +227,23 @@ const ipcApi = {
         return ipcRenderer.invoke('set-setting', setting)
     },
 
+    getHighLight: async () => {
+        return ipcRenderer.invoke('get-highLight')
+    },
+
+    setHighLight: async (highLight) => {
+        return ipcRenderer.invoke('set-highLight', highLight)
+    },
+
+    onHighLightChange: (callback) => {
+      ipcRenderer.on('highLight-changed', callback)
+    },
+
+    // 移除高亮变化监听
+    removeHighLightChange: (callback) => {
+      ipcRenderer.removeListener('highLight-changed', callback)
+    },
+
     selectBgImage: async () => {
         return ipcRenderer.invoke('select-bg-image')
     },

@@ -78,8 +78,8 @@ export const useBackgroundManager = () => {
         try {
             await window.ipcApi.setBgEnabled(enabled)
             setBackgroundState(prev => ({
-                ...prev,
-                isEnabled: enabled
+              ...prev,
+              isEnabled: enabled
             }))
         } catch (error) {
             console.error('切换背景开关失败:', error)

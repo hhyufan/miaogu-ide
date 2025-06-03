@@ -7,11 +7,13 @@ import { Spin, Alert } from 'antd'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 import extensionToLanguage from '../contexts/file-extensions.json'
 import '../monaco-setup'
+
 let highlighterPromise = null
 const initializeHighlighter = async () => {
+    const allHighlight = await window.ipcApi.getState('allTheme')
     if (!highlighterPromise) {
         highlighterPromise = createHighlighter({
-            themes: ['one-dark-pro', 'one-light', 'andromeeda', 'aurora-x'],
+            themes: Object.values(allHighlight).flat(),
             langs: [...new Set(Object.values(extensionToLanguage))]
         }).then((hl) => {
             shikiToMonaco(hl, monaco)
@@ -33,6 +35,8 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     const [fontSize, setFontSize] = useState(14)
     const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('JetBrains Mono')
+    const [highLight, setHighLight] = useState('One')
+    const [allHighLight, setAllHighLight] = useState({})
 
     useEffect(() => {
         let mounted = true
@@ -43,7 +47,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         return () => {
             mounted = false
         }
-    }, [])
+    }, [highLight])
 
     const editorLanguage = useMemo(() => {
         if (!currentFile?.name) return 'plaintext'
@@ -58,6 +62,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         const loadSettings = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
+                const allHighLight = await window.ipcApi.getState('allTheme')
                 if (savedSetting.fontSize) {
                     setFontSize(savedSetting.fontSize)
                 }
@@ -66,6 +71,12 @@ const EditorWithFileContext = ({ isDarkMode }) => {
                 }
                 if (savedSetting.fontFamily) {
                     setFontFamily(savedSetting.fontFamily)
+                }
+                if (savedSetting.highLight) {
+                    setHighLight(savedSetting.highLight)
+                }
+                if (allHighLight){
+                    setAllHighLight(allHighLight)
                 }
             } catch (error) {
                 console.error('加载设置失败:', error)
@@ -90,16 +101,22 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             setFontFamily(newFontFamily)
         }
 
+        const handleHighLightChange = (event, newHighLight) => {
+            setHighLight(newHighLight)
+        }
+
         // 添加事件监听器
         window.ipcApi.onFontSizeChange(handleFontSizeChange)
         window.ipcApi.onLineHeightChange(handleLineHeightChange)
         window.ipcApi.onFontFamilyChange(handleFontFamilyChange)
+        window.ipcApi.onHighLightChange(handleHighLightChange)
 
         // 清理事件监听器
         return () => {
             window.ipcApi.removeFontSizeChange(handleFontSizeChange)
             window.ipcApi.removeLineHeightChange(handleLineHeightChange)
             window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
+            window.ipcApi.removeHighLightChange(handleHighLightChange)
         }
     }, [])
 
@@ -108,7 +125,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         editorRef.current = monaco.editor.create(containerRef.current, {
             value: currentCode,
             language: editorLanguage,
-            theme: isDarkMode ? 'one-dark-pro' : 'one-light',
+            theme: isDarkMode ? allHighLight[highLight][0] : allHighLight[highLight][1],
             minimap: { enabled: false },
             fontSize: fontSize,
             lineHeight: lineHeight,
@@ -130,7 +147,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             editorRef.current = null
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isShikiReady])
+    }, [isShikiReady, highLight])
 
     // 监听currentCode和编码变化，更新编辑器内容
     useEffect(() => {
@@ -192,7 +209,8 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             )
         }
 
-        monaco.editor.setTheme(isDarkMode ? 'one-dark-pro' : 'one-light')
+        monaco.editor.setTheme(isDarkMode ? allHighLight?.[highLight][0] : allHighLight?.[highLight][1])
+
     }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
 
     // 监听字体大小、行高和字体变化并更新编辑器

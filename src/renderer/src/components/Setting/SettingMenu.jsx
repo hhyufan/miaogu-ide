@@ -22,6 +22,7 @@ const SettingMenu = () => {
     const [fontSize, setFontSize] = useState(14)
     const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('')
+    const [highLight, setHighLight] = useState('One')
 
     const renderContent = () => {
         switch (activeKey) {
@@ -34,6 +35,8 @@ const SettingMenu = () => {
                         setFontSize={setFontSize}
                         fontFamily={fontFamily}
                         setFontFamily={setFontFamily}
+                        highLight = {highLight}
+                        setHighLight = {setHighLight}
                     />
                 )
             case 'background':
@@ -52,6 +55,7 @@ const SettingMenu = () => {
                     setLineHeight(savedSetting.lineHeight)
                     setFontSize(savedSetting.fontSize)
                     setFontFamily(savedSetting.fontFamily)
+                    setHighLight(savedSetting.highLight)
                 }
             } catch (error) {
                 console.error('加载设置失败:', error)
@@ -81,13 +85,15 @@ const SettingMenu = () => {
             ...localSetting,
             fontSize,
             lineHeight,
-            fontFamily
+            fontFamily,
+            highLight
         }
 
         try {
             await window.ipcApi.setFontSize(fontSize)
             await window.ipcApi.setLineHeight(lineHeight)
             await window.ipcApi.setFontFamily(fontFamily)
+            await window.ipcApi.setHighLight(highLight)
             await window.ipcApi.setSetting(updatedSetting)
             setLocalSetting(updatedSetting)
             message.success('设置保存成功')
