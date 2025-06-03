@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { Modal } from 'antd'
-import extensionToLanguage from './file-extensions.json'
+import extensionToLanguage from '../configs/file-extensions.json'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 
 const FileContext = createContext(undefined)

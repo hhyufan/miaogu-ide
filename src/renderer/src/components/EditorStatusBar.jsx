@@ -1,12 +1,11 @@
 import './EditorStatusBar.scss'
-import ENCODING_CASE_MAP from './encoding-case.json'
-
+import ENCODING_CASE_MAP from '../configs/encoding-case.json'
+import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
 import { Breadcrumb, Divider } from 'antd'
 import { useFile } from '../contexts/FileContext'
 import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { useEffect, useRef, useState } from 'react'
 import { FileOutlined, FolderOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
-import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
 import { Button, Tooltip, Dropdown } from 'antd'
 
 function standardizeEncodingName(encoding) {

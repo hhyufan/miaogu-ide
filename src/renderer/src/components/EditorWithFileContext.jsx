@@ -5,7 +5,8 @@ import { createHighlighter } from 'shiki'
 import { shikiToMonaco } from '@shikijs/monaco'
 import { Spin, Alert } from 'antd'
 import { isFileBlacklisted } from '../configs/file-blacklist'
-import extensionToLanguage from '../contexts/file-extensions.json'
+import allHighLight from '../configs/themes.json'
+import extensionToLanguage from '../configs/file-extensions.json'
 import '../monaco-setup'
 
 let highlighterPromise = null
@@ -36,7 +37,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('JetBrains Mono')
     const [highLight, setHighLight] = useState('One')
-    const [allHighLight, setAllHighLight] = useState({})
 
     useEffect(() => {
         let mounted = true
@@ -47,7 +47,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         return () => {
             mounted = false
         }
-    }, [highLight])
+    }, [])
 
     const editorLanguage = useMemo(() => {
         if (!currentFile?.name) return 'plaintext'
@@ -62,7 +62,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         const loadSettings = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
-                const allHighLight = await window.ipcApi.getState('allTheme')
                 if (savedSetting.fontSize) {
                     setFontSize(savedSetting.fontSize)
                 }
@@ -74,9 +73,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
                 }
                 if (savedSetting.highLight) {
                     setHighLight(savedSetting.highLight)
-                }
-                if (allHighLight){
-                    setAllHighLight(allHighLight)
                 }
             } catch (error) {
                 console.error('加载设置失败:', error)
@@ -211,7 +207,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
 
         monaco.editor.setTheme(isDarkMode ? allHighLight?.[highLight][0] : allHighLight?.[highLight][1])
 
-    }, [editorLanguage, isDarkMode, currentFile.encoding, currentFile.lineEnding])
+    }, [editorLanguage, isDarkMode, highLight, currentFile.encoding, currentFile.lineEnding])
 
     // 监听字体大小、行高和字体变化并更新编辑器
     useEffect(() => {
