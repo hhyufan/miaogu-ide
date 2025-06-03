@@ -1,5 +1,5 @@
 import { InputNumber, Select } from 'antd'
-import { useState, useEffect} from 'react'
+import allHighLight from '../../contexts/highLightTheme.json'
 
 // eslint-disable-next-line react/prop-types
 const TextEditor = ({
@@ -13,15 +13,6 @@ const TextEditor = ({
                       setHighLight
 }) => {
 
-  const [allThemes, setAllThemes] = useState({})
-
-  useEffect( () => {
-    const initTheme = async ()=> {
-      const allTheme = await window.ipcApi.getState('allTheme')
-      setAllThemes(allTheme)
-    }
-    initTheme()
-  }, [])
 
 
     return (
@@ -82,7 +73,7 @@ const TextEditor = ({
                     setHighLight(value)
                   }}
                 >
-                  {Object.keys(allThemes).map((key) => {
+                  {Object.keys(allHighLight).map((key) => {
                     return <Select.Option value={key}>{key}</Select.Option>
                   })}
                 </Select>

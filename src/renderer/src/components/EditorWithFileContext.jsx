@@ -6,14 +6,14 @@ import { shikiToMonaco } from '@shikijs/monaco'
 import { Spin, Alert } from 'antd'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 import extensionToLanguage from '../contexts/file-extensions.json'
+import allHighLight from '../contexts/highLightTheme.json'
 import '../monaco-setup'
 
 let highlighterPromise = null
 const initializeHighlighter = async () => {
-    const allHighlight = await window.ipcApi.getState('allTheme')
     if (!highlighterPromise) {
         highlighterPromise = createHighlighter({
-            themes: Object.values(allHighlight).flat(),
+            themes: Object.values(allHighLight).flat(),
             langs: [...new Set(Object.values(extensionToLanguage))]
         }).then((hl) => {
             shikiToMonaco(hl, monaco)
@@ -36,7 +36,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
     const [lineHeight, setLineHeight] = useState(1.2)
     const [fontFamily, setFontFamily] = useState('JetBrains Mono')
     const [highLight, setHighLight] = useState('One')
-    const [allHighLight, setAllHighLight] = useState({})
 
     useEffect(() => {
         let mounted = true
@@ -62,7 +61,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         const loadSettings = async () => {
             try {
                 const savedSetting = await window.ipcApi.getSetting()
-                const allHighLight = await window.ipcApi.getState('allTheme')
                 if (savedSetting.fontSize) {
                     setFontSize(savedSetting.fontSize)
                 }
@@ -75,9 +73,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
                 if (savedSetting.highLight) {
                     setHighLight(savedSetting.highLight)
                 }
-                if (allHighLight){
-                    setAllHighLight(allHighLight)
-                }
+
             } catch (error) {
                 console.error('加载设置失败:', error)
             }

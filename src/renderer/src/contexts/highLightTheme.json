@@ -1,0 +1,13 @@
+{
+    "One": ["one-dark-pro", "one-light"],
+    "GitHub" : ["github-dark", "github-light"],
+    "Material": ["material-theme-darker", "material-theme-lighter"],
+    "Min": ["min-dark", "min-light"],
+    "Gruvbox": ["gruvbox-dark-hard", "gruvbox-light-hard"],
+    "Everforest": ["everforest-dark", "everforest-light"],
+    "Kanagawa": ["kanagawa-wave", "kanagawa-lotus"],
+    "Rose Pine":["rose-pine-moon", "rose-pine-dawn"],
+    "Slack":["slack-dark", "slack-ochin"],
+    "Solarized":["solarized-dark", "solarized-light"],
+    "Vitesse": ["vitesse-dark", "vitesse-light"]
+}
