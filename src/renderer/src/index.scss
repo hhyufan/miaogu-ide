@@ -1,94 +1,97 @@
 :root {
-  /* 亮色主题变量 */
-  --editor-background: rgba(255, 255, 255, 0.5);
-  --bar-background-color: #FFFFFF;
-  --primary-color: #1677ff;
-  --primary-color-rgb: 22, 119, 255;
-  --primary-hover: #4096ff;
-  --background-color: #f7f7f7;
-  --setting-background-color: #f5f5f5;
-  --card-bg-color: #ffffff;
-  --text-color: #333333;
-  --text-secondary-color: #666666;
-  --border-color: #e8e8e8;
-  --success-color: #52c41a;
-  --warning-color: #faad14;
-  --error-color: #ff4d4f;
-  --code-bg-color: #f6f8fa;
-  --outline-color: #FFFFFF3A;
+    /* 亮色主题变量 */
+    --editor-background: rgba(255, 255, 255, 0.5);
+    --bar-background-color: #FFFFFF;
+    --primary-color: #1677ff;
+    --primary-color-rgb: 22, 119, 255;
+    --primary-hover: #4096ff;
+    --background-color: #f7f7f7;
+    --setting-background-color: #f5f5f5;
+    --card-bg-color: #ffffff;
+    --text-color: #333333;
+    --text-secondary-color: #666666;
+    --border-color: #e8e8e8;
+    --success-color: #52c41a;
+    --warning-color: #faad14;
+    --error-color: #ff4d4f;
+    --code-bg-color: #f6f8fa;
+    --outline-color: #FFFFFF3A;
 
-  // 滚动条颜色
-  --scrollbar-track-color: rgba(0, 0, 0, 0.08);
-  --scrollbar-thumb-color: rgba(0, 0, 0, 0.25);
-  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.4);
-  --scrollbar-thumb-active-color: rgba(0, 0, 0, 0.5);
-  --transition-duration: 0.3s;
-  --sidebar-width: 250px;
-  --header-height: 42px;
-  --tab-bar-height: 38px;
-  --editor-background-image: url(https://t.alcy.cc/moez);
+    // 滚动条颜色
+    --scrollbar-track-color: rgba(0, 0, 0, 0.08);
+    --scrollbar-thumb-color: rgba(0, 0, 0, 0.25);
+    --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.4);
+    --scrollbar-thumb-active-color: rgba(0, 0, 0, 0.5);
+    --transition-duration: 0.3s;
+    --sidebar-width: 250px;
+    --header-height: 42px;
+    --tab-bar-height: 38px;
+    --editor-background-image: url(https://t.alcy.cc/moez);
+
+    // other settings
+    --console-layout-height: 276px;
 }
 
 [data-theme='dark'] {
-  /* 暗色主题变量 */
-  --editor-background: rgba(0, 0, 0, 0.5);
-  --bar-background-color: #1f1f1f;
-  --primary-color: #177ddc;
-  --primary-color-rgb: 23, 125, 220;
-  --primary-hover: #1668dc;
-  --setting-background-color: #1e1f22;
-  --background-color: #292c33;
-  --card-bg-color: #1f1f1f;
-  --text-color: #f0f0f0;
-  --text-secondary-color: #a0a0a0;
-  --border-color: #303030;
-  --success-color: #49aa19;
-  --warning-color: #d89614;
-  --error-color: #a61d24;
-  --code-bg-color: #282c34;
-  --console-font-family: '"JetBrains Mono", monospace';
+    /* 暗色主题变量 */
+    --editor-background: rgba(0, 0, 0, 0.5);
+    --bar-background-color: #1f1f1f;
+    --primary-color: #177ddc;
+    --primary-color-rgb: 23, 125, 220;
+    --primary-hover: #1668dc;
+    --setting-background-color: #1e1f22;
+    --background-color: #292c33;
+    --card-bg-color: #1f1f1f;
+    --text-color: #f0f0f0;
+    --text-secondary-color: #a0a0a0;
+    --border-color: #303030;
+    --success-color: #49aa19;
+    --warning-color: #d89614;
+    --error-color: #a61d24;
+    --code-bg-color: #282c34;
+    --console-font-family: '"JetBrains Mono", monospace';
 
-  // 滚动条颜色
-  --scrollbar-track-color: rgba(255, 255, 255, 0.1);
-  --scrollbar-thumb-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.5);
-  --scrollbar-thumb-active-color: rgba(255, 255, 255, 0.6);
+    // 滚动条颜色
+    --scrollbar-track-color: rgba(255, 255, 255, 0.1);
+    --scrollbar-thumb-color: rgba(255, 255, 255, 0.3);
+    --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.5);
+    --scrollbar-thumb-active-color: rgba(255, 255, 255, 0.6);
 
-  /* 表格样式覆盖 */
-  table th {
-    background-color: #333;
-  }
+    /* 表格样式覆盖 */
+    table th {
+        background-color: #333;
+    }
 }
 
 body {
-  margin: 0;
-  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: all var(--transition-duration);
-  /* 隐藏滚动条但仍可滚动 */
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE 和 Edge */
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: all var(--transition-duration);
+    /* 隐藏滚动条但仍可滚动 */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE 和 Edge */
 }
 
 /* 隐藏所有滚动条 */
 ::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari 和 Opera */
-  width: 0;
-  height: 0;
-  background: transparent;
+    display: none;
+    /* Chrome, Safari 和 Opera */
+    width: 0;
+    height: 0;
+    background: transparent;
 }
 
 code {
-  font-family: 'Source Code Pro', Consolas, Monaco, 'Andale Mono', monospace;
-  background-color: var(--code-bg-color);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-size: 0.9em;
+    font-family: 'Source Code Pro', Consolas, Monaco, 'Andale Mono', monospace;
+    background-color: var(--code-bg-color);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
 }
