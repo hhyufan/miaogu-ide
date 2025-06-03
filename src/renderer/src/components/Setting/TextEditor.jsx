@@ -1,5 +1,5 @@
 import { InputNumber, Select } from 'antd'
-import { useState, useEffect} from 'react'
+import allThemes from '../../configs/themes.json'
 
 // eslint-disable-next-line react/prop-types
 const TextEditor = ({
@@ -12,16 +12,6 @@ const TextEditor = ({
                       highLight,
                       setHighLight
 }) => {
-
-  const [allThemes, setAllThemes] = useState({})
-
-  useEffect( () => {
-    const initTheme = async ()=> {
-      const allTheme = await window.ipcApi.getState('allTheme')
-      setAllThemes(allTheme)
-    }
-    initTheme()
-  }, [])
 
 
     return (
@@ -61,6 +51,7 @@ const TextEditor = ({
                 <h4 style={{ margin: 0, minWidth: '40px', fontWeight: 400 }}>字体：</h4>
                 <Select
                   value={fontFamily}
+                  defaultValue="JetBrains Mono"
                   style={{ width: 240 }}
                   onChange={(value) => {
                     setFontFamily(value)
@@ -73,10 +64,12 @@ const TextEditor = ({
                 </Select>
               </div>
               <h3 style={{fontWeight: 500, marginBottom: 24 ,marginTop: 48}}>高亮显示</h3>
-              <div id="highLightTheme" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div id="highLightTheme" style={{ display: 'flex', alignItems: 'center', gap: 16}}>
                 <h4 style={{ margin: 0, minWidth: '40px', fontWeight: 400 }}>主题：</h4>
                 <Select
+                  listHeight={130}
                   value={highLight}
+                  defaultValue="One"
                   style={{ width: 240 }}
                   onChange={(value) => {
                     setHighLight(value)
