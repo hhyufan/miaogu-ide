@@ -13,7 +13,7 @@ const initializeHighlighter = async () => {
     const allHighlight = await window.ipcApi.getState('allTheme')
     if (!highlighterPromise) {
         highlighterPromise = createHighlighter({
-            themes: [].concat(...Object.values(allHighlight)),
+            themes: Object.values(allHighlight).flat(),
             langs: [...new Set(Object.values(extensionToLanguage))]
         }).then((hl) => {
             shikiToMonaco(hl, monaco)
