@@ -1141,3 +1141,15 @@ ipcMain.handle('set-bg-enabled', (event, enabled) => {
 ipcMain.handle('get-bg-transparency', () => {
     return stateStore.getTransparency()
 })
+
+ipcMain.handle('get-highLight', () => {
+  return stateStore.getHighLight()
+})
+
+ipcMain.handle('set-highLight', (event, highLight) => {
+  stateStore.setHighLight(highLight)
+  BrowserWindow.getAllWindows().forEach((win) => {
+    win.webContents.send('highLight-changed', highLight)
+  })
+  return true
+})

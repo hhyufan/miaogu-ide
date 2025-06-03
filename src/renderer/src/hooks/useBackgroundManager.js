@@ -81,10 +81,6 @@ export const useBackgroundManager = () => {
               ...prev,
               isEnabled: enabled
             }))
-            if (backgroundState.imagePath && enabled)
-            {
-              await window.ipcApi.setBgImage(backgroundState.imagePath)
-            }
         } catch (error) {
             console.error('切换背景开关失败:', error)
         }

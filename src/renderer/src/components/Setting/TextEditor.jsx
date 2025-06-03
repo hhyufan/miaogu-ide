@@ -1,4 +1,5 @@
 import { InputNumber, Select } from 'antd'
+import { useState, useEffect} from 'react'
 
 // eslint-disable-next-line react/prop-types
 const TextEditor = ({
@@ -7,8 +8,22 @@ const TextEditor = ({
                       lineHeight,
                       setLineHeight,
                       fontFamily,
-                      setFontFamily
+                      setFontFamily,
+                      highLight,
+                      setHighLight
 }) => {
+
+  const [allThemes, setAllThemes] = useState({})
+
+  useEffect( () => {
+    const initTheme = async ()=> {
+      const allTheme = await window.ipcApi.getState('allTheme')
+      setAllThemes(allTheme)
+    }
+    initTheme()
+  }, [])
+
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div id="textEditor">
@@ -55,6 +70,21 @@ const TextEditor = ({
                   <Select.Option value="Fira Code">Fira Code</Select.Option>
                   <Select.Option value="Courier New">Courier New</Select.Option>
                   <Select.Option value="Consolas">Consolas</Select.Option>
+                </Select>
+              </div>
+              <h3 style={{fontWeight: 500, marginBottom: 24 ,marginTop: 48}}>高亮显示</h3>
+              <div id="highLightTheme" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <h4 style={{ margin: 0, minWidth: '40px', fontWeight: 400 }}>主题：</h4>
+                <Select
+                  value={highLight}
+                  style={{ width: 240 }}
+                  onChange={(value) => {
+                    setHighLight(value)
+                  }}
+                >
+                  {Object.keys(allThemes).map((key) => {
+                    return <Select.Option value={key}>{key}</Select.Option>
+                  })}
                 </Select>
               </div>
             </div>
