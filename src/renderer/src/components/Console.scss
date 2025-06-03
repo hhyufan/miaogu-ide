@@ -395,18 +395,31 @@
 [data-theme='dark'] {
     .console-container {
         .console-card {
-            background-color: transparent !important;
+
             border-color: #434343;
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 
             .ant-card-head {
-                background-color: transparent !important;
+                background-color: var(--bar-background-color) !important;
                 border-bottom-color: #434343;
                 color: #fff;
             }
 
             .ant-card-body {
                 background-color: transparent !important;
+            }
+
+            &.with-background {
+                .console-card {
+                    .ant-card-head {
+                        background-color: transparent;
+                    }
+                }
+                .ant-card-body {
+                    padding: 0;
+                    max-height: 250px;
+                    overflow: hidden;
+                }
             }
         }
 

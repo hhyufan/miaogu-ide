@@ -25,7 +25,7 @@
     --transition-duration: 0.3s;
     --sidebar-width: 250px;
     --header-height: 42px;
-    --tab-bar-height: 38px;
+    --tab-bar-height: 36px;
     --editor-background-image: url(https://t.alcy.cc/moez);
 
     // other settings
@@ -72,6 +72,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     transition: all var(--transition-duration);
+    overflow: hidden;
     /* 隐藏滚动条但仍可滚动 */
     scrollbar-width: none;
     /* Firefox */

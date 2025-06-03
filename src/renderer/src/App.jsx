@@ -330,6 +330,10 @@ const App = () => {
         document.documentElement.style.setProperty('--console-layout-height', `${consoleHeight}px`)
     }, [consoleHeight])
 
+    // 控制台高度限制常量
+    const CONSOLE_MIN_HEIGHT = 125;
+    const CONSOLE_MARGIN = 125;
+
     function initConsoleDragEvent(event) {
         event.preventDefault();
 
@@ -341,8 +345,8 @@ const App = () => {
         function doDrag(event) {
             const newHeight = startHeight + (startY - event.clientY);
 
-            const minHeight = 115;
-            const maxHeight = containerHeight - 50;
+            const minHeight = CONSOLE_MIN_HEIGHT;
+            const maxHeight = containerHeight - CONSOLE_MARGIN;
 
             setConsoleHeight(Math.max(minHeight, Math.min(maxHeight, newHeight)));
         }
@@ -355,6 +359,27 @@ const App = () => {
         document.addEventListener('mousemove', doDrag);
         document.addEventListener('mouseup', stopDrag);
     }
+
+    // 监听窗口大小变化，重新计算控制台高度限制
+    useEffect(() => {
+        const handleResize = () => {
+            if (consoleLayoutRef.current && consoleVisible) {
+                const containerHeight = consoleLayoutRef.current.parentElement.clientHeight;
+                const maxHeight = containerHeight - CONSOLE_MARGIN;
+                const minHeight = CONSOLE_MIN_HEIGHT;
+
+                // 如果当前控制台高度超出了新的最大高度限制，则调整到最大允许高度
+                if (consoleHeight > maxHeight) {
+                    setConsoleHeight(maxHeight);
+                } else if (consoleHeight < minHeight) {
+                    setConsoleHeight(minHeight);
+                }
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [consoleHeight, consoleVisible]);
 
     // 处理代码运行输出
     const handleRunCode = (output) => {
@@ -371,7 +396,7 @@ const App = () => {
     }
 
     // 拖拽控制台高度
-    const handleDragConsole = (evnet) => initConsoleDragEvent(evnet);
+    const handleDragConsole = (event) => initConsoleDragEvent(event);
 
     // 清空控制台
     const handleClearConsole = () => {
