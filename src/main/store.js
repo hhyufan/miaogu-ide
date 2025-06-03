@@ -1,7 +1,6 @@
 // 导入electron-store模块
 import Store from 'electron-store'
 import { app } from 'electron'
-import setting from '../renderer/src/Setting'
 // 创建Store实例用于持久化存储
 const store = new Store({
     name: 'user-state', // 存储文件名
