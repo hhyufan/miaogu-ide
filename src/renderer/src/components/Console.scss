@@ -27,18 +27,18 @@
             }
         }
         .ant-card-body {
-            background-color: transparent!important;
+            background-color: transparent !important;
             padding: 0;
         }
-        &.with-background {
-            .console-card {
-                .ant-card-head {
-                    background-color: transparent;
-                }
+
+    }
+    &.with-background {
+        .console-card {
+            .ant-card-head {
+                background-color: transparent !important;
             }
         }
     }
-
 
 
     .console-header {
@@ -408,16 +408,14 @@
                 background-color: transparent !important;
                 padding: 0;
             }
-
-            &.with-background {
-                .console-card {
-                    .ant-card-head {
-                        background-color: transparent;
-                    }
+        }
+        &.with-background {
+            .console-card {
+                .ant-card-head {
+                    background-color: transparent !important;
                 }
             }
         }
-
         .console-header {
             .console-actions {
                 .ant-btn {
