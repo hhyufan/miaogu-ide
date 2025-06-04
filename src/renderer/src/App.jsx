@@ -426,8 +426,7 @@ const App = () => {
         // 显示控制台
         if (!consoleVisible) {
             // 直接显示控制台，不使用动画
-            const targetHeight = Math.min(300, window.innerHeight * 0.3)
-            setConsoleHeight(targetHeight)
+            setConsoleHeight(276)
             setConsoleVisible(true)
         }
     }
