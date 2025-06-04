@@ -67,7 +67,7 @@ const TextEditor = ({
               <div id="highLightTheme" style={{ display: 'flex', alignItems: 'center', gap: 16}}>
                 <h4 style={{ margin: 0, minWidth: '40px', fontWeight: 400 }}>主题：</h4>
                 <Select
-                  listHeight={130}
+                  listHeight={165}
                   value={highLight}
                   defaultValue="One"
                   style={{ width: 240 }}
