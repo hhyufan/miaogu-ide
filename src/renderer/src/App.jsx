@@ -82,7 +82,6 @@ const App = () => {
     // 控制台状态
     const [consoleVisible, setConsoleVisible] = useState(false)
     const [consoleOutputs, setConsoleOutputs] = useState([])
-    const [consoleAnimating, setConsoleAnimating] = useState(null)
 
     const consoleLayoutRef = useRef(null);
     const [consoleHeight, setConsoleHeight] = useState(276);
@@ -329,7 +328,14 @@ const App = () => {
             const minHeight = CONSOLE_MIN_HEIGHT;
             const maxHeight = containerHeight - CONSOLE_MARGIN;
 
-            setConsoleHeight(Math.max(minHeight, Math.min(maxHeight, newHeight)));
+            const clampedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight))
+            setConsoleHeight(clampedHeight)
+
+            // 直接设置高度，不使用动画
+            if (consoleLayoutRef.current) {
+                consoleLayoutRef.current.style.height = `${clampedHeight}px`
+                document.documentElement.style.setProperty('--console-layout-height', `${clampedHeight}px`)
+            }
         }
 
         function stopDrag() {
@@ -377,6 +383,38 @@ const App = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, [consoleHeight, consoleVisible]);
 
+    // 控制台高度动画函数
+    const animateConsoleHeight = (fromHeight, toHeight, duration, onComplete) => {
+        const startTime = performance.now()
+        const heightDiff = toHeight - fromHeight
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime
+            const progress = Math.min(elapsed / duration, 1)
+
+            // 使用easeOutCubic缓动函数
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3)
+            const currentHeight = fromHeight + heightDiff * easeOutCubic
+
+            if (consoleLayoutRef.current) {
+                consoleLayoutRef.current.style.height = `${currentHeight}px`
+                document.documentElement.style.setProperty('--console-layout-height', `${currentHeight}px`)
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(animate)
+            } else {
+                // 动画完成，更新状态
+                setConsoleHeight(toHeight)
+                if (onComplete) {
+                    onComplete()
+                }
+            }
+        }
+
+        requestAnimationFrame(animate)
+    }
+
     // 处理代码运行输出
     const handleRunCode = (output) => {
         if (output.type === 'clear') {
@@ -387,12 +425,10 @@ const App = () => {
 
         // 显示控制台
         if (!consoleVisible) {
-            setConsoleAnimating('opening')
+            // 直接显示控制台，不使用动画
+            const targetHeight = Math.min(300, window.innerHeight * 0.3)
+            setConsoleHeight(targetHeight)
             setConsoleVisible(true)
-            // 动画完成后重置动画状态
-            setTimeout(() => {
-                setConsoleAnimating(null)
-            }, 300)
         }
     }
 
@@ -406,13 +442,11 @@ const App = () => {
 
     // 关闭控制台
     const handleCloseConsole = () => {
-        setConsoleAnimating('closing')
-        // 延迟隐藏控制台，让关闭动画播放完成
-        setTimeout(() => {
+        // 使用JavaScript动画控制height
+        animateConsoleHeight(consoleHeight, 0, 300, () => {
             setConsoleVisible(false)
             setConsoleOutputs([])
-            setConsoleAnimating(null)
-        }, 300)
+        })
     }
     return (
         <FileProvider>
@@ -442,10 +476,9 @@ const App = () => {
                         </Content>
                         {consoleVisible && (
                             <div
-                                className={`console-layout ${consoleAnimating === 'opening' ? 'console-slide-up' :
-                                    consoleAnimating === 'closing' ? 'console-slide-down' : ''
-                                    }`}
+                                className="console-layout"
                                 ref={consoleLayoutRef}
+                                style={{ height: `${consoleHeight}px` }}
                             >
                                 <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
                                 <Console

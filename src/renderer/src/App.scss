@@ -69,7 +69,6 @@
     height: var(--console-layout-height);
     margin-bottom: 24px;
     border-top: 1px solid #f0f0f0;
-    transition: transform 0.3s ease-out;
 
     .console__drag-bar {
         position: absolute;
@@ -79,16 +78,6 @@
         background-color: transparent;
         cursor: ns-resize;
         z-index: 1;
-    }
-
-    // 控制台出现动画：从下到上
-    &.console-slide-up {
-        animation: slideUpFromBottom 0.3s ease-out;
-    }
-
-    // 控制台消失动画：从上到下
-    &.console-slide-down {
-        animation: slideDownToBottom 0.3s ease-out;
     }
 }
 
@@ -156,6 +145,7 @@
         transform: scale(1) translateY(0);
     }
 }
+
 /* 代码编辑器样式 */
 .code-editor-container {
     overflow: auto;
@@ -170,27 +160,4 @@
     }
 }
 
-/* 控制台动画关键帧 */
-@keyframes slideUpFromBottom {
-    from {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideDownToBottom {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-
-    to {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-}
+/* 控制台动画已改为JavaScript控制，移除CSS动画关键帧 */
