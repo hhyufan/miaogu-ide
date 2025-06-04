@@ -2,8 +2,8 @@ import './Setting.scss'
 
 import { useState, useEffect } from 'react'
 import { ConfigProvider, theme } from 'antd'
-import SettingMenu from './components/Setting/SettingMenu'
-import SettingHeader from './components/Setting/SettingHeader'
+import SettingMenu from './components/setting/SettingMenu'
+import SettingHeader from './components/setting/SettingHeader'
 import useThemeLoader from './hooks/useThemeLoader'
 
 const Setting = () => {
