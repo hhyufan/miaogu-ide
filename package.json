@@ -1,6 +1,6 @@
 {
   "name": "miaogu-ide",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "A simple and beautiful code editor.",
   "main": "./out/main/index.js",
   "author": "hhyufan",
