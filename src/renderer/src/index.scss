@@ -1,6 +1,7 @@
 :root {
     /* 亮色主题变量 */
-    --editor-background: rgba(255, 255, 255, 0.5);
+    --editor-background-light: rgba(255, 255, 255, 0.5);
+    --editor-background: var(--editor-background-light);
     --bar-background-color: #FFFFFF;
     --primary-color: #1677ff;
     --primary-color-rgb: 22, 119, 255;
@@ -34,7 +35,8 @@
 
 [data-theme='dark'] {
     /* 暗色主题变量 */
-    --editor-background: rgba(0, 0, 0, 0.5);
+    --editor-background-dark: rgba(0, 0, 0, 0.5);
+    --editor-background: var(--editor-background-dark);
     --bar-background-color: #1f1f1f;
     --primary-color: #177ddc;
     --primary-color-rgb: 23, 125, 220;

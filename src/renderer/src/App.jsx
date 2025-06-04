@@ -132,10 +132,14 @@ const App = () => {
             if (!bgEnabled || !bgImage || bgImage === '') {
                 return
             }
+            const { dark, light } = transparencySetting;
+            const colors = isDarkMode ? '0, 0, 0' : '255, 255, 255';
+            const alpha = isDarkMode ? dark : light;
+
             document.documentElement.style.setProperty(
-                '--editor-background',
-                `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
-            )
+                `--editor-background-${isDarkMode ? 'dark' : 'light'}`,
+                `rgba(${colors}, ${alpha / 100})`
+            );
         }
         loadInitBgTransparency().catch(console.error)
     }, [isDarkMode])
@@ -164,28 +168,24 @@ const App = () => {
     // 使用自定义hook加载保存的主题
     useThemeLoader(setIsDarkMode)
 
-    // 添加状态锁定，防止频闪
-    const [isUpdatingBackground, setIsUpdatingBackground] = useState(false)
-
     useEffect(() => {
         const handleBgImageChange = async (event, filePath) => {
-            // 防止重复更新
-            if (isUpdatingBackground) return
-            setIsUpdatingBackground(true)
 
             try {
                 const bgEnabled = await window.ipcApi.getBgEnabled()
 
                 // 如果背景未开启或背景图片路径为空，设置为透明色
                 if (!bgEnabled) {
-                    document.documentElement.style.setProperty('--editor-background', 'transparent')
-                    document.documentElement.style.setProperty('--editor-background-image', 'none')
+                    requestAnimationFrame(() => {
+                        document.documentElement.style.setProperty('--editor-background-light', 'transparent')
+                        document.documentElement.style.setProperty('--editor-background-dark', 'transparent')
+                        document.documentElement.style.setProperty('--editor-background-image', 'none')
+                    })
                     return
                 }
 
                 // 先设置背景滤镜（透明度）
                 const transparencySetting = await window.ipcApi.getBgTransparency()
-                const backgroundRgba = `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
 
                 // 然后加载背景图片
                 const imgPath = await window.electron.nativeImage.createFromPath(filePath)
@@ -194,8 +194,12 @@ const App = () => {
                 // 批量更新CSS变量，减少重绘次数
                 requestAnimationFrame(() => {
                     document.documentElement.style.setProperty(
-                        '--editor-background',
-                        backgroundRgba
+                        '--editor-background-light',
+                        `rgba(255, 255, 255, ${transparencySetting.light / 100})`
+                    )
+                    document.documentElement.style.setProperty(
+                        '--editor-background-dark',
+                        `rgba(0, 0, 0, ${transparencySetting.dark / 100})`
                     )
                     document.documentElement.style.setProperty(
                         '--editor-background-image',
@@ -204,17 +208,12 @@ const App = () => {
                 })
             } catch (error) {
                 console.error('背景图片更新失败:', error)
-            } finally {
-                // 添加短暂延迟，确保更新完成
-                setTimeout(() => {
-                    setIsUpdatingBackground(false)
-                }, 100)
             }
         }
 
         window.ipcApi.onBgImageChange(handleBgImageChange)
         return () => window.ipcApi.removeBgImageChange(handleBgImageChange)
-    }, [isDarkMode])
+    }, [])
 
     const isDarkModeRef = useRef(isDarkMode)
 
@@ -225,8 +224,6 @@ const App = () => {
 
     useEffect(() => {
         const handleBgTransparencyChange = async (event, theme, transparency) => {
-            // 如果正在更新背景图片，跳过透明度更新，避免冲突
-            if (isUpdatingBackground) return
             const [bgEnabled, bgImage] = await Promise.all([
                 window.ipcApi.getBgEnabled(),
                 window.ipcApi.getBgImage()
@@ -235,22 +232,14 @@ const App = () => {
             if (!bgEnabled || !bgImage || bgImage === '') {
                 return
             }
-            // 使用 ref 获取最新 isDarkMode
-            if (theme === 'dark' && isDarkModeRef.current) {
-                requestAnimationFrame(() => {
-                    document.documentElement.style.setProperty(
-                        '--editor-background',
-                        `rgba(0, 0, 0, ${transparency / 100})`
-                    )
-                })
-            } else if (theme === 'light' && !isDarkModeRef.current) {
-                requestAnimationFrame(() => {
-                    document.documentElement.style.setProperty(
-                        '--editor-background',
-                        `rgba(255, 255, 255, ${transparency / 100})`
-                    )
-                })
-            }
+            // 根据主题设置对应的CSS变量
+            const { dark, light } = transparency;
+            const colors = theme = 'dark' ? '0, 0, 0' : '255, 255, 255';
+            const alpha = isDarkMode ? dark : light;
+            document.documentElement.style.setProperty(
+                `--editor-background-${theme}`,
+                `rgba(${colors}, ${alpha / 100})`
+            );
         }
         // 注册监听（只运行一次）
         window.ipcApi.onBgTransparencyChange(handleBgTransparencyChange)
@@ -274,7 +263,11 @@ const App = () => {
                 if (!bgEnabled || !bgImage || bgImage === '') {
                     requestAnimationFrame(() => {
                         document.documentElement.style.setProperty(
-                            '--editor-background',
+                            '--editor-background-light',
+                            'transparent'
+                        )
+                        document.documentElement.style.setProperty(
+                            '--editor-background-dark',
                             'transparent'
                         )
                         document.documentElement.style.setProperty(
@@ -285,7 +278,6 @@ const App = () => {
                 } else {
                     // 背景图片开启时，先设置背景滤镜（透明度）
                     const transparencySetting = await window.ipcApi.getBgTransparency()
-                    const backgroundRgba = `rgba(${isDarkMode ? '0, 0, 0,' : '255, 255, 255,'} ${isDarkMode ? transparencySetting.dark / 100 : transparencySetting.light / 100})`
 
                     // 然后加载背景图片
                     const img = await window.electron.nativeImage.createFromPath(bgImage)
@@ -294,8 +286,12 @@ const App = () => {
                     // 批量更新CSS变量，减少重绘次数
                     requestAnimationFrame(() => {
                         document.documentElement.style.setProperty(
-                            '--editor-background',
-                            backgroundRgba
+                            '--editor-background-light',
+                            `rgba(255, 255, 255, ${transparencySetting.light / 100})`
+                        )
+                        document.documentElement.style.setProperty(
+                            '--editor-background-dark',
+                            `rgba(0, 0, 0, ${transparencySetting.dark / 100})`
                         )
                         document.documentElement.style.setProperty(
                             '--editor-background-image',

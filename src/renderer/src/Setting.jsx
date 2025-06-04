@@ -26,18 +26,14 @@ const Setting = () => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
   }, [isDarkMode])
 
-
-  const toggleTheme = () => {
-    const newTheme = !isDarkMode
-    setIsDarkMode(newTheme)
-
-    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light')
-  }
-
-
+  // 监听主题变化事件，同步主窗口的主题状态
   useEffect(() => {
-    const handleToggleTheme = () => {
-      toggleTheme()
+    const handleToggleTheme = async () => {
+        // 从electron-store获取当前实际的主题状态
+        const currentTheme = await window.ipcApi.getTheme()
+        const isDark = currentTheme === 'dark'
+        setIsDarkMode(isDark)
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
     }
 
     // 添加事件监听器
@@ -47,7 +43,7 @@ const Setting = () => {
     return () => {
       window.ipcApi.removeToggleTheme(handleToggleTheme)
     }
-  }, [toggleTheme])
+  }, [])
 
   // 使用自定义hook加载保存的主题
   useThemeLoader(setIsDarkMode)
