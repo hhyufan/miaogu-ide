@@ -2,7 +2,7 @@ import './Console.scss'
 
 import MarkdownRenderer from './MarkdownRenderer'
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useState, useCallback} from 'react'
 import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
 import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { Button, Card } from 'antd'
