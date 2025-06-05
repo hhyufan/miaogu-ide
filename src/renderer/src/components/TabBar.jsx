@@ -1,13 +1,45 @@
 import './TabBar.scss'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useBackgroundManager } from '../hooks/useBackgroundManager'
-import { useFile } from '../contexts/FileContext'
+import { useCurrentFile, useOpenedFiles, useFileActions } from '../hooks/useFileManager'
 import { EditOutlined, FileAddOutlined } from '@ant-design/icons'
 import { Tabs } from 'antd'
-const TabBar = () => {
-    const { openedFiles, currentFile, switchFile, closeFile } = useFile()
+const TabBar = ({ fileManager }) => {
+    const currentFile = useCurrentFile(fileManager)
+    const openedFiles = useOpenedFiles(fileManager)
+    const { switchFile, closeFile } = useFileActions(fileManager)
     const { hasBackground } = useBackgroundManager()
+
+    const onChange = useCallback((activeKey) => {
+        switchFile(activeKey)
+    }, [switchFile])
+
+    const onEdit = useCallback((targetKey, action) => {
+        if (action === 'remove') {
+            closeFile(targetKey)
+        }
+    }, [closeFile])
+
+    const items = useMemo(() => openedFiles.map((file) => ({
+        key: file.path,
+        label: (
+            <span>
+                {file.name}
+                {file.isModified && !file.isTemporary && (
+                    <EditOutlined
+                        style={{ marginLeft: '5px', fontSize: '12px', color: '#faad14' }}
+                    />
+                )}
+                {file.isTemporary && (
+                    <FileAddOutlined
+                        style={{ marginLeft: '5px', fontSize: '12px', color: '#1890ff' }}
+                    />
+                )}
+            </span>
+        ),
+        closable: true
+    })), [openedFiles])
 
     // 使用useEffect设置或移除CSS变量
     useEffect(() => {
@@ -27,36 +59,6 @@ const TabBar = () => {
     if (openedFiles.length === 0) {
         return null
     }
-
-    const onChange = (activeKey) => {
-        switchFile(activeKey)
-    }
-
-    const onEdit = (targetKey, action) => {
-        if (action === 'remove') {
-            closeFile(targetKey)
-        }
-    }
-
-    const items = openedFiles.map((file) => ({
-        key: file.path,
-        label: (
-            <span>
-                {file.name}
-                {file.isModified && !file.isTemporary && (
-                    <EditOutlined
-                        style={{ marginLeft: '5px', fontSize: '12px', color: '#faad14' }}
-                    />
-                )}
-                {file.isTemporary && (
-                    <FileAddOutlined
-                        style={{ marginLeft: '5px', fontSize: '12px', color: '#1890ff' }}
-                    />
-                )}
-            </span>
-        ),
-        closable: true
-    }))
 
     return (
         <div className={`tab-bar ${hasBackground ? 'with-background' : ''}`}>

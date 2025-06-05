@@ -1,23 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { Button, ConfigProvider, Layout, theme } from 'antd'
 import { MoonFilled, SunOutlined } from '@ant-design/icons'
 import './App.scss'
 import AppHeader from './components/AppHeader'
 import TabBar from './components/TabBar'
 import Console from './components/Console'
-import { FileProvider, useFile } from './contexts/FileContext'
+import { useFileManager, useCurrentFile } from './hooks/useFileManager'
 import EditorWithFileContext from './components/EditorWithFileContext'
 import CodeRunner from './components/CodeRunner'
 import EditorStatusBar from './components/EditorStatusBar'
 import useThemeLoader from './hooks/useThemeLoader'
+import { isJavaScriptFileOptimized, isHTMLFileOptimized } from './utils/fileNameUtils'
 
 const { Content } = Layout
 
 // 内部组件，用于访问文件上下文
 // eslint-disable-next-line react/prop-types
-const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onCloseConsole }) => {
-    const { currentFile } = useFile()
+const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onCloseConsole, fileManager }) => {
+    const currentFile = useCurrentFile(fileManager)
     const [previousFilePath, setPreviousFilePath] = useState(null)
 
     // 监听文件切换，自动关闭控制台
@@ -30,19 +31,14 @@ const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onClos
             setPreviousFilePath(currentFile.path)
         }
     }, [currentFile, previousFilePath, consoleVisible, onCloseConsole])
-    // 检查文件是否为JavaScript文件
-    const isJavaScriptFile = (fileName) => {
-        if (!fileName) return false
-        const ext = fileName.toLowerCase().split('.').pop()
-        return ['js', 'jsx', 'mjs', 'cjs'].includes(ext)
-    }
+    // 检查文件是否为JavaScript文件 - 使用 useMemo 优化
+    const fileTypeCheckers = useMemo(() => ({
+        isJavaScript: (fileName) => isJavaScriptFileOptimized(fileName),
+        isHTML: (fileName) => isHTMLFileOptimized(fileName)
+    }), [])
 
-    // 检查文件是否为HTML文件
-    const isHTMLFile = (fileName) => {
-        if (!fileName) return false
-        const ext = fileName.toLowerCase().split('.').pop()
-        return ['html', 'htm'].includes(ext)
-    }
+    const isJavaScriptFile = fileTypeCheckers.isJavaScript
+    const isHTMLFile = fileTypeCheckers.isHTML
 
     return (
         <>
@@ -71,7 +67,13 @@ const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onClos
                 )}
             <div className="content-container">
                 <div className={`code-editor-container ${consoleVisible ? 'with-console' : ''}`}>
-                    <EditorWithFileContext isDarkMode={isDarkMode} />
+                    <EditorWithFileContext
+                        isDarkMode={isDarkMode}
+                        onRunCode={onRunCode}
+                        consoleVisible={consoleVisible}
+                        onCloseConsole={onCloseConsole}
+                        fileManager={fileManager}
+                    />
                 </div>
             </div>
         </>
@@ -79,6 +81,9 @@ const AppContent = ({ isDarkMode, toggleTheme, onRunCode, consoleVisible, onClos
 }
 
 const App = () => {
+    // 文件管理器
+    const fileManager = useFileManager()
+
     // 控制台状态
     const [consoleVisible, setConsoleVisible] = useState(false)
     const [consoleOutputs, setConsoleOutputs] = useState([])
@@ -103,23 +108,23 @@ const App = () => {
         return window.matchMedia('(prefers-color-scheme: dark)').matches
     })
 
-    // 切换主题
-    const toggleTheme = () => {
+    // 切换主题 - 使用 useCallback 优化
+    const toggleTheme = useCallback(() => {
         // 同时保存到electron-store
         if (window.ipcApi && window.ipcApi.setTheme) {
             window.ipcApi.setTheme(!isDarkMode ? 'dark' : 'light').catch((error) => {
                 console.error('保存主题设置失败:', error)
             })
         }
-    }
+    }, [isDarkMode])
 
-    const changeTheme = () => {
+    const changeTheme = useCallback(() => {
         const newTheme = !isDarkMode
         setIsDarkMode(newTheme)
         // 保存到localStorage（向后兼容）
         localStorage.setItem('theme', newTheme ? 'dark' : 'light')
         document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light')
-    }
+    }, [isDarkMode])
     useEffect(() => {
         const loadInitBgTransparency = async () => {
             const [transparencySetting, bgEnabled, bgImage] = await Promise.all([
@@ -231,13 +236,10 @@ const App = () => {
             if (!bgEnabled || !bgImage || bgImage === '') {
                 return
             }
-            // 根据主题设置对应的CSS变量
-            const { dark, light } = transparency;
-            const colors = theme = 'dark' ? '0, 0, 0' : '255, 255, 255';
-            const alpha = isDarkMode ? dark : light;
+            const colors = theme === 'dark' ? '0, 0, 0' : '255, 255, 255';
             document.documentElement.style.setProperty(
                 `--editor-background-${theme}`,
-                `rgba(${colors}, ${alpha / 100})`
+                `rgba(${colors}, ${transparency / 100})`
             );
         }
         // 注册监听（只运行一次）
@@ -415,8 +417,8 @@ const App = () => {
         requestAnimationFrame(animate)
     }
 
-    // 处理代码运行输出
-    const handleRunCode = (output) => {
+    // 处理代码运行输出 - 使用 useCallback 优化
+    const handleRunCode = useCallback((output) => {
         if (output.type === 'clear') {
             setConsoleOutputs([])
         } else {
@@ -429,70 +431,69 @@ const App = () => {
             setConsoleHeight(276)
             setConsoleVisible(true)
         }
-    }
+    }, [consoleVisible])
 
-    // 拖拽控制台高度
-    const handleDragConsole = (event) => initConsoleDragEvent(event);
+    // 拖拽控制台高度 - 使用 useCallback 优化
+    const handleDragConsole = useCallback((event) => initConsoleDragEvent(event), [])
 
-    // 清空控制台
-    const handleClearConsole = () => {
+    // 清空控制台 - 使用 useCallback 优化
+    const handleClearConsole = useCallback(() => {
         setConsoleOutputs([])
-    }
+    }, [])
 
-    // 关闭控制台
-    const handleCloseConsole = () => {
+    // 关闭控制台 - 使用 useCallback 优化
+    const handleCloseConsole = useCallback(() => {
         // 使用JavaScript动画控制height
         animateConsoleHeight(consoleHeight, 0, 300, () => {
             setConsoleVisible(false)
             setConsoleOutputs([])
         })
-    }
+    }, [consoleHeight])
     return (
-        <FileProvider>
-            <ConfigProvider
-                theme={{
-                    algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-                    token: {
-                        colorPrimary: '#1677ff',
-                        borderRadius: 4,
-                        fontFamily:
-                            '"Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-                    }
-                }}
-            >
-                <Layout className="app-layout">
-                    <AppHeader />
-                    <TabBar onRunCode={handleRunCode} />
-                    <Layout className="main-layout">
-                        <Content className={`app-content ${consoleVisible ? 'with-console' : ''}`}>
-                            <AppContent
-                                isDarkMode={isDarkMode}
-                                toggleTheme={toggleTheme}
-                                onRunCode={handleRunCode}
-                                consoleVisible={consoleVisible}
-                                onCloseConsole={handleCloseConsole}
+        <ConfigProvider
+            theme={{
+                algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                token: {
+                    colorPrimary: '#1677ff',
+                    borderRadius: 4,
+                    fontFamily:
+                        '"Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+                }
+            }}
+        >
+            <Layout className="app-layout">
+                <AppHeader fileManager={fileManager} />
+                <TabBar onRunCode={handleRunCode} fileManager={fileManager} />
+                <Layout className="main-layout">
+                    <Content className={`app-content ${consoleVisible ? 'with-console' : ''}`}>
+                        <AppContent
+                            isDarkMode={isDarkMode}
+                            toggleTheme={toggleTheme}
+                            onRunCode={handleRunCode}
+                            consoleVisible={consoleVisible}
+                            onCloseConsole={handleCloseConsole}
+                            fileManager={fileManager}
+                        />
+                    </Content>
+                    {consoleVisible && (
+                        <div
+                            className="console-layout"
+                            ref={consoleLayoutRef}
+                            style={{ height: `${consoleHeight}px` }}
+                        >
+                            <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
+                            <Console
+                                outputs={consoleOutputs}
+                                onClear={handleClearConsole}
+                                onClose={handleCloseConsole}
+                                visible={consoleVisible}
                             />
-                        </Content>
-                        {consoleVisible && (
-                            <div
-                                className="console-layout"
-                                ref={consoleLayoutRef}
-                                style={{ height: `${consoleHeight}px` }}
-                            >
-                                <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
-                                <Console
-                                    outputs={consoleOutputs}
-                                    onClear={handleClearConsole}
-                                    onClose={handleCloseConsole}
-                                    visible={consoleVisible}
-                                />
-                            </div>
-                        )}
-                        <EditorStatusBar />
-                    </Layout>
+                        </div>
+                    )}
+                    <EditorStatusBar fileManager={fileManager} />
                 </Layout>
-            </ConfigProvider>
-        </FileProvider>
+            </Layout>
+        </ConfigProvider>
     )
 }
 

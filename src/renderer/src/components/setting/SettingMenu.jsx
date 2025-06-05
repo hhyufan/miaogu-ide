@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button, message, Menu } from 'antd'
 import './SettingMenu.scss'
 import TextEditor from './TextEditor'
 import BackgroundSetting from './BackgroundSetting'
 
+// 使用 useMemo 优化菜单项
 const items = [
     {
         key: 'textEditor',
@@ -24,7 +25,8 @@ const SettingMenu = () => {
     const [fontFamily, setFontFamily] = useState('')
     const [highLight, setHighLight] = useState('One')
 
-    const renderContent = () => {
+    // 使用 useMemo 优化内容渲染
+    const renderContent = useCallback(() => {
         switch (activeKey) {
             case 'textEditor':
                 return (
@@ -44,7 +46,15 @@ const SettingMenu = () => {
             default:
                 return null
         }
-    }
+    }, [activeKey, fontSize, lineHeight, fontFamily, highLight])
+
+    const handleFontSizeChange = useCallback((event, newFontSize) => {
+        setFontSize(newFontSize)
+    }, [])
+    
+    const handleLineHeightChange = useCallback((event, newLineHeight) => {
+        setLineHeight(newLineHeight)
+    }, [])
 
     useEffect(() => {
         const loadSetting = async () => {
@@ -64,13 +74,6 @@ const SettingMenu = () => {
 
         loadSetting().catch(console.error)
 
-        const handleFontSizeChange = (event, newFontSize) => {
-            setFontSize(newFontSize)
-        }
-        const handleLineHeightChange = (event, newLineHeight) => {
-            setLineHeight(newLineHeight)
-        }
-
         window.ipcApi.onFontSizeChange(handleFontSizeChange)
         window.ipcApi.onLineHeightChange(handleLineHeightChange)
 
@@ -78,9 +81,9 @@ const SettingMenu = () => {
             window.ipcApi.removeFontSizeChange(handleFontSizeChange)
             window.ipcApi.removeLineHeightChange(handleLineHeightChange)
         }
-    }, [])
+    }, [handleFontSizeChange, handleLineHeightChange])
 
-    const saveSetting = async () => {
+    const saveSetting = useCallback(async () => {
         const updatedSetting = {
             ...localSetting,
             fontSize,
@@ -101,7 +104,7 @@ const SettingMenu = () => {
             message.error('设置保存失败')
             console.error('设置保存失败:', error)
         }
-    }
+    }, [localSetting, fontSize, lineHeight, fontFamily, highLight])
 
     return (
         <div style={{ display: 'flex', height: '100vh' }}>

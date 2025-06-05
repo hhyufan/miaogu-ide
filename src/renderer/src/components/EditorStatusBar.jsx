@@ -2,11 +2,12 @@ import './EditorStatusBar.scss'
 import ENCODING_CASE_MAP from '../configs/encoding-case.json'
 import { filterDirectoryContents, isFileBlacklisted } from '../configs/file-blacklist'
 import { Breadcrumb, Divider } from 'antd'
-import { useFile } from '../contexts/FileContext'
+import { useCurrentFile, useFileActions } from '../hooks/useFileManager'
 import { useBackgroundManager } from '../hooks/useBackgroundManager'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { FileOutlined, FolderOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons'
 import { Button, Tooltip, Dropdown } from 'antd'
+import { splitPath } from '../utils/pathUtils'
 
 function standardizeEncodingName(encoding) {
     // 转换为小写进行匹配
@@ -25,8 +26,9 @@ function standardizeEncodingName(encoding) {
     // 返回标准化名称（如果映射表中不存在则返回原值的大写形式）
     return mapped.toUpperCase() === mapped ? mapped : mapped.toUpperCase()
 }
-const EditorStatusBar = () => {
-    const { currentFile, updateFileLineEnding, setOpenFile } = useFile()
+const EditorStatusBar = ({ fileManager }) => {
+    const currentFile = useCurrentFile(fileManager)
+    const { updateFileLineEnding, setOpenFile } = useFileActions(fileManager)
     const encodingInputRef = useRef(null)
     const lineEndingInputRef = useRef(null)
     const breadcrumbRef = useRef(null)
@@ -45,26 +47,26 @@ const EditorStatusBar = () => {
     const [dragStartX, setDragStartX] = useState(0)
     const [dragStartScrollLeft, setDragStartScrollLeft] = useState(0)
     // Line ending options
-    const lineEndingOptions = [
+    const lineEndingOptions = useMemo(() => [
         { value: 'LF', label: 'LF' },
         { value: 'CRLF', label: 'CRLF' },
         { value: 'CR', label: 'CR' }
-    ]
+    ], [])
 
     // Get current line ending label
-    const getCurrentLineEndingLabel = () => {
+    const getCurrentLineEndingLabel = useCallback(() => {
         // 确保currentFile.lineEnding是字符串
         const lineEnding =
             typeof currentFile.lineEnding === 'string' ? currentFile.lineEnding : 'LF'
         const option = lineEndingOptions.find((opt) => opt.value === lineEnding)
         return option ? option.label : 'LF (\\n)'
-    }
+    }, [currentFile.lineEnding])
 
     // 获取当前编码标签
-    const getCurrentEncodingLabel = () => {
+    const getCurrentEncodingLabel = useCallback(() => {
         const encoding = typeof currentFile.encoding === 'string' ? currentFile.encoding : 'UTF-8'
         return standardizeEncodingName(encoding)
-    }
+    }, [currentFile.encoding])
 
     // 加载字体大小设置
     useEffect(() => {
@@ -97,7 +99,7 @@ const EditorStatusBar = () => {
     }, [])
 
     // 处理字体大小变化
-    const handleFontSizeChange = async (newSize) => {
+    const handleFontSizeChange = useCallback(async (newSize) => {
         console.log('newSize', newSize)
         // 限制字体大小范围在8-32之间
         const size = Math.max(8, Math.min(32, newSize))
@@ -109,21 +111,14 @@ const EditorStatusBar = () => {
         } catch (error) {
             console.error('保存字体大小设置失败:', error)
         }
-    }
+    }, [])
 
     // 处理路径分段 - 当文件路径或临时状态变化时更新面包屑
     useEffect(() => {
         if (typeof currentFile.path === 'string' && currentFile.path && !currentFile.isTemporary) {
-            // 分割路径为段落
-            const segments = currentFile.path.split(/[\\/]/).filter(Boolean)
-
-            // 如果是Windows路径，添加盘符作为第一个元素
-            if (currentFile.path.match(/^[A-Za-z]:/)) {
-                const driveLetter = segments.shift() + '\\'
-                setPathSegments([driveLetter, ...segments])
-            } else {
-                setPathSegments(segments)
-            }
+            // 使用优化的路径分割函数
+            const segments = splitPath(currentFile.path)
+            setPathSegments(segments)
 
             // 清除之前的目录内容缓存，确保切换文件后显示正确的目录内容
             setDirectoryContents({})
@@ -133,7 +128,7 @@ const EditorStatusBar = () => {
     }, [currentFile.path, currentFile.isTemporary])
 
     // 检查滚动状态和更新滚动条
-    const updateScrollState = () => {
+    const updateScrollState = useCallback(() => {
         if (breadcrumbRef.current && filePathRef.current) {
             const breadcrumb = breadcrumbRef.current
             const container = filePathRef.current
@@ -178,7 +173,7 @@ const EditorStatusBar = () => {
                 }
             }
         }
-    }
+    }, [currentFile.path, currentFile.isTemporary])
 
     // 监听面包屑内容变化和窗口大小变化
     useEffect(() => {
@@ -201,7 +196,7 @@ const EditorStatusBar = () => {
     }, [])
 
     // 处理滚动条点击
-    const handleScrollBarClick = (e) => {
+    const handleScrollBarClick = useCallback((e) => {
         if (!breadcrumbRef.current || !scrollState.canScroll || isDragging) return
 
         const rect = e.currentTarget.getBoundingClientRect()
@@ -210,10 +205,10 @@ const EditorStatusBar = () => {
         const maxScroll = scrollState.scrollWidth - scrollState.clientWidth
         breadcrumbRef.current.scrollLeft = percentage * maxScroll
         updateScrollState()
-    }
+    }, [scrollState.canScroll, scrollState.scrollWidth, scrollState.clientWidth, isDragging, updateScrollState])
 
     // 处理滚动条拖拽开始
-    const handleThumbMouseDown = (e) => {
+    const handleThumbMouseDown = useCallback((e) => {
         e.preventDefault()
         e.stopPropagation()
         if (!breadcrumbRef.current || !scrollState.canScroll) return
@@ -226,7 +221,7 @@ const EditorStatusBar = () => {
         if (filePathRef.current) {
             filePathRef.current.classList.add('dragging')
         }
-    }
+    }, [scrollState.canScroll])
 
     // 处理鼠标移动（拖拽）
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,14 +244,14 @@ const EditorStatusBar = () => {
     }
 
     // 处理鼠标释放（拖拽结束）
-    const handleMouseUp = () => {
+    const handleMouseUp = useCallback(() => {
         setIsDragging(false)
 
         // 移除拖拽状态的CSS类
         if (filePathRef.current) {
             filePathRef.current.classList.remove('dragging')
         }
-    }
+    }, [])
 
     // 添加全局鼠标事件监听
     useEffect(() => {
@@ -271,12 +266,12 @@ const EditorStatusBar = () => {
     }, [isDragging, dragStartX, dragStartScrollLeft, handleMouseMove])
 
     // 处理面包屑滚动
-    const handleBreadcrumbScroll = () => {
+    const handleBreadcrumbScroll = useCallback(() => {
         updateScrollState()
-    }
+    }, [updateScrollState])
 
     // 获取目录内容
-    const getDirectoryContents = async (path) => {
+    const getDirectoryContents = useCallback(async (path) => {
         if (!window.ipcApi?.getDirectoryContents) return []
 
         try {
@@ -290,10 +285,10 @@ const EditorStatusBar = () => {
             console.error('获取目录内容失败:', error)
             return []
         }
-    }
+    }, [])
 
     // 构建完整路径
-    const buildFullPath = (index) => {
+    const buildFullPath = useCallback((index) => {
         if (index < 0 || !pathSegments.length) return ''
 
         // 对于Windows路径，特殊处理盘符
@@ -303,20 +298,20 @@ const EditorStatusBar = () => {
         } else {
             return '/' + pathSegments.slice(0, index + 1).join('/')
         }
-    }
+    }, [pathSegments])
 
     // 处理面包屑项点击
-    const handleBreadcrumbClick = async (index) => {
+    const handleBreadcrumbClick = useCallback(async (index) => {
         const dirPath = buildFullPath(index)
         if (!dirPath) return
 
         // 获取该目录下的内容
         const contents = await getDirectoryContents(dirPath)
         setDirectoryContents({ [index]: contents })
-    }
+    }, [buildFullPath, getDirectoryContents])
 
     // 处理文件或目录点击
-    const handleFileClick = async (filePath, isDirectory) => {
+    const handleFileClick = useCallback(async (filePath, isDirectory) => {
         if (!filePath) return
         // 如果是文件，检查是否在黑名单中，不在黑名单中才打开
         if (!isDirectory) {
@@ -328,23 +323,16 @@ const EditorStatusBar = () => {
         }
         // 文件打开后，更新路径分段
         if (filePath) {
-            const segments = filePath.split(/[\\/]/).filter(Boolean)
-
-            // 如果是Windows路径，添加盘符作为第一个元素
-            if (filePath.match(/^[A-Za-z]:/)) {
-                const driveLetter = segments.shift() + '\\'
-                setPathSegments([driveLetter, ...segments])
-            } else {
-                setPathSegments(segments)
-            }
+            const segments = splitPath(filePath)
+            setPathSegments(segments)
 
             // 清除之前的目录内容缓存，确保切换文件后显示正确的目录内容
             setDirectoryContents({})
         }
-    }
+    }, [setOpenFile])
 
     // 生成面包屑下拉菜单项
-    const getDropdownItems = (index) => {
+    const getDropdownItems = useCallback((index) => {
         const contents = directoryContents[index] || []
 
         // 确保应用黑名单过滤，防止黑名单中的文件和目录显示在下拉菜单中
@@ -366,9 +354,9 @@ const EditorStatusBar = () => {
             icon: item.isDirectory ? <FolderOutlined /> : <FileOutlined />,
             onClick: () => handleFileClick(item.path, item.isDirectory)
         }))
-    }
+    }, [directoryContents, handleFileClick])
     // 渲染面包屑项
-    const renderBreadcrumbItem = (segment, index) => {
+    const renderBreadcrumbItem = useCallback((segment, index) => {
         // 如果是目录，显示下拉菜单
         return (
             <Breadcrumb.Item key={index}>
@@ -390,15 +378,15 @@ const EditorStatusBar = () => {
                 </Dropdown>
             </Breadcrumb.Item>
         )
-    }
+    }, [getDropdownItems, handleBreadcrumbClick])
 
     // Handle line ending change
-    const handleLineEndingChange = (value) => {
+    const handleLineEndingChange = useCallback((value) => {
         // 确保不直接渲染函数返回值
-        if (updateFileLineEnding) {
-            updateFileLineEnding(value)
+        if (updateFileLineEnding && currentFile.path) {
+            updateFileLineEnding(currentFile.path, value)
         }
-    }
+    }, [updateFileLineEnding, currentFile.path])
 
     return (
         <div className={`editor-status-bar ${hasBackground ? 'with-background' : ''}`}>

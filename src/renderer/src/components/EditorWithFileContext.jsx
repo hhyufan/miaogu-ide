@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useFile } from '../contexts/FileContext'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useCurrentFile, useFileActions } from '../hooks/useFileManager'
+import { getFileExtensionOptimized } from '../utils/fileNameUtils'
 import * as monaco from 'monaco-editor'
 import { createHighlighter } from 'shiki'
 import { shikiToMonaco } from '@shikijs/monaco'
@@ -25,8 +26,9 @@ const initializeHighlighter = async () => {
 }
 
 // eslint-disable-next-line react/prop-types
-const EditorWithFileContext = ({ isDarkMode }) => {
-    const { currentFile, currentCode, updateCode, refreshFileContent } = useFile()
+const EditorWithFileContext = ({ isDarkMode, fileManager }) => {
+    const currentFile = useCurrentFile(fileManager)
+    const { currentCode, updateCode, refreshFileContent } = useFileActions(fileManager)
     const containerRef = useRef(null)
     const editorRef = useRef(null)
     const [isShikiReady, setIsShikiReady] = useState(false)
@@ -53,15 +55,34 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         if (!currentFile?.name) return 'plaintext'
         const filename = currentFile.name.toLowerCase()
         if (filename === 'dockerfile') return 'dockerfile'
-        const extension = filename.split('.').pop()
+        const extension = getFileExtensionOptimized(currentFile.name)
         return extensionToLanguage[extension] || 'plaintext'
     }, [currentFile?.name])
+
+    // 监听字体大小变化事件
+    const handleFontSizeChange = useCallback((event, newFontSize) => {
+        setFontSize(newFontSize)
+    }, [])
+
+    // 监听行高变化事件
+    const handleLineHeightChange = useCallback((event, newLineHeight) => {
+        setLineHeight(newLineHeight)
+    }, [])
+
+    //监听字体变化
+    const handleFontFamilyChange = useCallback((event, newFontFamily) => {
+        setFontFamily(newFontFamily)
+    }, [])
+
+    const handleHighLightChange = useCallback((event, newHighLight) => {
+        setHighLight(newHighLight)
+    }, [])
 
     // 获取保存的设置并监听变化
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const savedSetting = await window.ipcApi.getSetting()
+                const savedSetting = await window.ipcApi.getState('setting')
                 if (savedSetting.fontSize) {
                     setFontSize(savedSetting.fontSize)
                 }
@@ -82,25 +103,6 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         // 初始加载设置
         loadSettings().catch(console.error)
 
-        // 监听字体大小变化事件
-        const handleFontSizeChange = (event, newFontSize) => {
-            setFontSize(newFontSize)
-        }
-
-        // 监听行高变化事件
-        const handleLineHeightChange = (event, newLineHeight) => {
-            setLineHeight(newLineHeight)
-        }
-
-        //监听字体变化
-        const handleFontFamilyChange = (event, newFontFamily) => {
-            setFontFamily(newFontFamily)
-        }
-
-        const handleHighLightChange = (event, newHighLight) => {
-            setHighLight(newHighLight)
-        }
-
         // 添加事件监听器
         window.ipcApi.onFontSizeChange(handleFontSizeChange)
         window.ipcApi.onLineHeightChange(handleLineHeightChange)
@@ -114,7 +116,7 @@ const EditorWithFileContext = ({ isDarkMode }) => {
             window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
             window.ipcApi.removeHighLightChange(handleHighLightChange)
         }
-    }, [])
+    }, [handleFontSizeChange, handleLineHeightChange, handleFontFamilyChange, handleHighLightChange])
 
     useEffect(() => {
         if (!containerRef.current || !isShikiReady || editorRef.current) return
@@ -151,7 +153,8 @@ const EditorWithFileContext = ({ isDarkMode }) => {
         const editor = editorRef.current
 
         // 始终设置编辑器的值，确保空文件不会继承之前的内容
-        editor.setValue(currentCode)
+        const codeToSet = currentCode || ''
+        editor.setValue(codeToSet)
         prevCodeRef.current = currentCode
 
         // 更新编码引用

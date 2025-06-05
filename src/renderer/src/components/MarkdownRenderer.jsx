@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import ReactMarkdown from 'react-markdown'
 import Prism from 'prismjs'
@@ -63,76 +63,75 @@ const MarkdownRenderer = memo(({ content }) => {
     }, [isDarkMode])
     const containerRef = useRef(null)
 
-    const baseStyle = {
-        color: token['colorText']
-    }
+    // 使用 useMemo 优化样式对象
+    const styles = useMemo(() => {
+        const baseStyle = {
+            fontFamily: fontFamily,
+            color: isDarkMode ? '#ffffff' : token['colorText']
+        }
 
-    const textStyle = {
-        ...baseStyle,
-        fontSize: '1rem',
-        lineHeight: 1.6
-    }
-    // 组件样式定义
-    const headingStyle = {
-        ...baseStyle,
-        margin: '0.4rem 0 0.6em',
-        lineHeight: 1.2
-    }
-
-    const quoteStyle = {
-        ...baseStyle,
-        margin: '1rem 0',
-        fontStyle: 'italic',
-        backgroundColor: isDarkMode ? '#282c34' : '#fafafa',
-        padding: '0.5rem 1rem',
-        borderRadius: '4px'
-    }
-
-    const listStyle = {
-        ...baseStyle,
-        paddingLeft: '1.5rem',
-        margin: '1rem 0'
-    }
-
-    const listItemStyle = {
-        ...baseStyle,
-        margin: '0.4rem 0'
-    }
-
-    const linkStyle = {
-        ...baseStyle,
-        color: '#0066cc',
-        textDecoration: 'underline'
-    }
-
-    const hrStyle = {
-        ...baseStyle,
-        border: 0,
-        borderTop: '1px solid #ddd',
-        margin: '1.5rem 0'
-    }
-
-    const tableStyle = {
-        ...baseStyle,
-        borderCollapse: 'collapse',
-        margin: '1rem 0'
-    }
-
-    const tableHeadStyle = {
-        backgroundColor: isDarkMode ? '#1f1f1f' : '#f5f5f5'
-    }
-
-    const tableCellStyle = {
-        ...baseStyle,
-        border: '1px solid #ddd',
-        padding: '0.5rem'
-    }
-
-    const tableHeaderStyle = {
-        ...tableCellStyle,
-        fontWeight: 600,
-        color: isDarkMode ? '#ffffff' : token['colorText']
-    }
+        return {
+            base: baseStyle,
+            text: {
+                ...baseStyle,
+                fontSize: '1rem',
+                lineHeight: 1.6
+            },
+            heading: {
+                ...baseStyle,
+                margin: '0.4rem 0 0.6em',
+                lineHeight: 1.2
+            },
+            quote: {
+                ...baseStyle,
+                margin: '1rem 0',
+                fontStyle: 'italic',
+                backgroundColor: isDarkMode ? '#282c34' : '#fafafa',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px'
+            },
+            list: {
+                ...baseStyle,
+                paddingLeft: '1.5rem',
+                margin: '1rem 0'
+            },
+            listItem: {
+                ...baseStyle,
+                margin: '0.4rem 0'
+            },
+            link: {
+                ...baseStyle,
+                color: '#0066cc',
+                textDecoration: 'underline'
+            },
+            hr: {
+                ...baseStyle,
+                border: 0,
+                borderTop: '1px solid #ddd',
+                margin: '1.5rem 0'
+            },
+            table: {
+                ...baseStyle,
+                borderCollapse: 'collapse',
+                margin: '1rem 0'
+            },
+            tableHead: {
+                backgroundColor: isDarkMode ? '#1f1f1f' : '#f5f5f5'
+            },
+            tableCell: {
+                ...baseStyle,
+                border: '1px solid #ddd',
+                padding: '0.5rem'
+            },
+            tableHeader: {
+                ...baseStyle,
+                border: '1px solid #ddd',
+                padding: '0.5rem',
+                fontWeight: 600,
+                color: isDarkMode ? '#ffffff' : token['colorText']
+            }
+        }
+    }, [fontFamily, isDarkMode, token])
     // 语言显示名称映射表
     const LANGUAGE_DISPLAY_MAP = {
         html: 'HTML',
@@ -153,14 +152,14 @@ const MarkdownRenderer = memo(({ content }) => {
         rb: 'Ruby'
     }
 
-    // 清理旧标签
-    const cleanupLabels = () => {
+    // 清理旧标签 - 使用 useCallback 优化
+    const cleanupLabels = useCallback(() => {
         const existingTags = containerRef.current?.querySelectorAll('.lang-tag')
         existingTags?.forEach((tag) => tag.remove())
-    }
+    }, [])
 
-    // 添加语言标签
-    const addLanguageLabels = () => {
+    // 添加语言标签 - 使用 useCallback 优化
+    const addLanguageLabels = useCallback(() => {
         cleanupLabels()
 
         const codeBlocks = containerRef.current?.querySelectorAll('code') || []
@@ -226,7 +225,7 @@ const MarkdownRenderer = memo(({ content }) => {
             // 将标签添加到 pre 元素
             pre.parentElement.appendChild(tag)
         })
-    }
+    }, [cleanupLabels, token])
 
     // 存储React根节点的引用
     const mermaidRootsRef = useRef(new Map())
@@ -337,35 +336,35 @@ const MarkdownRenderer = memo(({ content }) => {
             <ReactMarkdown
                 remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
                 components={{
-                    p: ({ children }) => <p style={textStyle}>{children}</p>,
+                    p: ({ children }) => <p style={styles.text}>{children}</p>,
                     h1: ({ children }) => (
-                        <h1 style={{ ...headingStyle, fontSize: '2rem' }}>{children}</h1>
+                        <h1 style={{ ...styles.heading, fontSize: '2rem' }}>{children}</h1>
                     ),
                     h2: ({ children }) => (
-                        <h2 style={{ ...headingStyle, fontSize: '1.8rem' }}>{children}</h2>
+                        <h2 style={{ ...styles.heading, fontSize: '1.8rem' }}>{children}</h2>
                     ),
                     h3: ({ children }) => (
-                        <h3 style={{ ...headingStyle, fontSize: '1.6rem' }}>{children}</h3>
+                        <h3 style={{ ...styles.heading, fontSize: '1.6rem' }}>{children}</h3>
                     ),
                     h4: ({ children }) => (
-                        <h4 style={{ ...headingStyle, fontSize: '1.4rem' }}>{children}</h4>
+                        <h4 style={{ ...styles.heading, fontSize: '1.4rem' }}>{children}</h4>
                     ),
                     h5: ({ children }) => (
-                        <h5 style={{ ...headingStyle, fontSize: '1.2rem' }}>{children}</h5>
+                        <h5 style={{ ...styles.heading, fontSize: '1.2rem' }}>{children}</h5>
                     ),
                     h6: ({ children }) => (
-                        <h6 style={{ ...headingStyle, fontSize: '1rem' }}>{children}</h6>
+                        <h6 style={{ ...styles.heading, fontSize: '1rem' }}>{children}</h6>
                     ),
                     blockquote: ({ children }) => (
-                        <blockquote style={quoteStyle}>{children}</blockquote>
+                        <blockquote style={styles.quote}>{children}</blockquote>
                     ),
-                    ul: ({ children }) => <ul style={listStyle}>{children}</ul>,
-                    ol: ({ children }) => <ol style={listStyle}>{children}</ol>,
-                    li: ({ children }) => <li style={listItemStyle}>{children}</li>,
+                    ul: ({ children }) => <ul style={styles.list}>{children}</ul>,
+                    ol: ({ children }) => <ol style={styles.list}>{children}</ol>,
+                    li: ({ children }) => <li style={styles.listItem}>{children}</li>,
                     a: ({ children, href }) => (
                         <a
                             href={href}
-                            style={linkStyle}
+                            style={styles.link}
                             onClick={(e) => {
                                 e.preventDefault()
                                 if (href && window.ipcApi?.openExternal) {
@@ -376,15 +375,15 @@ const MarkdownRenderer = memo(({ content }) => {
                             {children}
                         </a>
                     ),
-                    em: ({ children }) => <em style={textStyle}>{children}</em>,
+                    em: ({ children }) => <em style={styles.text}>{children}</em>,
                     strong: ({ children }) => (
-                        <strong style={{ ...textStyle, fontWeight: 600 }}>{children}</strong>
+                        <strong style={{ ...styles.text, fontWeight: 600 }}>{children}</strong>
                     ),
-                    hr: () => <hr style={hrStyle} />,
-                    table: ({ children }) => <table style={tableStyle}>{children}</table>,
-                    thead: ({ children }) => <thead style={tableHeadStyle}>{children}</thead>,
-                    td: ({ children }) => <td style={tableCellStyle}>{children}</td>,
-                    th: ({ children }) => <th style={tableHeaderStyle}>{children}</th>,
+                    hr: () => <hr style={styles.hr} />,
+                    table: ({ children }) => <table style={styles.table}>{children}</table>,
+                    thead: ({ children }) => <thead style={styles.tableHead}>{children}</thead>,
+                    td: ({ children }) => <td style={styles.tableCell}>{children}</td>,
+                    th: ({ children }) => <th style={styles.tableHeader}>{children}</th>,
                     code({ className, children, inline, ...props }) {
                         const language = className?.replace('language-', '') || ''
                         return !inline && language ? (

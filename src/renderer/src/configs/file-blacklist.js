@@ -401,15 +401,17 @@ const blacklistFileNames = [
     '.gitattributes'
 ]
 
+import { getFileName, getFileExtension } from '../utils/pathUtils'
+
 /**
  * 检查文件是否在黑名单中
  * @param {string} filePath - 文件路径
- * @returns {boolean} - 如果文件在黑名单中返回true，否则返回false
+ * @returns {boolean} - 是否在黑名单中
  */
 export const isFileBlacklisted = (filePath) => {
-    if (!filePath) return false
+    if (!filePath || typeof filePath !== 'string') return false
 
-    const fileName = filePath.split(/[\\/]/).pop()
+    const fileName = getFileName(filePath)
     if (!fileName) return false
 
     // 检查文件名是否在黑名单中（支持正则表达式）
@@ -426,7 +428,7 @@ export const isFileBlacklisted = (filePath) => {
         return true
     }
     // 检查扩展名是否在黑名单中
-    const extension = fileName.split('.').pop().toLowerCase()
+    const extension = getFileExtension(fileName)
     return blacklistExtensions.includes(extension)
 }
 

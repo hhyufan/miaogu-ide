@@ -1,26 +1,26 @@
 import { Button, Checkbox, Col, Input, InputNumber, Row, Slider, ConfigProvider } from 'antd'
 import { UploadOutlined } from '@ant-design/icons'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useBackgroundManager } from '../../hooks/useBackgroundManager'
 
 const BackgroundSetting = () => {
     const { backgroundState, selectBackgroundImage, toggleBackground, setBackgroundTransparency } = useBackgroundManager()
     const [localBgImage, setLocalBgImage] = useState('')
 
-    const handleSelectBgImage = async () => {
+    const handleSelectBgImage = useCallback(async () => {
         const filePath = await selectBackgroundImage()
         if (filePath) {
             setLocalBgImage(filePath)
         }
-    }
+    }, [selectBackgroundImage])
 
-    const handleToggleBackground = async (enabled) => {
+    const handleToggleBackground = useCallback(async (enabled) => {
         await toggleBackground(enabled)
-    }
+    }, [toggleBackground])
 
-    const handleBgTransparency = (theme, value) => {
+    const handleBgTransparency = useCallback((theme, value) => {
         setBackgroundTransparency(theme, value).catch(console.error)
-    }
+    }, [setBackgroundTransparency])
 
     // 同步背景状态
     useEffect(() => {

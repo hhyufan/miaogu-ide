@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { Button, message } from 'antd'
 import { PlayCircleOutlined } from '@ant-design/icons'
 import * as Babel from '@babel/standalone'
@@ -222,18 +222,29 @@ const CodeRunner = ({ code, filePath, onOutput, disabled = false, fileType = 'ja
     const handleExecute = fileType === 'html' ? executeHTML : executeCode
 
     // 根据文件类型设置按钮样式和提示
-    const getButtonConfig = () => {
-        if (fileType === 'html') {
-            return {
-                color: '#1890ff',
-                title: '在浏览器中运行HTML文件'
-            }
+    const getButtonConfig = useMemo(() => {
+        switch (fileType) {
+            case 'html':
+                return {
+                    text: '运行 HTML',
+                    icon: '🌐',
+                    action: executeHTML
+                }
+            case 'python':
+                return {
+                    text: '运行 Python',
+                    icon: '🐍',
+                    action: executeCode
+                }
+            case 'javascript':
+            default:
+                return {
+                    text: '运行 JavaScript',
+                    icon: '⚡',
+                    action: executeCode
+                }
         }
-        return {
-            color: '#52c41a',
-            title: '运行JavaScript代码'
-        }
-    }
+    }, [fileType, executeHTML, executeCode])
 
     const buttonConfig = getButtonConfig()
 

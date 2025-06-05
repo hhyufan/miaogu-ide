@@ -20,6 +20,18 @@ const ipcApi = {
     openSettingWindow: () => {
         ipcRenderer.send('open-setting-window')
     },
+    // 设置窗口控制 - 最小化
+    minimizeSettingWindow: () => {
+        ipcRenderer.send('setting-window-control', 'minimize')
+    },
+    // 设置窗口控制 - 最大化/还原
+    maximizeSettingWindow: () => {
+        ipcRenderer.send('setting-window-control', 'maximize')
+    },
+    // 设置窗口控制 - 关闭
+    closeSettingWindow: async () => {
+        return ipcRenderer.invoke('setting-window-control', 'close')
+    },
 
     // 状态持久化相关API
 

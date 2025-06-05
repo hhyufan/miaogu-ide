@@ -1,5 +1,5 @@
 import { Layout, Button } from 'antd'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './SettingHeader.scss'
 
 const { Header } = Layout
@@ -13,18 +13,18 @@ import {
 const SettingHeader = () => {
     const [isMaximized, setIsMaximized] = useState(false)
 
-    const handleMinimize = () => {
-        window.ipcApi.minimizeWindow()
-    }
+    const handleMinimize = useCallback(() => {
+        window.ipcApi.minimizeSettingWindow()
+    }, [])
 
-    const handleMaximize = () => {
-        window.ipcApi.maximizeWindow()
-        setIsMaximized(!isMaximized) // 切换状态
-    }
+    const handleMaximize = useCallback(() => {
+        window.ipcApi.maximizeSettingWindow()
+        setIsMaximized(!isMaximized)
+    }, [isMaximized])
 
-    const handleClose = async () => {
-        window.ipcApi.closeWindow()
-    }
+    const handleClose = useCallback(async () => {
+        await window.ipcApi.closeSettingWindow()
+    }, [])
 
     return (
         <Header className="setting-header">

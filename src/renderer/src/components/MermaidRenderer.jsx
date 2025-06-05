@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState, useCallback } from 'react'
 import mermaid from 'mermaid'
 import { Skeleton } from 'antd'
 
@@ -89,7 +89,7 @@ const MermaidRenderer = memo(({ code }) => {
     }, [code, mermaidId])
 
     // 创建一个渲染内容的函数
-    const renderContent = () => {
+    const renderContent = useCallback(() => {
         if (errorContent) {
             return <div dangerouslySetInnerHTML={{ __html: errorContent }} />
         }
@@ -97,7 +97,7 @@ const MermaidRenderer = memo(({ code }) => {
             return <div dangerouslySetInnerHTML={{ __html: svgContent }} />
         }
         return <Skeleton />
-    }
+    }, [errorContent, svgContent])
 
     return (
         <div

@@ -76,7 +76,7 @@ const TextEditor = ({
                   }}
                 >
                   {Object.keys(allThemes).map((key) => {
-                    return <Select.Option value={key}>{key}</Select.Option>
+                    return <Select.Option key={key} value={key}>{key}</Select.Option>
                   })}
                 </Select>
               </div>

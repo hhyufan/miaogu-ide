@@ -2,7 +2,7 @@ import './Console.scss'
 
 import MarkdownRenderer from './MarkdownRenderer'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { CloseOutlined, ClearOutlined } from '@ant-design/icons'
 import { useBackgroundManager } from '../hooks/useBackgroundManager'
 import { Button, Card } from 'antd'
@@ -20,15 +20,16 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
         initFamily().catch(console.error)
     }, [])
 
+    const handleFontFamilyChange = useCallback((event, newFontFamily) => {
+        setFontFamily(newFontFamily)
+    }, [])
+
     useEffect(() => {
-        const handleFontFamilyChange = (event, newFontFamily) => {
-            setFontFamily(newFontFamily)
-        }
         window.ipcApi.onFontFamilyChange(handleFontFamilyChange)
         return () => {
             window.ipcApi.removeFontFamilyChange(handleFontFamilyChange)
         }
-    }, [])
+    }, [handleFontFamilyChange])
 
     // 自动滚动到顶部
     useEffect(() => {
@@ -41,7 +42,7 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
         return null
     }
 
-    const getOutputClass = (type) => {
+    const getOutputClass = useCallback((type) => {
         switch (type) {
             case 'error':
                 return 'console-output-error'
@@ -58,9 +59,9 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
             default:
                 return 'console-output-log'
         }
-    }
+    }, [])
 
-    const getOutputPrefix = (type) => {
+    const getOutputPrefix = useCallback((type) => {
         switch (type) {
             case 'error':
                 return '❌'
@@ -77,7 +78,7 @@ const Console = ({ outputs = [], onClear, onClose, visible = false }) => {
             default:
                 return '📝'
         }
-    }
+    }, [])
     return (
         <div className={`console-container ${hasBackground ? 'with-background' : ''}`}>
             <Card

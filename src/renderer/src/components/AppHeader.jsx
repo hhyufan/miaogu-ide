@@ -14,12 +14,12 @@ import {
 } from '@ant-design/icons'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 import './AppHeader.scss'
-import { useState, useEffect, useRef } from 'react'
-import { useFile } from '../contexts/FileContext'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useCurrentFile, useFileActions } from '../hooks/useFileManager'
 const { Header } = Layout
 const { Title, Text } = Typography
 
-const AppHeader = () => {
+const AppHeader = ({ fileManager }) => {
     const [isMaximized, setIsMaximized] = useState(false)
     const [isModalVisible, setIsModalVisible] = useState(false)
     const [newFileName, setNewFileName] = useState('')
@@ -32,8 +32,8 @@ const AppHeader = () => {
     const fileNameInputRef = useRef(null)
     const selectedFilesRef = useRef(selectedFiles)
     // 使用文件上下文
+    const currentFile = useCurrentFile(fileManager)
     const {
-        currentFile,
         openFile,
         createFile,
         saveFile,
@@ -42,11 +42,11 @@ const AppHeader = () => {
         updateDefaultFileName,
         saveFiles,
         renameFile
-    } = useFile()
+    } = useFileActions(fileManager)
     // 窗口控制函数
-    const handleMinimize = () => {
+    const handleMinimize = useCallback(() => {
         window.ipcApi.minimizeWindow()
-    }
+    }, [])
 
     // 添加键盘快捷键监听
     useEffect(() => {
@@ -84,10 +84,10 @@ const AppHeader = () => {
             window.removeEventListener('keydown', handleKeyDown)
         }
     }, [openFile, saveFile])
-    const handleMaximize = () => {
+    const handleMaximize = useCallback(() => {
         window.ipcApi.maximizeWindow()
         setIsMaximized(!isMaximized) // 切换状态
-    }
+    }, [isMaximized])
     const handleFileNameEdit = (e) => {
         const newName = e.target.value
         setEditedFileName(newName)
@@ -97,43 +97,43 @@ const AppHeader = () => {
             updateDefaultFileName(newName)
         }
     }
-    // 处理单个文件选择
-    const handleSelectFile = (e, file) => {
+    // 处理单个文件选择 - 使用 useCallback 优化
+    const handleSelectFile = useCallback((e, file) => {
         const checked = e.target.checked
         setSelectedFiles((prev) =>
             checked ? [...prev, file] : prev.filter((path) => path !== file)
         )
-    }
-    const saveSelectedFiles = async (filesToSave) => {
+    }, [])
+    const saveSelectedFiles = useCallback(async (filesToSave) => {
         setUnsavedModalVisible(false)
         await saveFiles(filesToSave)
         window.ipcApi.closeWindow()
-    }
+    }, [saveFiles])
 
     // 同步selectedFiles到ref
     useEffect(() => {
         selectedFilesRef.current = selectedFiles
     }, [selectedFiles])
 
-    const handleClose = async () => {
+    const handleClose = useCallback(async () => {
         const unsavedFiles = getUnsavedFiles()
         if (unsavedFiles.length > 0) {
             setUnsavedModalVisible(true)
         } else {
             window.ipcApi.closeWindow()
         }
-    }
+    }, [getUnsavedFiles])
 
-    // 文件操作函数
-    const handleOpenFile = () => {
+    // 文件操作函数 - 使用 useCallback 优化
+    const handleOpenFile = useCallback(() => {
         openFile()
-    }
+    }, [openFile])
 
-    const handleCreateFile = () => {
+    const handleCreateFile = useCallback(() => {
         setIsModalVisible(true)
-    }
+    }, [])
 
-    const handleModalOk = () => {
+    const handleModalOk = useCallback(() => {
         if (newFileName.trim()) {
             // 检查文件名是否在黑名单中
             if (isFileBlacklisted(newFileName)) {
@@ -149,26 +149,29 @@ const AppHeader = () => {
             setIsModalVisible(false)
             setNewFileName('')
         }
-    }
+    }, [newFileName, createFile])
 
-    // 保存文件
-    const handleSaveFile = () => {
+    // 保存文件 - 使用 useCallback 优化
+    const handleSaveFile = useCallback(() => {
         // 如果当前没有打开的文件，但有默认文件名，使用该文件名保存
         saveFile()
-    }
-    const handleExportFile = () => {
+    }, [saveFile])
+    
+    const handleExportFile = useCallback(() => {
         exportFile()
-    }
-    const handleModalCancel = () => {
+    }, [exportFile])
+    
+    const handleModalCancel = useCallback(() => {
         setIsModalVisible(false)
         setNewFileName('')
-    }
-    const openSettingWindow = () => {
+    }, [])
+    
+    const openSettingWindow = useCallback(() => {
         window.ipcApi.openSettingWindow()
-    }
+    }, [])
 
-    // 文件菜单项
-    const fileMenuItems = [
+    // 文件菜单项 - 使用 useMemo 优化
+    const fileMenuItems = useMemo(() => [
         {
             key: 'open',
             label: '打开',
@@ -196,7 +199,7 @@ const AppHeader = () => {
             icon: <SettingOutlined />,
             onClick: openSettingWindow
         }
-    ]
+    ], [handleOpenFile, handleSaveFile, handleExportFile, openSettingWindow])
 
     return (
         <Header className="app-header">
