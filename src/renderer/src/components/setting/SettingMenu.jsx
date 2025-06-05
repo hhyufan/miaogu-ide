@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Button, message, Menu } from 'antd'
+import { Button, Menu, App } from 'antd'
 import './SettingMenu.scss'
 import TextEditor from './TextEditor'
 import BackgroundSetting from './BackgroundSetting'
@@ -17,6 +17,7 @@ const items = [
 ]
 
 const SettingMenu = () => {
+    const { message } = App.useApp()
     const [activeKey, setActiveKey] = useState('textEditor')
     const contentRef = useRef(null)
     const [localSetting, setLocalSetting] = useState({})

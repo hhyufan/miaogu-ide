@@ -62,7 +62,6 @@ miaogu-ide/
             ├── components/ # React组件
                └── setting/       # 设置相关组件
             ├── configs/   # 配置文件
-            ├── contexts/  # React上下文
             ├── hooks/     # hook函数
             ├── plugins/   # 插件
             └── utils/     # 工具函数

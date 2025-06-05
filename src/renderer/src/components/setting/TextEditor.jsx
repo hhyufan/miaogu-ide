@@ -56,12 +56,13 @@ const TextEditor = ({
                   onChange={(value) => {
                     setFontFamily(value)
                   }}
-                >
-                  <Select.Option value="JetBrains Mono">JetBrains Mono</Select.Option>
-                  <Select.Option value="Fira Code">Fira Code</Select.Option>
-                  <Select.Option value="Courier New">Courier New</Select.Option>
-                  <Select.Option value="Consolas">Consolas</Select.Option>
-                </Select>
+                  options={[
+                    { value: "JetBrains Mono", label: "JetBrains Mono" },
+                    { value: "Fira Code", label: "Fira Code" },
+                    { value: "Courier New", label: "Courier New" },
+                    { value: "Consolas", label: "Consolas" }
+                  ]}
+                />
               </div>
               <h3 style={{fontWeight: 500, marginBottom: 24 ,marginTop: 48}}>高亮显示</h3>
               <div id="highLightTheme" style={{ display: 'flex', alignItems: 'center', gap: 16}}>
@@ -74,11 +75,11 @@ const TextEditor = ({
                   onChange={(value) => {
                     setHighLight(value)
                   }}
-                >
-                  {Object.keys(allThemes).map((key) => {
-                    return <Select.Option key={key} value={key}>{key}</Select.Option>
-                  })}
-                </Select>
+                  options={Object.keys(allThemes).map((key) => ({
+                    value: key,
+                    label: key
+                  }))}
+                />
               </div>
             </div>
 

@@ -355,11 +355,11 @@ const EditorStatusBar = ({ fileManager }) => {
             onClick: () => handleFileClick(item.path, item.isDirectory)
         }))
     }, [directoryContents, handleFileClick])
-    // 渲染面包屑项
-    const renderBreadcrumbItem = useCallback((segment, index) => {
-        // 如果是目录，显示下拉菜单
-        return (
-            <Breadcrumb.Item key={index}>
+    // 生成面包屑items
+    const breadcrumbItems = useMemo(() => {
+        return pathSegments.map((segment, index) => ({
+            key: index,
+            title: (
                 <Dropdown
                     menu={{ items: getDropdownItems(index) }}
                     trigger={['click']}
@@ -376,9 +376,9 @@ const EditorStatusBar = ({ fileManager }) => {
                         {/^[A-Z]:\\$/i.test(segment) ? segment.substring(0, 2) : segment}
                     </span>
                 </Dropdown>
-            </Breadcrumb.Item>
-        )
-    }, [getDropdownItems, handleBreadcrumbClick])
+            )
+        }))
+    }, [pathSegments, getDropdownItems, handleBreadcrumbClick])
 
     // Handle line ending change
     const handleLineEndingChange = useCallback((value) => {
@@ -411,6 +411,7 @@ const EditorStatusBar = ({ fileManager }) => {
                         className="breadcrumb-container"
                     >
                         <Breadcrumb
+                            items={breadcrumbItems}
                             separator={
                                 <svg
                                     className="icon"
@@ -428,9 +429,7 @@ const EditorStatusBar = ({ fileManager }) => {
                                     ></path>
                                 </svg>
                             }
-                        >
-                            {pathSegments.map(renderBreadcrumbItem)}
-                        </Breadcrumb>
+                        />
                     </div>
                 ) : (
                     '未保存的文件'

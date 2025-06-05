@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { Button, ConfigProvider, Layout, theme } from 'antd'
+import { Button, ConfigProvider, Layout, theme, App as AntdApp } from 'antd'
 import { MoonFilled, SunOutlined } from '@ant-design/icons'
 import './App.scss'
 import AppHeader from './components/AppHeader'
@@ -454,45 +454,46 @@ const App = () => {
             theme={{
                 algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 token: {
-                    colorPrimary: '#1677ff',
-                    borderRadius: 4,
-                    fontFamily:
-                        '"Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+                    colorPrimary: '#1890ff',
+                    borderRadius: 6,
+                    wireframe: false
                 }
             }}
         >
-            <Layout className="app-layout">
-                <AppHeader fileManager={fileManager} />
-                <TabBar onRunCode={handleRunCode} fileManager={fileManager} />
-                <Layout className="main-layout">
-                    <Content className={`app-content ${consoleVisible ? 'with-console' : ''}`}>
-                        <AppContent
-                            isDarkMode={isDarkMode}
-                            toggleTheme={toggleTheme}
-                            onRunCode={handleRunCode}
-                            consoleVisible={consoleVisible}
-                            onCloseConsole={handleCloseConsole}
-                            fileManager={fileManager}
-                        />
-                    </Content>
-                    {consoleVisible && (
-                        <div
-                            className="console-layout"
-                            ref={consoleLayoutRef}
-                            style={{ height: `${consoleHeight}px` }}
-                        >
-                            <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
-                            <Console
-                                outputs={consoleOutputs}
-                                onClear={handleClearConsole}
-                                onClose={handleCloseConsole}
-                                visible={consoleVisible}
+            <AntdApp>
+                <Layout className="app-layout">
+                    <AppHeader fileManager={fileManager} />
+                    <TabBar onRunCode={handleRunCode} fileManager={fileManager} />
+                    <Layout className="main-layout">
+                        <Content className={`app-content ${consoleVisible ? 'with-console' : ''}`}>
+                            <AppContent
+                                isDarkMode={isDarkMode}
+                                toggleTheme={toggleTheme}
+                                onRunCode={handleRunCode}
+                                consoleVisible={consoleVisible}
+                                onCloseConsole={handleCloseConsole}
+                                fileManager={fileManager}
                             />
-                        </div>
-                    )}
-                    <EditorStatusBar fileManager={fileManager} />
+                        </Content>
+                        {consoleVisible && (
+                            <div
+                                className="console-layout"
+                                ref={consoleLayoutRef}
+                                style={{ height: `${consoleHeight}px` }}
+                            >
+                                <div className="console__drag-bar" onMouseDown={handleDragConsole}></div>
+                                <Console
+                                    outputs={consoleOutputs}
+                                    onClear={handleClearConsole}
+                                    onClose={handleCloseConsole}
+                                    visible={consoleVisible}
+                                />
+                            </div>
+                        )}
+                        <EditorStatusBar fileManager={fileManager} />
+                    </Layout>
                 </Layout>
-            </Layout>
+            </AntdApp>
         </ConfigProvider>
     )
 }

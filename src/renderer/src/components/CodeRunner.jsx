@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { Button, message } from 'antd'
+import { Button, App } from 'antd'
 import { PlayCircleOutlined } from '@ant-design/icons'
 import * as Babel from '@babel/standalone'
 
@@ -11,6 +11,7 @@ Babel.registerPreset('browser-safe', {
 
 // eslint-disable-next-line react/prop-types
 const CodeRunner = ({ code, filePath, onOutput, disabled = false, fileType = 'javascript' }) => {
+    const { message } = App.useApp()
     const [isRunning, setIsRunning] = useState(false)
     // HTML执行函数
     const executeHTML = useCallback(async () => {
