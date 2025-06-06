@@ -15,13 +15,19 @@ const router = createBrowserRouter(
     ],
     {
         future: {
-            v7_relativeSplatPath: true // 启用未来标志
+            v7_relativeSplatPath: true, // 启用未来标志
+            v7_startTransition: true // 启用 React.startTransition 包装状态更新
         }
     }
 )
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <RouterProvider router={router} />
+        <RouterProvider
+            router={router}
+            future={{
+                v7_startTransition: true
+            }}
+        />
     </React.StrictMode>
 )

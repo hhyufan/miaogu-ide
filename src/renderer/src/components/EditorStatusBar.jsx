@@ -100,7 +100,6 @@ const EditorStatusBar = ({ fileManager }) => {
 
     // 处理字体大小变化
     const handleFontSizeChange = useCallback(async (newSize) => {
-        console.log('newSize', newSize)
         // 限制字体大小范围在8-32之间
         const size = Math.max(8, Math.min(32, newSize))
         setFontSize(size)

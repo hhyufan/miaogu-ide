@@ -4,7 +4,7 @@ import { getFileExtensionOptimized } from '../utils/fileNameUtils'
 import * as monaco from 'monaco-editor'
 import { createHighlighter } from 'shiki'
 import { shikiToMonaco } from '@shikijs/monaco'
-import { Spin, Alert } from 'antd'
+import { Alert } from 'antd'
 import { isFileBlacklisted } from '../configs/file-blacklist'
 import allHighLight from '../configs/themes.json'
 import extensionToLanguage from '../configs/file-extensions.json'
@@ -252,8 +252,38 @@ const EditorWithFileContext = ({ isDarkMode, fileManager }) => {
 
     if (!isShikiReady) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200 }}>
-                <Spin size="large" />
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'var(--editor-background)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}
+            >
+                <div
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '3px solid var(--border-color)',
+                        borderTop: '3px solid var(--primary-color)',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                    }}
+                />
+                <style>
+                    {`
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    `}
+                </style>
             </div>
         )
     }
